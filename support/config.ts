@@ -8,6 +8,9 @@ const ConfigSchema = z.object({
 	database: z.object({
 		url: z.string(),
 	}),
+	discord: z.object({
+		token: z.string().min(1),
+	}),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -15,6 +18,9 @@ export type Config = z.infer<typeof ConfigSchema>;
 const DEFAULT_CONFIG: Config = {
 	database: {
 		url: "postgres://nugget:nugget@localhost:5433/nugget?sslmode=disable",
+	},
+	discord: {
+		token: "",
 	},
 };
 

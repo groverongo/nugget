@@ -3,6 +3,7 @@
 	"scripts": {
 		"dev": "nodemon src/app.ts | pino-pretty",
 		"prepare": "husky",
+		"preinstall": "docker pull sqlc/sqlc:latest",
 		"clean": "rimraf dist",
 		"build": "pnpm clean && tsc -p .",
 		"start": "node dist/app.js",
@@ -11,7 +12,8 @@
 		"migrate:up": "ts-node ./cmd/migration.ts up | pino-pretty",
 		"migrate:down": "ts-node ./cmd/migration.ts down | pino-pretty",
 		"migrate:status": "ts-node ./cmd/migration.ts status | pino-pretty",
-		"migrate:create": "f() { ts-node ./cmd/migration.ts create \"$@\" | pino-pretty; }; f"
+		"migrate:create": "f() { ts-node ./cmd/migration.ts create \"$@\" | pino-pretty; }; f",
+		"generate:db": "cd db && docker run --rm -u \"$(id -u):$(id -g)\" -e HOME=/src -v \"$(pwd):/src\" -w /src sqlc/sqlc generate"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.15",
@@ -26,7 +28,7 @@
 		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"discord": "^0.8.2",
+		"discord.js": "^14.26.4",
 		"dotenv": "^17.4.2",
 		"js-yaml": "^4.1.1",
 		"pg": "^8.21.0",
