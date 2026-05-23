@@ -1,11 +1,13 @@
 import fs from "fs/promises";
 import path from "path";
 import { Client } from "pg";
+import { config } from "../../support/config";
+import { logger } from "../../support/logger";
 
 const MIGRATIONS_DIR = path.join(process.cwd(), "db", "migrations");
 
 const client = new Client({
-	connectionString: process.env.DATABASE_URL,
+	connectionString: config.database.url,
 });
 
 type Migration = {
@@ -58,12 +60,12 @@ async function runUp() {
 	const pending = migrations.filter((m) => !applied.has(m.id));
 
 	if (pending.length === 0) {
-		console.log("No pending migrations.");
+		logger.info("No pending migrations.");
 		return;
 	}
 
 	for (const migration of pending) {
-		console.log(`Applying ${migration.id}...`);
+		logger.info(`Applying ${migration.id}...`);
 
 		const sql = await fs.readFile(migration.upPath, "utf8");
 
@@ -82,7 +84,7 @@ async function runUp() {
 
 			await client.query("COMMIT");
 
-			console.log(`Applied ${migration.id}`);
+			logger.info(`Applied ${migration.id}`);
 		} catch (err) {
 			await client.query("ROLLBACK");
 			throw err;
@@ -95,7 +97,7 @@ async function runDown() {
 	const appliedIds = await getAppliedMigrationIds();
 
 	if (appliedIds.length === 0) {
-		console.log("No migrations to rollback.");
+		logger.info("No migrations to rollback.");
 		return;
 	}
 
@@ -107,7 +109,7 @@ async function runDown() {
 		throw new Error(`Migration file missing for ${latestId}`);
 	}
 
-	console.log(`Rolling back ${migration.id}...`);
+	logger.info(`Rolling back ${migration.id}...`);
 
 	const sql = await fs.readFile(migration.downPath, "utf8");
 
@@ -126,7 +128,7 @@ async function runDown() {
 
 		await client.query("COMMIT");
 
-		console.log(`Rolled back ${migration.id}`);
+		logger.info(`Rolled back ${migration.id}`);
 	} catch (err) {
 		await client.query("ROLLBACK");
 		throw err;
@@ -140,7 +142,7 @@ async function runStatus() {
 	for (const migration of migrations) {
 		const status = applied.has(migration.id) ? "APPLIED" : "PENDING";
 
-		console.log(`${status.padEnd(10)} ${migration.id}`);
+		logger.info(`${status.padEnd(10)} ${migration.id}`);
 	}
 }
 
@@ -187,20 +189,20 @@ async function createMigration(name: string) {
 
 	await fs.writeFile(downPath, `-- DOWN MIGRATION: ${baseName}\n`, "utf8");
 
-	console.log("Created:");
-	console.log(`  ${path.basename(upPath)}`);
-	console.log(`  ${path.basename(downPath)}`);
+	logger.info("Created:");
+	logger.info(`  ${path.basename(upPath)}`);
+	logger.info(`  ${path.basename(downPath)}`);
 }
 
 async function main() {
 	const command = process.argv[2];
 
 	if (!command) {
-		console.log("Usage:");
-		console.log("  tsx migrate.ts up");
-		console.log("  tsx migrate.ts down");
-		console.log("  tsx migrate.ts status");
-		console.log("  tsx migrate.ts create <name>");
+		logger.info("Usage:");
+		logger.info("  tsx migrate.ts up");
+		logger.info("  tsx migrate.ts down");
+		logger.info("  tsx migrate.ts status");
+		logger.info("  tsx migrate.ts create <name>");
 		process.exit(1);
 	}
 
@@ -239,6 +241,6 @@ async function main() {
 }
 
 main().catch((err) => {
-	console.error(err);
+	logger.error(err);
 	process.exit(1);
 });
