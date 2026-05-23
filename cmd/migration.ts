@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import { Client } from "pg";
-import { config } from "../../support/config";
-import { logger } from "../../support/logger";
+import { config } from "../support/config";
+import { logger } from "../support/logger";
 
 const MIGRATIONS_DIR = path.join(process.cwd(), "db", "migrations");
 
