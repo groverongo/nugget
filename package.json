@@ -8,10 +8,10 @@
 		"start": "node dist/app.js",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
-		"migrate:up": "ts-node ./cmd/migration/migration.ts up | pino-pretty",
-		"migrate:down": "ts-node ./cmd/migration/migration.ts down | pino-pretty",
-		"migrate:status": "ts-node ./cmd/migration/migration.ts status | pino-pretty",
-		"migrate:create": "f() { ts-node ./cmd/migration/migration.ts create \"$@\" | pino-pretty; }; f"
+		"migrate:up": "ts-node ./cmd/migration.ts up | pino-pretty",
+		"migrate:down": "ts-node ./cmd/migration.ts down | pino-pretty",
+		"migrate:status": "ts-node ./cmd/migration.ts status | pino-pretty",
+		"migrate:create": "f() { ts-node ./cmd/migration.ts create \"$@\" | pino-pretty; }; f"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.15",
