@@ -1,0 +1,142 @@
+import dotenv from "dotenv";
+import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
+import z from "zod";
+
+const ConfigSchema = z.object({
+	database: z.object({
+		url: z.string(),
+	}),
+});
+
+export type Config = z.infer<typeof ConfigSchema>;
+
+const DEFAULT_CONFIG: Config = {
+	database: {
+		url: "postgres://nugget:nugget@localhost:5433/nugget?sslmode=disable",
+	},
+};
+
+class ConfigService {
+	private static instance: ConfigService;
+
+	private readonly isProduction = process.env.NODE_ENV === "production";
+
+	private config!: Config;
+
+	private constructor() {
+		this.load();
+	}
+
+	static getInstance(): ConfigService {
+		if (!ConfigService.instance) {
+			ConfigService.instance = new ConfigService();
+		}
+
+		return ConfigService.instance;
+	}
+
+	/**
+	 * Public config accessor
+	 */
+	get(): Config {
+		return this.config;
+	}
+
+	private load() {
+		if (this.isProduction) {
+			this.config = ConfigSchema.parse(
+				this.deepMerge(DEFAULT_CONFIG, this.fromEnv()),
+			);
+
+			return;
+		}
+
+		dotenv.config();
+
+		const yamlConfig = this.loadYaml();
+
+		const merged = this.deepMerge(
+			this.deepMerge(DEFAULT_CONFIG, yamlConfig),
+			this.fromEnv(),
+		);
+
+		this.config = ConfigSchema.parse(merged);
+	}
+
+	private loadYaml(): Record<string, unknown> {
+		const fullPath = path.join(process.cwd(), "config.yaml");
+
+		if (!fs.existsSync(fullPath)) {
+			return {};
+		}
+
+		const raw = fs.readFileSync(fullPath, "utf8");
+
+		return (yaml.load(raw) as Record<string, unknown>) ?? {};
+	}
+
+	private fromEnv(): Record<string, unknown> {
+		const result: Record<string, unknown> = {};
+
+		for (const [key, value] of Object.entries(process.env)) {
+			if (value === undefined) {
+				continue;
+			}
+
+			const pathParts = key.toLowerCase().split("_");
+
+			this.setDeep(result, pathParts, value);
+		}
+
+		return result;
+	}
+
+	private setDeep(
+		obj: Record<string, unknown>,
+		path: string[],
+		value: unknown,
+	) {
+		let current = obj;
+
+		for (let i = 0; i < path.length - 1; i++) {
+			const key = path[i];
+			const next = current[key];
+
+			if (!this.isObject(next)) {
+				current[key] = {};
+			}
+
+			current = current[key] as Record<string, unknown>;
+		}
+
+		current[path[path.length - 1]] = value;
+	}
+
+	private deepMerge(
+		target: Record<string, unknown>,
+		source: Record<string, unknown>,
+	): Record<string, unknown> {
+		const result = { ...target };
+
+		for (const key of Object.keys(source)) {
+			const sourceValue = source[key];
+			const targetValue = target[key];
+
+			if (this.isObject(sourceValue) && this.isObject(targetValue)) {
+				result[key] = this.deepMerge(targetValue, sourceValue);
+			} else {
+				result[key] = sourceValue;
+			}
+		}
+
+		return result;
+	}
+
+	private isObject(value: unknown): value is Record<string, unknown> {
+		return typeof value === "object" && value !== null && !Array.isArray(value);
+	}
+}
+
+export const config = ConfigService.getInstance().get();
