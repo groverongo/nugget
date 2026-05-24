@@ -2,12 +2,14 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "commonjs",
-		"rootDirs": ["cmd", "src"],
+		"rootDirs": ["cmd", "src", "tests"],
 		"outDir": "./dist",
 		"removeComments": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
+		"types": ["node", "jest"],
 		"skipLibCheck": true
-	}
+	},
+	"include": ["cmd/**/*.ts", "src/**/*.ts", "support/**/*.ts", "tests/**/*.ts"]
 }

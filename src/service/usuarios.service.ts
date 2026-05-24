@@ -17,7 +17,7 @@ export class UsuariosService implements IUsuariosService {
 	) {}
 
 	async createUsuario(args: CreateUsuarioArgs) {
-		this.txManager.runInTx(async (tx) => {
+		return this.txManager.runInTx(async (tx) => {
 			await this.usuariosRepo.withTx(tx).create(args);
 
 			const conteo = await this.usuariosRepo.withTx(tx).count();
