@@ -1,9 +1,10 @@
 import type { QueryArrayConfig, QueryArrayResult } from "pg";
 import {
 	type CreateUsuarioArgs,
-	type CreateUsuarioRow,
 	createUsuario,
 	listUsuarios,
+	type UpdateUsuarioUsernameArgs,
+	updateUsuarioUsername,
 } from "../../db/sqlcgen/usuarios_sql";
 
 type Queryable = {
@@ -13,11 +14,15 @@ type Queryable = {
 export class UsuariosRepository {
 	constructor(private readonly client: Queryable) {}
 
-	create(args: CreateUsuarioArgs): Promise<CreateUsuarioRow | null> {
+	create(args: CreateUsuarioArgs) {
 		return createUsuario(this.client, args);
 	}
 
 	list() {
 		return listUsuarios(this.client);
+	}
+
+	updateUsername(args: UpdateUsuarioUsernameArgs) {
+		return updateUsuarioUsername(this.client, args);
 	}
 }
