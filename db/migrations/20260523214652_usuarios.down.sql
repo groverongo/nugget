@@ -1,0 +1,3 @@
+-- DOWN MIGRATION: 20260523214652_usuarios
+
+DROP TABLE usuarios;
