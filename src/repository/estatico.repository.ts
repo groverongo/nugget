@@ -4,10 +4,11 @@ import {
 	agregarPuestoPremio,
 	limpiezaDistribucionPremios,
 } from "../../db/sqlcgen/usuarios_sql";
+import type { DBExecutor } from "../../support/db.provider";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 
 export class EstaticoRepository implements IEstaticoRepository {
-	constructor(private readonly pool: PoolClient) {}
+	constructor(private readonly pool: DBExecutor) {}
 
 	limpiezaDistribucionPremios(): Promise<void> {
 		return limpiezaDistribucionPremios(this.pool);

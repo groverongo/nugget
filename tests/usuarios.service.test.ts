@@ -23,6 +23,7 @@ function createUsuariosRepositoryMock(
 ): jest.Mocked<IUsuariosRepository> {
 	const repo = {
 		create: jest.fn().mockResolvedValue(undefined),
+		delete: jest.fn().mockResolvedValue(undefined),
 		list: jest.fn().mockResolvedValue([]),
 		updateUsername: jest.fn().mockResolvedValue(undefined),
 		count: jest.fn().mockResolvedValue(count),
@@ -117,6 +118,69 @@ describe("UsuariosService", () => {
 			.then(() => {
 				resolved = true;
 			});
+
+		await Promise.resolve();
+		expect(resolved).toBe(false);
+
+		releaseTransaction();
+		await pending;
+		expect(resolved).toBe(true);
+	});
+
+	it("deleteUsuario runs repository updates inside a transaction and rebuilds prize distribution", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock(2);
+		const estaticoRepo = createEstaticoRepositoryMock();
+		const tx = {} as PoolClient;
+		const txManager = createTxManagerMock(async (fn) => {
+			await fn(tx);
+		});
+		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
+		const args = { id: "user-1" };
+		const expectedEntries = generarPremiosPolla(2).listaPremios.flatMap(
+			(puesto) => {
+				const entries = [] as Array<{ premio: string; puesto: number }>;
+
+				for (let i = puesto.min; i < puesto.max + 1; i++) {
+					entries.push({
+						premio: puesto.premio.toString(),
+						puesto: i,
+					});
+				}
+
+				return entries;
+			},
+		);
+
+		await service.deleteUsuario(args);
+
+		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
+		expect(usuariosRepo.withTx).toHaveBeenCalledWith(tx);
+		expect(usuariosRepo.delete).toHaveBeenCalledWith(args);
+		expect(usuariosRepo.count).toHaveBeenCalledTimes(1);
+		expect(estaticoRepo.withTx).toHaveBeenCalledWith(tx);
+		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
+		expect(estaticoRepo.agregarEntradaDistribucionPremio).toHaveBeenCalledWith(
+			expectedEntries,
+		);
+	});
+
+	it("deleteUsuario does not resolve before the transaction work finishes", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock();
+		const estaticoRepo = createEstaticoRepositoryMock();
+		let releaseTransaction!: () => void;
+		const transactionFinished = new Promise<void>((resolve) => {
+			releaseTransaction = resolve;
+		});
+		const txManager = createTxManagerMock(async (fn) => {
+			await fn({} as PoolClient);
+			await transactionFinished;
+		});
+		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
+
+		let resolved = false;
+		const pending = service.deleteUsuario({ id: "user-2" }).then(() => {
+			resolved = true;
+		});
 
 		await Promise.resolve();
 		expect(resolved).toBe(false);

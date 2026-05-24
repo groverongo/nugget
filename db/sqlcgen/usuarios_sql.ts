@@ -61,6 +61,22 @@ export async function updateUsuarioUsername(client: Client, args: UpdateUsuarioU
     });
 }
 
+export const deleteUsuarioQuery = `-- name: DeleteUsuario :exec
+DELETE FROM usuarios
+WHERE id = $1`;
+
+export interface DeleteUsuarioArgs {
+    id: string;
+}
+
+export async function deleteUsuario(client: Client, args: DeleteUsuarioArgs): Promise<void> {
+    await client.query({
+        text: deleteUsuarioQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
 export const countUsuariosQuery = `-- name: CountUsuarios :one
 SELECT COUNT(*) FROM usuarios`;
 

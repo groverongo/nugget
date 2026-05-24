@@ -1,9 +1,11 @@
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 import z from "zod";
 import {
 	type CreateUsuarioArgs,
 	countUsuarios,
 	createUsuario,
+	type DeleteUsuarioArgs,
+	deleteUsuario,
 	type ListUsuariosRow,
 	listUsuarios,
 	type UpdateUsuarioUsernameArgs,
@@ -12,7 +14,7 @@ import {
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 
 export class UsuariosRepository implements IUsuariosRepository {
-	constructor(private readonly pool: PoolClient) {}
+	constructor(private readonly pool: Pool | PoolClient) {}
 
 	create(args: CreateUsuarioArgs): Promise<void> {
 		return createUsuario(this.pool, args);
@@ -30,6 +32,10 @@ export class UsuariosRepository implements IUsuariosRepository {
 		const r = await countUsuarios(this.pool);
 		if (r === null) return 0;
 		return z.coerce.number().int().min(0).parse(r.count);
+	}
+
+	delete(args: DeleteUsuarioArgs) {
+		return deleteUsuario(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): UsuariosRepository {

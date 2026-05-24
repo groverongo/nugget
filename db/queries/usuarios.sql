@@ -10,6 +10,10 @@ UPDATE usuarios SET
     username = $1
 WHERE id = $2;
 
+-- name: DeleteUsuario :exec
+DELETE FROM usuarios
+WHERE id = $1;
+
 -- name: CountUsuarios :one
 SELECT COUNT(*) FROM usuarios;
 

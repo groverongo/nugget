@@ -1,6 +1,7 @@
 import type {
 	AgregarPuestoPremioArgs,
 	CreateUsuarioArgs,
+	DeleteUsuarioArgs,
 	ListUsuariosRow,
 } from "../../db/sqlcgen/usuarios_sql";
 import type { TxManager } from "../../support/db.provider";
@@ -25,6 +26,37 @@ export class UsuariosService implements IUsuariosService {
 			const { comisionOrg: _, listaPremios } = generarPremiosPolla(conteo);
 
 			await this.estaticoRepo.withTx(tx).limpiezaDistribucionPremios();
+
+			const entradas = listaPremios.flatMap(
+				(puesto): AgregarPuestoPremioArgs[] => {
+					const entradas: AgregarPuestoPremioArgs[] = [];
+					for (let i = puesto.min; i < puesto.max + 1; i++) {
+						entradas.push({
+							premio: puesto.premio.toString(),
+							puesto: i,
+						});
+					}
+					return entradas;
+				},
+			);
+
+			await this.estaticoRepo
+				.withTx(tx)
+				.agregarEntradaDistribucionPremio(entradas);
+		});
+	}
+
+	async deleteUsuario(args: DeleteUsuarioArgs) {
+		return this.txManager.runInTx(async (tx) => {
+			await this.usuariosRepo.withTx(tx).delete(args);
+
+			const conteo = await this.usuariosRepo.withTx(tx).count();
+
+			await this.estaticoRepo.withTx(tx).limpiezaDistribucionPremios();
+
+			if (conteo === 0) return;
+
+			const { comisionOrg: _, listaPremios } = generarPremiosPolla(conteo);
 
 			const entradas = listaPremios.flatMap(
 				(puesto): AgregarPuestoPremioArgs[] => {
