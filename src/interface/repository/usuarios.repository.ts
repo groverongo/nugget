@@ -1,3 +1,4 @@
+import type { PoolClient } from "pg";
 import type {
 	CreateUsuarioArgs,
 	ListUsuariosRow,
@@ -12,4 +13,6 @@ export interface IUsuariosRepository {
 	updateUsername(args: UpdateUsuarioUsernameArgs): Promise<void>;
 
 	count(): Promise<number>;
+
+	withTx(tx: PoolClient): IUsuariosRepository;
 }

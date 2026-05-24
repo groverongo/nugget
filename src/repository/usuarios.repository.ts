@@ -31,4 +31,8 @@ export class UsuariosRepository implements IUsuariosRepository {
 		if (r === null) return 0;
 		return z.coerce.number().int().min(0).parse(r.count);
 	}
+
+	withTx(tx: PoolClient): UsuariosRepository {
+		return new UsuariosRepository(tx);
+	}
 }

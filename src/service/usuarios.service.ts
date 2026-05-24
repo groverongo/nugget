@@ -2,20 +2,25 @@ import type {
 	CreateUsuarioArgs,
 	ListUsuariosRow,
 } from "../../db/sqlcgen/usuarios_sql";
+import type { TxManager } from "../../support/db.provider";
 import { generarPremiosPolla } from "../../support/pozo";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type { IUsuariosService } from "../interface/service/usuarios.service";
 
 export class UsuariosService implements IUsuariosService {
-	constructor(private readonly usuariosRepo: IUsuariosRepository) {}
+	constructor(
+		private readonly usuariosRepo: IUsuariosRepository,
+		private readonly txManager: TxManager,
+	) {}
 
 	async createUsuario(args: CreateUsuarioArgs) {
-		// TODO: Agregarlo en transaccion
-		await this.usuariosRepo.create(args);
+		this.txManager.runInTx(async (tx) => {
+			await this.usuariosRepo.withTx(tx).create(args);
 
-		const conteo = await this.usuariosRepo.count();
+			const conteo = await this.usuariosRepo.withTx(tx).count();
 
-		const _ = generarPremiosPolla(conteo);
+			const distribucion = generarPremiosPolla(conteo);
+		});
 	}
 
 	listUsuarios(): Promise<ListUsuariosRow[]> {
