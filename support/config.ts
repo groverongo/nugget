@@ -11,6 +11,12 @@ const ConfigSchema = z.object({
 	discord: z.object({
 		token: z.string().min(1),
 	}),
+	polla: z.object({
+		costo_entrada: z.number(),
+		fraccion_comision_org: z.number().min(0).max(1),
+		fraccion_extra_campeon: z.number().min(0).max(1),
+		factor_bloque_maximo: z.number(),
+	}),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -21,6 +27,12 @@ const DEFAULT_CONFIG: Config = {
 	},
 	discord: {
 		token: "",
+	},
+	polla: {
+		costo_entrada: 100,
+		fraccion_comision_org: 0.1,
+		fraccion_extra_campeon: 0.25,
+		factor_bloque_maximo: 10,
 	},
 };
 
