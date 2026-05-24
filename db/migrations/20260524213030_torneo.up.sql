@@ -3,7 +3,8 @@
 CREATE TABLE estatico_equipos (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
-    puntos_fifa DECIMAL(6,2)
+    puntos_fifa DECIMAL(6,2),
+    grupo VARCHAR(1) NOT NULL
 );
 
 CREATE TABLE estatico_fases (
