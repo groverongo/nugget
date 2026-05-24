@@ -83,3 +83,31 @@ export async function countUsuarios(client: Client): Promise<CountUsuariosRow | 
     };
 }
 
+export const limpiezaDistribucionPremiosQuery = `-- name: LimpiezaDistribucionPremios :exec
+DELETE FROM estatico_premios`;
+
+export async function limpiezaDistribucionPremios(client: Client): Promise<void> {
+    await client.query({
+        text: limpiezaDistribucionPremiosQuery,
+        values: [],
+        rowMode: "array"
+    });
+}
+
+export const agregarPuestoPremioQuery = `-- name: AgregarPuestoPremio :exec
+INSERT INTO estatico_premios (puesto, premio)
+VALUES ($1, $2)`;
+
+export interface AgregarPuestoPremioArgs {
+    puesto: number;
+    premio: string;
+}
+
+export async function agregarPuestoPremio(client: Client, args: AgregarPuestoPremioArgs): Promise<void> {
+    await client.query({
+        text: agregarPuestoPremioQuery,
+        values: [args.puesto, args.premio],
+        rowMode: "array"
+    });
+}
+

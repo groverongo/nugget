@@ -1,0 +1,3 @@
+-- DOWN MIGRATION: 20260524175454_premios
+
+DROP TABLE estatico_premios;
