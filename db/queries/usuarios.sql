@@ -1,12 +1,25 @@
 -- name: ListUsuarios :many
 SELECT * FROM usuarios;
 
--- name: CreateUsuario :one
+-- name: CreateUsuario :exec
 INSERT INTO usuarios (id, username)
-VALUES (sqlc.arg(id), sqlc.arg(username))
-RETURNING *;
+VALUES (sqlc.arg(id), sqlc.arg(username));
 
 -- name: UpdateUsuarioUsername :exec
 UPDATE usuarios SET
     username = $1
 WHERE id = $2;
+
+-- name: DeleteUsuario :exec
+DELETE FROM usuarios
+WHERE id = $1;
+
+-- name: CountUsuarios :one
+SELECT COUNT(*) FROM usuarios;
+
+-- name: LimpiezaDistribucionPremios :exec
+DELETE FROM estatico_premios;
+
+-- name: AgregarPuestoPremio :exec
+INSERT INTO estatico_premios (puesto, premio)
+VALUES ($1, $2);
