@@ -26,35 +26,21 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
     });
 }
 
-export const createUsuarioQuery = `-- name: CreateUsuario :one
+export const createUsuarioQuery = `-- name: CreateUsuario :exec
 INSERT INTO usuarios (id, username)
-VALUES ($1, $2)
-RETURNING id, username`;
+VALUES ($1, $2)`;
 
 export interface CreateUsuarioArgs {
     id: string;
     username: string;
 }
 
-export interface CreateUsuarioRow {
-    id: string;
-    username: string;
-}
-
-export async function createUsuario(client: Client, args: CreateUsuarioArgs): Promise<CreateUsuarioRow | null> {
-    const result = await client.query({
+export async function createUsuario(client: Client, args: CreateUsuarioArgs): Promise<void> {
+    await client.query({
         text: createUsuarioQuery,
         values: [args.id, args.username],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1]
-    };
 }
 
 export const updateUsuarioUsernameQuery = `-- name: UpdateUsuarioUsername :exec
@@ -73,5 +59,27 @@ export async function updateUsuarioUsername(client: Client, args: UpdateUsuarioU
         values: [args.username, args.id],
         rowMode: "array"
     });
+}
+
+export const countUsuariosQuery = `-- name: CountUsuarios :one
+SELECT COUNT(*) FROM usuarios`;
+
+export interface CountUsuariosRow {
+    count: string;
+}
+
+export async function countUsuarios(client: Client): Promise<CountUsuariosRow | null> {
+    const result = await client.query({
+        text: countUsuariosQuery,
+        values: [],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
 }
 
