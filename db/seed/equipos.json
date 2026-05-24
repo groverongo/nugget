@@ -1,0 +1,58 @@
+{
+	"table": "estatico_equipos",
+	"rows": [
+		{ "nombre": "Australia" },
+		{ "nombre": "Iran" },
+		{ "nombre": "Iraq" },
+		{ "nombre": "Japan" },
+		{ "nombre": "Jordan" },
+		{ "nombre": "Qatar" },
+		{ "nombre": "Saudi Arabia" },
+		{ "nombre": "South Korea" },
+		{ "nombre": "Uzbekistan" },
+
+		{ "nombre": "Algeria" },
+		{ "nombre": "Cape Verde" },
+		{ "nombre": "DR Congo" },
+		{ "nombre": "Egypt" },
+		{ "nombre": "Ghana" },
+		{ "nombre": "Ivory Coast" },
+		{ "nombre": "Morocco" },
+		{ "nombre": "Senegal" },
+		{ "nombre": "South Africa" },
+		{ "nombre": "Tunisia" },
+
+		{ "nombre": "Canada" },
+		{ "nombre": "Curaçao" },
+		{ "nombre": "Haiti" },
+		{ "nombre": "Mexico" },
+		{ "nombre": "Panama" },
+		{ "nombre": "United States" },
+
+		{ "nombre": "Argentina" },
+		{ "nombre": "Brazil" },
+		{ "nombre": "Colombia" },
+		{ "nombre": "Ecuador" },
+		{ "nombre": "Paraguay" },
+		{ "nombre": "Uruguay" },
+
+		{ "nombre": "New Zealand" },
+
+		{ "nombre": "Austria" },
+		{ "nombre": "Belgium" },
+		{ "nombre": "Bosnia and Herzegovina" },
+		{ "nombre": "Croatia" },
+		{ "nombre": "Czech Republic" },
+		{ "nombre": "England" },
+		{ "nombre": "France" },
+		{ "nombre": "Germany" },
+		{ "nombre": "Netherlands" },
+		{ "nombre": "Norway" },
+		{ "nombre": "Portugal" },
+		{ "nombre": "Scotland" },
+		{ "nombre": "Spain" },
+		{ "nombre": "Sweden" },
+		{ "nombre": "Switzerland" },
+		{ "nombre": "Turkey" }
+	]
+}
