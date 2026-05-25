@@ -1,0 +1,58 @@
+{
+	"table": "estatico_equipos",
+	"rows": [
+		{ "nombre": "Australia", "grupo": "D" },
+		{ "nombre": "Irán", "grupo": "G" },
+		{ "nombre": "Irak", "grupo": "I" },
+		{ "nombre": "Japón", "grupo": "F" },
+		{ "nombre": "Jordania", "grupo": "J" },
+		{ "nombre": "Catar", "grupo": "B" },
+		{ "nombre": "Arabia Saudí", "grupo": "H" },
+		{ "nombre": "República de Corea", "grupo": "A" },
+		{ "nombre": "Uzbekistán", "grupo": "K" },
+
+		{ "nombre": "Argelia", "grupo": "J" },
+		{ "nombre": "Cabo Verde", "grupo": "H" },
+		{ "nombre": "RD Congo", "grupo": "K" },
+		{ "nombre": "Egipto", "grupo": "G" },
+		{ "nombre": "Ghana", "grupo": "L" },
+		{ "nombre": "Costa de Marfil", "grupo": "E" },
+		{ "nombre": "Marruecos", "grupo": "C" },
+		{ "nombre": "Senegal", "grupo": "I" },
+		{ "nombre": "Sudáfrica", "grupo": "A" },
+		{ "nombre": "Túnez", "grupo": "F" },
+
+		{ "nombre": "Canadá", "grupo": "B" },
+		{ "nombre": "Curazao", "grupo": "E" },
+		{ "nombre": "Haití", "grupo": "C" },
+		{ "nombre": "México", "grupo": "A" },
+		{ "nombre": "Panamá", "grupo": "L" },
+		{ "nombre": "Estados Unidos", "grupo": "D" },
+
+		{ "nombre": "Argentina", "grupo": "J" },
+		{ "nombre": "Brasil", "grupo": "C" },
+		{ "nombre": "Colombia", "grupo": "K" },
+		{ "nombre": "Ecuador", "grupo": "E" },
+		{ "nombre": "Paraguay", "grupo": "D" },
+		{ "nombre": "Uruguay", "grupo": "H" },
+
+		{ "nombre": "Nueva Zelanda", "grupo": "G" },
+
+		{ "nombre": "Austria", "grupo": "J" },
+		{ "nombre": "Bélgica", "grupo": "G" },
+		{ "nombre": "Bosnia y Herzegovina", "grupo": "B" },
+		{ "nombre": "Croacia", "grupo": "L" },
+		{ "nombre": "República Checa", "grupo": "A" },
+		{ "nombre": "Inglaterra", "grupo": "L" },
+		{ "nombre": "Francia", "grupo": "I" },
+		{ "nombre": "Alemania", "grupo": "E" },
+		{ "nombre": "Países Bajos", "grupo": "F" },
+		{ "nombre": "Noruega", "grupo": "I" },
+		{ "nombre": "Portugal", "grupo": "K" },
+		{ "nombre": "Escocia", "grupo": "C" },
+		{ "nombre": "España", "grupo": "H" },
+		{ "nombre": "Suecia", "grupo": "F" },
+		{ "nombre": "Suiza", "grupo": "B" },
+		{ "nombre": "Turquía", "grupo": "D" }
+	]
+}

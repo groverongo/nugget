@@ -14,6 +14,7 @@
 		"migrate:down": "ts-node ./cmd/migration.ts down | pino-pretty",
 		"migrate:status": "ts-node ./cmd/migration.ts status | pino-pretty",
 		"migrate:create": "f() { ts-node ./cmd/migration.ts create \"$@\" | pino-pretty; }; f",
+		"seed": "ts-node ./cmd/seeding.ts | pino-pretty",
 		"generate:db": "cd db && docker run --rm -u \"$(id -u):$(id -g)\" -e HOME=/src -v \"$(pwd):/src\" -w /src sqlc/sqlc generate",
 		"generate": "pnpm run generate:db"
 	},

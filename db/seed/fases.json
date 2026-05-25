@@ -1,0 +1,35 @@
+{
+	"table": "estatico_fases",
+	"rows": [
+		{
+			"nombre": "grupos",
+			"puntos_base": 3,
+			"puntos_buen_intento": 1
+		},
+		{
+			"nombre": "16vos",
+			"puntos_base": 4,
+			"puntos_buen_intento": 2
+		},
+		{
+			"nombre": "8vos",
+			"puntos_base": 4,
+			"puntos_buen_intento": 2
+		},
+		{
+			"nombre": "4tos",
+			"puntos_base": 5,
+			"puntos_buen_intento": 2
+		},
+		{
+			"nombre": "semis",
+			"puntos_base": 5,
+			"puntos_buen_intento": 2
+		},
+		{
+			"nombre": "final",
+			"puntos_base": 5,
+			"puntos_buen_intento": 3
+		}
+	]
+}
