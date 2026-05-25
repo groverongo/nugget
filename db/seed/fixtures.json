@@ -1,0 +1,458 @@
+{
+	"table": "partidos",
+	"refs": {
+		"equipo_local_id": { "from": "estatico_equipos", "by": "nombre" },
+		"equipo_visitante_id": { "from": "estatico_equipos", "by": "nombre" },
+		"fase_id": { "from": "estatico_fases", "by": "nombre" }
+	},
+	"rows": [
+		{
+			"equipo_local_id": "México",
+			"equipo_visitante_id": "Sudáfrica",
+			"fecha_partido": "2026-06-11T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "República de Corea",
+			"equipo_visitante_id": "República Checa",
+			"fecha_partido": "2026-06-11T22:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Canadá",
+			"equipo_visitante_id": "Bosnia y Herzegovina",
+			"fecha_partido": "2026-06-12T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Estados Unidos",
+			"equipo_visitante_id": "Paraguay",
+			"fecha_partido": "2026-06-12T21:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Catar",
+			"equipo_visitante_id": "Suiza",
+			"fecha_partido": "2026-06-13T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Brasil",
+			"equipo_visitante_id": "Marruecos",
+			"fecha_partido": "2026-06-13T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Haití",
+			"equipo_visitante_id": "Escocia",
+			"fecha_partido": "2026-06-13T21:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Australia",
+			"equipo_visitante_id": "Turquía",
+			"fecha_partido": "2026-06-14T00:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Alemania",
+			"equipo_visitante_id": "Curazao",
+			"fecha_partido": "2026-06-14T13:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Países Bajos",
+			"equipo_visitante_id": "Japón",
+			"fecha_partido": "2026-06-14T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Costa de Marfil",
+			"equipo_visitante_id": "Ecuador",
+			"fecha_partido": "2026-06-14T19:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Suecia",
+			"equipo_visitante_id": "Túnez",
+			"fecha_partido": "2026-06-14T22:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "España",
+			"equipo_visitante_id": "Cabo Verde",
+			"fecha_partido": "2026-06-15T12:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Bélgica",
+			"equipo_visitante_id": "Egipto",
+			"fecha_partido": "2026-06-15T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Arabia Saudí",
+			"equipo_visitante_id": "Uruguay",
+			"fecha_partido": "2026-06-15T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Irán",
+			"equipo_visitante_id": "Nueva Zelanda",
+			"fecha_partido": "2026-06-15T21:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Francia",
+			"equipo_visitante_id": "Senegal",
+			"fecha_partido": "2026-06-16T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Irak",
+			"equipo_visitante_id": "Noruega",
+			"fecha_partido": "2026-06-16T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Argentina",
+			"equipo_visitante_id": "Argelia",
+			"fecha_partido": "2026-06-16T21:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Austria",
+			"equipo_visitante_id": "Jordania",
+			"fecha_partido": "2026-06-17T00:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Portugal",
+			"equipo_visitante_id": "RD Congo",
+			"fecha_partido": "2026-06-17T13:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Inglaterra",
+			"equipo_visitante_id": "Croacia",
+			"fecha_partido": "2026-06-17T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Ghana",
+			"equipo_visitante_id": "Panamá",
+			"fecha_partido": "2026-06-17T19:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Uzbekistán",
+			"equipo_visitante_id": "Colombia",
+			"fecha_partido": "2026-06-17T22:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "República Checa",
+			"equipo_visitante_id": "Sudáfrica",
+			"fecha_partido": "2026-06-18T12:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Suiza",
+			"equipo_visitante_id": "Bosnia y Herzegovina",
+			"fecha_partido": "2026-06-18T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Canadá",
+			"equipo_visitante_id": "Catar",
+			"fecha_partido": "2026-06-18T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "México",
+			"equipo_visitante_id": "República de Corea",
+			"fecha_partido": "2026-06-18T21:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Estados Unidos",
+			"equipo_visitante_id": "Australia",
+			"fecha_partido": "2026-06-19T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Escocia",
+			"equipo_visitante_id": "Marruecos",
+			"fecha_partido": "2026-06-19T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Brasil",
+			"equipo_visitante_id": "Haití",
+			"fecha_partido": "2026-06-19T21:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Turquía",
+			"equipo_visitante_id": "Paraguay",
+			"fecha_partido": "2026-06-20T00:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Países Bajos",
+			"equipo_visitante_id": "Suecia",
+			"fecha_partido": "2026-06-20T13:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Alemania",
+			"equipo_visitante_id": "Costa de Marfil",
+			"fecha_partido": "2026-06-20T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Ecuador",
+			"equipo_visitante_id": "Curazao",
+			"fecha_partido": "2026-06-20T22:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Túnez",
+			"equipo_visitante_id": "Japón",
+			"fecha_partido": "2026-06-21T00:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "España",
+			"equipo_visitante_id": "Arabia Saudí",
+			"fecha_partido": "2026-06-21T12:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Bélgica",
+			"equipo_visitante_id": "Irán",
+			"fecha_partido": "2026-06-21T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Uruguay",
+			"equipo_visitante_id": "Cabo Verde",
+			"fecha_partido": "2026-06-21T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Nueva Zelanda",
+			"equipo_visitante_id": "Egipto",
+			"fecha_partido": "2026-06-21T21:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Argentina",
+			"equipo_visitante_id": "Austria",
+			"fecha_partido": "2026-06-22T13:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Francia",
+			"equipo_visitante_id": "Irak",
+			"fecha_partido": "2026-06-22T17:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Noruega",
+			"equipo_visitante_id": "Senegal",
+			"fecha_partido": "2026-06-22T20:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Jordania",
+			"equipo_visitante_id": "Argelia",
+			"fecha_partido": "2026-06-22T23:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Portugal",
+			"equipo_visitante_id": "Uzbekistán",
+			"fecha_partido": "2026-06-23T13:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Inglaterra",
+			"equipo_visitante_id": "Ghana",
+			"fecha_partido": "2026-06-23T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Panamá",
+			"equipo_visitante_id": "Croacia",
+			"fecha_partido": "2026-06-23T19:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Colombia",
+			"equipo_visitante_id": "RD Congo",
+			"fecha_partido": "2026-06-23T22:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Suiza",
+			"equipo_visitante_id": "Canadá",
+			"fecha_partido": "2026-06-24T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Bosnia y Herzegovina",
+			"equipo_visitante_id": "Catar",
+			"fecha_partido": "2026-06-24T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Escocia",
+			"equipo_visitante_id": "Brasil",
+			"fecha_partido": "2026-06-24T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Marruecos",
+			"equipo_visitante_id": "Haití",
+			"fecha_partido": "2026-06-24T18:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "República Checa",
+			"equipo_visitante_id": "México",
+			"fecha_partido": "2026-06-24T21:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Sudáfrica",
+			"equipo_visitante_id": "República de Corea",
+			"fecha_partido": "2026-06-24T21:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Curazao",
+			"equipo_visitante_id": "Costa de Marfil",
+			"fecha_partido": "2026-06-25T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Ecuador",
+			"equipo_visitante_id": "Alemania",
+			"fecha_partido": "2026-06-25T16:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Japón",
+			"equipo_visitante_id": "Suecia",
+			"fecha_partido": "2026-06-25T19:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Túnez",
+			"equipo_visitante_id": "Países Bajos",
+			"fecha_partido": "2026-06-25T19:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Turquía",
+			"equipo_visitante_id": "Estados Unidos",
+			"fecha_partido": "2026-06-25T22:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Paraguay",
+			"equipo_visitante_id": "Australia",
+			"fecha_partido": "2026-06-25T22:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Noruega",
+			"equipo_visitante_id": "Francia",
+			"fecha_partido": "2026-06-26T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Senegal",
+			"equipo_visitante_id": "Irak",
+			"fecha_partido": "2026-06-26T15:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Cabo Verde",
+			"equipo_visitante_id": "Arabia Saudí",
+			"fecha_partido": "2026-06-26T20:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Uruguay",
+			"equipo_visitante_id": "España",
+			"fecha_partido": "2026-06-26T20:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Egipto",
+			"equipo_visitante_id": "Irán",
+			"fecha_partido": "2026-06-26T23:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Nueva Zelanda",
+			"equipo_visitante_id": "Bélgica",
+			"fecha_partido": "2026-06-26T23:00:00",
+			"fase_id": "grupos"
+		},
+
+		{
+			"equipo_local_id": "Panamá",
+			"equipo_visitante_id": "Inglaterra",
+			"fecha_partido": "2026-06-27T17:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Croacia",
+			"equipo_visitante_id": "Ghana",
+			"fecha_partido": "2026-06-27T17:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Colombia",
+			"equipo_visitante_id": "Portugal",
+			"fecha_partido": "2026-06-27T19:30:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "RD Congo",
+			"equipo_visitante_id": "Uzbekistán",
+			"fecha_partido": "2026-06-27T19:30:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Argelia",
+			"equipo_visitante_id": "Austria",
+			"fecha_partido": "2026-06-27T22:00:00",
+			"fase_id": "grupos"
+		},
+		{
+			"equipo_local_id": "Jordania",
+			"equipo_visitante_id": "Argentina",
+			"fecha_partido": "2026-06-27T22:00:00",
+			"fase_id": "grupos"
+		}
+	]
+}

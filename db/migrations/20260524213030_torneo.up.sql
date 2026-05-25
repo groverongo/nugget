@@ -9,7 +9,7 @@ CREATE TABLE estatico_equipos (
 
 CREATE TABLE estatico_fases (
     id SERIAL PRIMARY KEY,
-    nombre_fase VARCHAR(50) NOT NULL, -- Ej: 'Fase de Grupos', 'Gran Final'
+    nombre VARCHAR(50) NOT NULL, -- Ej: 'Fase de Grupos', 'Gran Final'
     puntos_base INTEGER NOT NULL, -- 3, 4 o 5 puntos según la especificación
     puntos_buen_intento INTEGER NOT NULL -- 1, 2 o 3 puntos
 );
