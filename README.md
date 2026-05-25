@@ -35,7 +35,7 @@ pnpm dev
 
 ### Notes about setup
 
-- `pnpm install` runs a `preinstall` hook that pulls `sqlc/sqlc:latest`, so Docker must be available during dependency installation.
+- `pnpm install:images` runs hook that pulls `sqlc/sqlc:latest`, so Docker must be available during dependency installation.
 - Commands should be run from the repo root because the migration runner and config loader resolve paths from `process.cwd()`.
 - The app config requires `discord.token` plus the numeric `polla.*` settings after validation.
 

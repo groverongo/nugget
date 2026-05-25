@@ -6,7 +6,7 @@
 
 ## Setup and command order
 - Use Node `v24.13.1` from `.nvmrc` and `pnpm@10.30.1` via Corepack.
-- `pnpm install` runs `docker pull sqlc/sqlc:latest` as a `preinstall` hook, so Docker must already be available even for dependency install.
+- `pnpm install:images` runs `docker pull sqlc/sqlc:latest` as a hook, so Docker must already be available even for dependency install.
 - Local Postgres comes from `docker-compose.yaml` and binds `localhost:5433` with database/user/password all set to `nugget`.
 - Run repo commands from the repo root. Both `cmd/migration.ts`, `cmd/seeding.ts`, and `support/config.ts` resolve paths from `process.cwd()`.
 - Normal local boot order is: `corepack enable` -> `pnpm install` -> `docker compose up -d` -> `pnpm migrate:up` -> `pnpm dev`.

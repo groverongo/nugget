@@ -3,7 +3,7 @@
 	"scripts": {
 		"dev": "nodemon src/app.ts | pino-pretty",
 		"prepare": "husky",
-		"preinstall": "docker pull sqlc/sqlc:latest",
+		"install:images": "docker pull sqlc/sqlc:latest",
 		"clean": "rimraf dist",
 		"build": "pnpm clean && tsc -p .",
 		"start": "node dist/app.js",
