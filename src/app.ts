@@ -1,4 +1,5 @@
-import { ProvideDB, ProvideTxManager } from "../support/db.provider";
+import { ProvideDB, ProvideTxManager } from "@support/db.provider";
+import { logger } from "@support/logger";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { UsuariosService } from "./service/usuarios.service";
@@ -30,6 +31,7 @@ export function createAppContext() {
 
 //TODO : Definicion de bot con Discord.js
 async function main() {
+	logger.info("MISSING DISCORD.JS IMPL");
 	const _ = createAppContext();
 }
 

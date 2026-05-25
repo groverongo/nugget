@@ -1,10 +1,10 @@
-import type { PoolClient } from "pg";
 import {
 	type AgregarPuestoPremioArgs,
 	agregarPuestoPremio,
 	limpiezaDistribucionPremios,
-} from "../../db/sqlcgen/usuarios_sql";
-import type { DBExecutor } from "../../support/db.provider";
+} from "@sqlc/usuarios_sql";
+import type { DBExecutor } from "@support/db.provider";
+import type { PoolClient } from "pg";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 
 export class EstaticoRepository implements IEstaticoRepository {

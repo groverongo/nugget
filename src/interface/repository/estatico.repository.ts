@@ -1,5 +1,5 @@
+import type { AgregarPuestoPremioArgs } from "@sqlc/usuarios_sql";
 import type { PoolClient } from "pg";
-import type { AgregarPuestoPremioArgs } from "../../../db/sqlcgen/usuarios_sql";
 
 export interface IEstaticoRepository {
 	limpiezaDistribucionPremios(): Promise<void>;

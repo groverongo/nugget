@@ -1,10 +1,10 @@
-import type { PoolClient } from "pg";
 import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
 	UpdateUsuarioUsernameArgs,
-} from "../../../db/sqlcgen/usuarios_sql";
+} from "@sqlc/usuarios_sql";
+import type { PoolClient } from "pg";
 
 export interface IUsuariosRepository {
 	create(args: CreateUsuarioArgs): Promise<void>;

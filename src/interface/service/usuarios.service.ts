@@ -2,7 +2,7 @@ import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
-} from "../../../db/sqlcgen/usuarios_sql";
+} from "@sqlc/usuarios_sql";
 
 export interface IUsuariosService {
 	createUsuario(args: CreateUsuarioArgs): Promise<void>;

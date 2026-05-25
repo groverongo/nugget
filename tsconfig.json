@@ -2,7 +2,12 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "commonjs",
-		"rootDirs": ["cmd", "src", "tests"],
+		"ignoreDeprecations": "6.0",
+		"paths": {
+			"*": ["./*"],
+			"@sqlc/*": ["./db/sqlcgen/*"],
+			"@support/*": ["./support/*"]
+		},
 		"outDir": "./dist",
 		"removeComments": true,
 		"esModuleInterop": true,
@@ -11,5 +16,5 @@
 		"types": ["node", "jest"],
 		"skipLibCheck": true
 	},
-	"include": ["cmd/**/*.ts", "src/**/*.ts", "support/**/*.ts", "tests/**/*.ts"]
+	"include": ["src/**/*.ts", "support/**/*.ts", "db/sqlcgen/**/*.ts"]
 }

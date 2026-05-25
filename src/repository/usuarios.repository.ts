@@ -1,5 +1,3 @@
-import type { Pool, PoolClient } from "pg";
-import z from "zod";
 import {
 	type CreateUsuarioArgs,
 	countUsuarios,
@@ -10,7 +8,9 @@ import {
 	listUsuarios,
 	type UpdateUsuarioUsernameArgs,
 	updateUsuarioUsername,
-} from "../../db/sqlcgen/usuarios_sql";
+} from "@sqlc/usuarios_sql";
+import type { Pool, PoolClient } from "pg";
+import z from "zod";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 
 export class UsuariosRepository implements IUsuariosRepository {

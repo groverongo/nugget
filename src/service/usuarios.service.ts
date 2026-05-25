@@ -3,9 +3,9 @@ import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
-} from "../../db/sqlcgen/usuarios_sql";
-import type { TxManager } from "../../support/db.provider";
-import { generarPremiosPolla } from "../../support/pozo";
+} from "@sqlc/usuarios_sql";
+import type { TxManager } from "@support/db.provider";
+import { generarPremiosPolla } from "@support/pozo";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type { IUsuariosService } from "../interface/service/usuarios.service";
