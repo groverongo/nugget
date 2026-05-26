@@ -35,6 +35,57 @@ JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
 WHERE prediccion.partido_id = $1;
 
+-- name: VerPrediccionesHoy :many
+SELECT 
+    prediccion.partido_id AS partido_id,
+    prediccion.usuario_id AS usuario_id,
+    usuarios.username AS username,
+    prediccion.goles_local AS prediccion_goles_local,
+    prediccion.goles_visitante AS prediccion_goles_visitante,
+    partidos.equipo_local_id,
+    partidos.equipo_visitante_id,
+    partidos.fecha_partido,
+    partidos.goles_local AS partido_goles_local,
+    partidos.goles_visitante AS partido_goles_visitante,
+    partidos.estado,
+    el.nombre AS equipo_local_nombre,
+    el.puntos_fifa AS equipo_local_puntos_fifa,
+    el.grupo AS equipo_local_grupo,
+    ev.nombre AS equipo_visitante_nombre,
+    ev.puntos_fifa AS equipo_visitante_puntos_fifa,
+    ev.grupo AS equipo_visitante_grupo
+FROM prediccion
+JOIN usuarios ON usuarios.id = prediccion.usuario_id
+JOIN partidos ON partidos.id = prediccion.partido_id
+JOIN estatico_equipos el on el.id = partidos.equipo_local_id
+JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
+WHERE DATE(partidos.fecha_partido) = CURRENT_DATE;
+
+-- name: VerPredicciones :many
+SELECT 
+    prediccion.partido_id AS partido_id,
+    prediccion.usuario_id AS usuario_id,
+    usuarios.username AS username,
+    prediccion.goles_local AS prediccion_goles_local,
+    prediccion.goles_visitante AS prediccion_goles_visitante,
+    partidos.equipo_local_id,
+    partidos.equipo_visitante_id,
+    partidos.fecha_partido,
+    partidos.goles_local AS partido_goles_local,
+    partidos.goles_visitante AS partido_goles_visitante,
+    partidos.estado,
+    el.nombre AS equipo_local_nombre,
+    el.puntos_fifa AS equipo_local_puntos_fifa,
+    el.grupo AS equipo_local_grupo,
+    ev.nombre AS equipo_visitante_nombre,
+    ev.puntos_fifa AS equipo_visitante_puntos_fifa,
+    ev.grupo AS equipo_visitante_grupo
+FROM prediccion
+JOIN usuarios ON usuarios.id = prediccion.usuario_id
+JOIN partidos ON partidos.id = prediccion.partido_id
+JOIN estatico_equipos el on el.id = partidos.equipo_local_id
+JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id;
+
 -- name: VerMisPredicciones :many
 SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
