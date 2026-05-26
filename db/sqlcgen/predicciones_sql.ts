@@ -46,18 +46,53 @@ export async function actualizarPrediccion(client: Client, args: ActualizarPredi
 }
 
 export const verPrediccionesPorPartidoQuery = `-- name: VerPrediccionesPorPartido :many
-SELECT usuario_id, goles_local, goles_visitante
+SELECT 
+    prediccion.partido_id AS partido_id,
+    prediccion.usuario_id AS usuario_id,
+    usuarios.username AS username,
+    prediccion.goles_local AS prediccion_goles_local,
+    prediccion.goles_visitante AS prediccion_goles_visitante,
+    partidos.equipo_local_id,
+    partidos.equipo_visitante_id,
+    partidos.fecha_partido,
+    partidos.goles_local AS partido_goles_local,
+    partidos.goles_visitante AS partido_goles_visitante,
+    partidos.estado,
+    el.nombre AS equipo_local_nombre,
+    el.puntos_fifa AS equipo_local_puntos_fifa,
+    el.grupo AS equipo_local_grupo,
+    ev.nombre AS equipo_visitante_nombre,
+    ev.puntos_fifa AS equipo_visitante_puntos_fifa,
+    ev.grupo AS equipo_visitante_grupo
 FROM prediccion
-WHERE partido_id = $1`;
+JOIN usuarios ON usuarios.id = prediccion.usuario_id
+JOIN partidos ON partidos.id = prediccion.partido_id
+JOIN estatico_equipos el on el.id = partidos.equipo_local_id
+JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
+WHERE prediccion.partido_id = $1`;
 
 export interface VerPrediccionesPorPartidoArgs {
     partidoId: number;
 }
 
 export interface VerPrediccionesPorPartidoRow {
+    partidoId: number;
     usuarioId: string;
-    golesLocal: number;
-    golesVisitante: number;
+    username: string;
+    prediccionGolesLocal: number;
+    prediccionGolesVisitante: number;
+    equipoLocalId: number | null;
+    equipoVisitanteId: number | null;
+    fechaPartido: Date | null;
+    partidoGolesLocal: number | null;
+    partidoGolesVisitante: number | null;
+    estado: string;
+    equipoLocalNombre: string;
+    equipoLocalPuntosFifa: string | null;
+    equipoLocalGrupo: string;
+    equipoVisitanteNombre: string;
+    equipoVisitantePuntosFifa: string | null;
+    equipoVisitanteGrupo: string;
 }
 
 export async function verPrediccionesPorPartido(client: Client, args: VerPrediccionesPorPartidoArgs): Promise<VerPrediccionesPorPartidoRow[]> {
@@ -68,17 +103,40 @@ export async function verPrediccionesPorPartido(client: Client, args: VerPredicc
     });
     return result.rows.map(row => {
         return {
-            usuarioId: row[0],
-            golesLocal: row[1],
-            golesVisitante: row[2]
+            partidoId: row[0],
+            usuarioId: row[1],
+            username: row[2],
+            prediccionGolesLocal: row[3],
+            prediccionGolesVisitante: row[4],
+            equipoLocalId: row[5],
+            equipoVisitanteId: row[6],
+            fechaPartido: row[7],
+            partidoGolesLocal: row[8],
+            partidoGolesVisitante: row[9],
+            estado: row[10],
+            equipoLocalNombre: row[11],
+            equipoLocalPuntosFifa: row[12],
+            equipoLocalGrupo: row[13],
+            equipoVisitanteNombre: row[14],
+            equipoVisitantePuntosFifa: row[15],
+            equipoVisitanteGrupo: row[16]
         };
     });
 }
 
 export const verMisPrediccionesQuery = `-- name: VerMisPredicciones :many
-SELECT partido_id, goles_local, goles_visitante
-FROM prediccion
-WHERE usuario_id = $1`;
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
+FROM (
+    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
+    FROM prediccion
+    WHERE usuario_id = $1
+) pe 
+INNER JOIN (
+    SELECT partidos.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
+    FROM partidos 
+    JOIN estatico_equipos el on el.id = partidos.equipo_local_id
+    JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
+) pa_ex ON pe.partido_id = pa_ex.partido_id`;
 
 export interface VerMisPrediccionesArgs {
     usuarioId: string;
@@ -86,8 +144,20 @@ export interface VerMisPrediccionesArgs {
 
 export interface VerMisPrediccionesRow {
     partidoId: number;
-    golesLocal: number;
-    golesVisitante: number;
+    prediccionGolesLocal: number;
+    prediccionGolesVisitante: number;
+    equipoLocalId: number | null;
+    equipoVisitanteId: number | null;
+    fechaPartido: Date | null;
+    partidoGolesLocal: number | null;
+    partidoGolesVisitante: number | null;
+    estado: string;
+    equipoLocalNombre: string;
+    equipoLocalPuntosFifa: string | null;
+    equipoLocalGrupo: string;
+    equipoVisitanteNombre: string;
+    equipoVisitantePuntosFifa: string | null;
+    equipoVisitanteGrupo: string;
 }
 
 export async function verMisPredicciones(client: Client, args: VerMisPrediccionesArgs): Promise<VerMisPrediccionesRow[]> {
@@ -99,8 +169,20 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
     return result.rows.map(row => {
         return {
             partidoId: row[0],
-            golesLocal: row[1],
-            golesVisitante: row[2]
+            prediccionGolesLocal: row[1],
+            prediccionGolesVisitante: row[2],
+            equipoLocalId: row[3],
+            equipoVisitanteId: row[4],
+            fechaPartido: row[5],
+            partidoGolesLocal: row[6],
+            partidoGolesVisitante: row[7],
+            estado: row[8],
+            equipoLocalNombre: row[9],
+            equipoLocalPuntosFifa: row[10],
+            equipoLocalGrupo: row[11],
+            equipoVisitanteNombre: row[12],
+            equipoVisitantePuntosFifa: row[13],
+            equipoVisitanteGrupo: row[14]
         };
     });
 }
