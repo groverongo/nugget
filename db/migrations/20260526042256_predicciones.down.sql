@@ -1,0 +1,3 @@
+-- DOWN MIGRATION: 20260526042256_predicciones
+
+DROP TABLE prediccion;
