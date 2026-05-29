@@ -1,6 +1,12 @@
 import type {
 	ActualizarPrediccionArgs,
 	AgregarPrediccionArgs,
+	VerMisPrediccionesHoyRow,
+	VerMisPrediccionesRow,
+	VerPrediccionesHoyRow,
+	VerPrediccionesPorPartidoArgs,
+	VerPrediccionesPorPartidoRow,
+	VerPrediccionesRow,
 } from "@sqlc/predicciones_sql";
 import type { TxManager } from "@support/db.provider";
 import type { ObtenerPartidoRow } from "db/sqlcgen/partido_sql";
@@ -12,7 +18,7 @@ export class PrediccionesService implements IPrediccionesService {
 	constructor(
 		private readonly prediccionesRepo: IPrediccionesRepository,
 		private readonly partidosRepo: IPartidosRepository,
-		private readonly txManager: TxManager,
+		private readonly _txManager: TxManager,
 	) {}
 
 	async agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
@@ -27,6 +33,30 @@ export class PrediccionesService implements IPrediccionesService {
 			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
 		await this.assertPartidoNoIniciado(partido);
 		await this.prediccionesRepo.actualizarPrediccion(args);
+	}
+
+	verPrediccionesPorPartido(
+		args: VerPrediccionesPorPartidoArgs,
+	): Promise<VerPrediccionesPorPartidoRow[]> {
+		return this.prediccionesRepo.verPrediccionesPorPartido(args);
+	}
+
+	verPrediccionesHoy(): Promise<VerPrediccionesHoyRow[]> {
+		return this.prediccionesRepo.verPrediccionesHoy();
+	}
+
+	verPredicciones(): Promise<VerPrediccionesRow[]> {
+		return this.prediccionesRepo.verPredicciones();
+	}
+
+	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
+		return this.prediccionesRepo.verMisPredicciones(usuarioId);
+	}
+
+	verMisPrediccionesHoy(
+		usuarioId: string,
+	): Promise<VerMisPrediccionesHoyRow[]> {
+		return this.prediccionesRepo.verMisPrediccionesHoy(usuarioId);
 	}
 
 	private async assertPartidoNoIniciado(
