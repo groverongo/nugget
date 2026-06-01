@@ -32,12 +32,7 @@ export function createAppContext() {
 }
 
 async function main() {
-	const app = createAppContext();
-
-	if (!config.discord.token) {
-		logger.error("DISCORD_TOKEN no está definido en el entorno o en .env");
-		process.exit(1);
-	}
+	createAppContext();
 
 	const client = new Client({
 		intents: [

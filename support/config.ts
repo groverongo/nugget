@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import fs from "fs";
 import yaml from "js-yaml";
 import path from "path";
@@ -62,6 +63,16 @@ class ConfigService {
 	}
 
 	private load() {
+		if (this.isProduction) {
+			this.config = ConfigSchema.parse(
+				this.deepMerge(DEFAULT_CONFIG, this.fromEnv()),
+			);
+
+			return;
+		}
+
+		dotenv.config();
+
 		const yamlConfig = this.loadYaml();
 
 		const merged = this.deepMerge(

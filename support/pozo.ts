@@ -74,12 +74,13 @@ export function generarPremiosPolla(
 
 	for (let i = 1; i < bloques.length - 1; i++) {
 		bloques[i].peso = (cantBloquesMedio - i + 1) * bloques[i].tamano;
-		sumaPesos += bloques[i].peso!;
+		sumaPesos += bloques[i].peso ?? 0;
 	}
 
 	// 3. Distribuir el dinero restante y redondear a múltiplos de S/5
 	for (let i = 1; i < bloques.length - 1; i++) {
-		const porcentajeBloque = bloques[i].peso! / sumaPesos;
+		const peso = bloques[i].peso ?? 0;
+		const porcentajeBloque = sumaPesos === 0 ? 0 : peso / sumaPesos;
 		const dineroTotalBloque = pozoRestante * porcentajeBloque;
 		const premioIndividual = dineroTotalBloque / bloques[i].tamano;
 		bloques[i].premio = Math.floor(5 * Math.round(premioIndividual / 5));
