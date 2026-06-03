@@ -1,13 +1,14 @@
 import { config } from "@support/config";
 import { ProvideDB, ProvideTxManager } from "@support/db.provider";
-import { logger } from "@support/logger";
-import { Client, Events, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
+import { registerDiscordEvents } from "./events";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { UsuariosService } from "./service/usuarios.service";
+import type { AppContext } from "./types/app-context";
 
 // * (SKETCH) Inyecciones declaracion - definicion
-export function createAppContext() {
+export function createAppContext(): AppContext {
 	const db = ProvideDB();
 	const txManager = ProvideTxManager(db);
 	const usuariosRepository = new UsuariosRepository(db);
@@ -32,29 +33,18 @@ export function createAppContext() {
 }
 
 async function main() {
-	createAppContext();
+	const appContext = createAppContext();
 
 	const client = new Client({
 		intents: [
 			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMembers,
 			GatewayIntentBits.GuildMessages,
 			GatewayIntentBits.MessageContent,
 		],
 	});
 
-	client.once(Events.ClientReady, () => {
-		logger.info({ user: client.user?.tag }, "Discord bot listo");
-	});
-
-	client.on(Events.MessageCreate, async (message) => {
-		if (message.author.bot) {
-			return;
-		}
-
-		if (message.content === "!ping") {
-			await message.reply("pong");
-		}
-	});
+	registerDiscordEvents(client, appContext);
 
 	await client.login(config.discord.token);
 }

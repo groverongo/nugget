@@ -6,8 +6,18 @@ import { logger } from "../support/logger";
 
 const MIGRATIONS_DIR = path.join(process.cwd(), "db", "migrations");
 
+const sslOption =
+	process.env.NODE_ENV === "production"
+		? undefined
+		: { rejectUnauthorized: false };
+
+if (process.env.NODE_ENV !== "production") {
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
 const client = new Client({
 	connectionString: config.database.url,
+	ssl: sslOption,
 });
 
 type Migration = {

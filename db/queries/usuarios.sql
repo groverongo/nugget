@@ -2,13 +2,37 @@
 SELECT * FROM usuarios;
 
 -- name: CreateUsuario :exec
-INSERT INTO usuarios (id, username)
-VALUES (sqlc.arg(id), sqlc.arg(username));
+INSERT INTO usuarios (
+    id,
+    username,
+    partidos_apostados,
+    partidos_ganados,
+    partidos_perdidos,
+    puntos,
+    racha,
+    win_rate
+)
+VALUES (
+    sqlc.arg(id),
+    sqlc.arg(username),
+    sqlc.arg(partidos_apostados),
+    sqlc.arg(partidos_ganados),
+    sqlc.arg(partidos_perdidos),
+    sqlc.arg(puntos),
+    sqlc.arg(racha),
+    sqlc.arg(win_rate)
+)
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;
+
+-- name: UpdateUsuarioPremio :exec
+UPDATE usuarios SET
+    premio_asociado = sqlc.arg(premio_asociado)
+WHERE id = sqlc.arg(id);
 
 -- name: UpdateUsuarioUsername :exec
 UPDATE usuarios SET
-    username = $1
-WHERE id = $2;
+    username = sqlc.arg(username)
+WHERE id = sqlc.arg(id);
 
 -- name: DeleteUsuario :exec
 DELETE FROM usuarios
