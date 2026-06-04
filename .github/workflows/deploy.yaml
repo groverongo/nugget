@@ -44,6 +44,11 @@ jobs:
             docker pull ${{ env.IMAGE }}:${{ github.sha }}
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm   ${{ env.CONTAINER_NAME }} || true
+            docker run \
+              -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+              -e NODE_ENV=production \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              ${{ env.IMAGE }}:${{ github.sha }} dist/cmd/migration.js up
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
