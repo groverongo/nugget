@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Code validation, Image building and Deployment
 
 on:
   push:
@@ -12,8 +12,44 @@ env:
   CONTAINER_NAME: nugget-bot-container
 
 jobs:
+
+  code-validation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: 2.4.4
+      - name: Run Biome
+        run: biome ci .
+  
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Test
+        run: DISCORD_TOKEN="GENERICO" pnpm run test
+
   eval-migrations:
     name: migrations test
+    needs: code-validation
     runs-on: ubuntu-latest
 
     services:
@@ -53,6 +89,7 @@ jobs:
         run: pnpm run migrate:up
 
   deploy:
+    needs: eval-migrations
     runs-on: ubuntu-latest
 
     steps:
