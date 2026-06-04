@@ -12,6 +12,46 @@ env:
   CONTAINER_NAME: nugget-bot-container
 
 jobs:
+  eval-migrations:
+    name: migrations test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nugget
+          POSTGRES_PASSWORD: nugget
+          POSTGRES_DB: nugget
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nugget"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Apply migrations
+        env:
+          DISCORD_TOKEN: GENERICO
+          DATABASE_URL: postgres://nugget:nugget@localhost:5432/nugget?sslmode=disable
+        run: pnpm run migrate:up
+
   deploy:
     runs-on: ubuntu-latest
 
