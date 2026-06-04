@@ -84,7 +84,7 @@ jobs:
             docker pull ${{ env.IMAGE }}:${{ github.sha }}
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm   ${{ env.CONTAINER_NAME }} || true
-            docker run \
+            docker run --rm \
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
               -e NODE_ENV=production \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
