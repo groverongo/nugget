@@ -8,7 +8,19 @@ import type { TxManager } from "@support/db.provider";
 import { generarPremiosPolla } from "@support/pozo";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
-import type { IUsuariosService } from "../interface/service/usuarios.service";
+import type {
+	CreateUsuarioInput,
+	IUsuariosService,
+} from "../interface/service/usuarios.service";
+
+const defaultUsuarioValues: Omit<CreateUsuarioArgs, "id" | "username"> = {
+	partidosApostados: 0,
+	partidosGanados: 0,
+	partidosPerdidos: 0,
+	puntos: 0,
+	racha: 0,
+	winRate: "0.00",
+};
 
 export class UsuariosService implements IUsuariosService {
 	constructor(
@@ -17,9 +29,23 @@ export class UsuariosService implements IUsuariosService {
 		private readonly txManager: TxManager,
 	) {}
 
-	async createUsuario(args: CreateUsuarioArgs) {
+	async createUsuario(args: CreateUsuarioInput) {
+		const usuario: CreateUsuarioArgs = {
+			id: args.id,
+			username: args.username,
+			partidosApostados:
+				args.partidosApostados ?? defaultUsuarioValues.partidosApostados,
+			partidosGanados:
+				args.partidosGanados ?? defaultUsuarioValues.partidosGanados,
+			partidosPerdidos:
+				args.partidosPerdidos ?? defaultUsuarioValues.partidosPerdidos,
+			puntos: args.puntos ?? defaultUsuarioValues.puntos,
+			racha: args.racha ?? defaultUsuarioValues.racha,
+			winRate: args.winRate ?? defaultUsuarioValues.winRate,
+		};
+
 		return this.txManager.runInTx(async (tx) => {
-			await this.usuariosRepo.withTx(tx).create(args);
+			await this.usuariosRepo.withTx(tx).create(usuario);
 
 			const conteo = await this.usuariosRepo.withTx(tx).count();
 

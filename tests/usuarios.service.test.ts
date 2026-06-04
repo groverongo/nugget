@@ -71,6 +71,16 @@ describe("UsuariosService", () => {
 		});
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
 		const args = { id: "user-1", username: "alice" };
+		const expectedCreateArgs = {
+			id: "user-1",
+			username: "alice",
+			partidosApostados: 0,
+			partidosGanados: 0,
+			partidosPerdidos: 0,
+			puntos: 0,
+			racha: 0,
+			winRate: "0.00",
+		};
 		const expectedEntries = generarPremiosPolla(3).listaPremios.flatMap(
 			(puesto) => {
 				const entries = [] as Array<{ premio: string; puesto: number }>;
@@ -90,7 +100,7 @@ describe("UsuariosService", () => {
 
 		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
 		expect(usuariosRepo.withTx).toHaveBeenCalledWith(tx);
-		expect(usuariosRepo.create).toHaveBeenCalledWith(args);
+		expect(usuariosRepo.create).toHaveBeenCalledWith(expectedCreateArgs);
 		expect(usuariosRepo.count).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.withTx).toHaveBeenCalledWith(tx);
 		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
