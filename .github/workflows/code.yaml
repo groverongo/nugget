@@ -41,4 +41,4 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=4096
 
       - name: Test
-        run: pnpm run test
+        run: DISCORD_TOKEN="GENERICO" pnpm run test
