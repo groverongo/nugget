@@ -16,5 +16,10 @@
 		"types": ["node", "jest"],
 		"skipLibCheck": true
 	},
-	"include": ["src/**/*.ts", "support/**/*.ts", "db/sqlcgen/**/*.ts"]
+	"include": [
+		"src/**/*.ts",
+		"support/**/*.ts",
+		"db/sqlcgen/**/*.ts",
+		"cmd/**/*.ts"
+	]
 }

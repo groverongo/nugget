@@ -25,7 +25,8 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 FROM deps AS build
 
 COPY package.json pnpm-lock.yaml tsconfig.json ./
-COPY db ./db
+COPY cmd ./cmd
+COPY db/sqlcgen ./db/sqlcgen
 COPY src ./src
 COPY support ./support
 RUN pnpm build
@@ -53,8 +54,12 @@ RUN corepack enable
 
 WORKDIR /bot
 
+COPY db/migrations /bot/db/migrations
+
 COPY --from=prod-deps /bot/node_modules ./node_modules
 COPY --from=build /bot/dist ./dist
 COPY package.json ./
 
-CMD ["node", "dist/src/app.js"]
+ENTRYPOINT [ "node" ]
+
+CMD ["dist/src/app.js"]
