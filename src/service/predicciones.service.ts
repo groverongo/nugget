@@ -20,7 +20,8 @@ export class PrediccionesService implements IPrediccionesService {
 	constructor(
 		private readonly prediccionesRepo: IPrediccionesRepository,
 		private readonly partidosRepo: IPartidosRepository,
-		private readonly _txManager: TxManager,
+		// biome-ignore lint/correctness/noUnusedPrivateClassMembers: <Es el estandar para la capa de servicios>
+		private readonly txManager: TxManager,
 	) {}
 
 	async agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {

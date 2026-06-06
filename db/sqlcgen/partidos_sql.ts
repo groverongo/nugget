@@ -87,3 +87,25 @@ export async function obtenerPartido(client: Client, args: ObtenerPartidoArgs): 
     };
 }
 
+export const verFechasDePartidosQuery = `-- name: VerFechasDePartidos :many
+SELECT DISTINCT DATE(fecha_partido)::TEXT AS fecha
+FROM partidos
+ORDER BY fecha ASC`;
+
+export interface VerFechasDePartidosRow {
+    fecha: string;
+}
+
+export async function verFechasDePartidos(client: Client): Promise<VerFechasDePartidosRow[]> {
+    const result = await client.query({
+        text: verFechasDePartidosQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            fecha: row[0]
+        };
+    });
+}
+

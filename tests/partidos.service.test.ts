@@ -10,6 +10,7 @@ import { PartidosService } from "../src/service/partidos.service";
 function createPartidosRepositoryMock(): jest.Mocked<IPartidosRepository> {
 	const repo = {
 		verPorFecha: jest.fn().mockResolvedValue([]),
+		verFechasDePartidos: jest.fn().mockResolvedValue([]),
 		obtenerPartido: jest
 			.fn<Promise<ObtenerPartidoRow | null>, [ObtenerPartidoArgs]>()
 			.mockResolvedValue(null),
@@ -44,5 +45,16 @@ describe("PartidosService", () => {
 		await expect(service.verPartidosPorFecha(args)).resolves.toEqual(expected);
 		expect(partidosRepo.verPorFecha).toHaveBeenCalledTimes(1);
 		expect(partidosRepo.verPorFecha).toHaveBeenCalledWith(args);
+	});
+
+	it("verFechasDePartidos delegates to partidosRepo.verFechasDePartidos", async () => {
+		const expected: string[] = ["2026-06-06", "2026-06-07"];
+		const partidosRepo = createPartidosRepositoryMock();
+		partidosRepo.verFechasDePartidos.mockResolvedValue(expected);
+		const service = new PartidosService(partidosRepo);
+
+		await expect(service.verFechasDePartidos()).resolves.toEqual(expected);
+		expect(partidosRepo.verFechasDePartidos).toHaveBeenCalledTimes(1);
+		expect(partidosRepo.verFechasDePartidos).toHaveBeenCalledWith();
 	});
 });

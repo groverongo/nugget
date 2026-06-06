@@ -18,3 +18,8 @@ WHERE DATE(partidos.fecha_partido) = DATE($1);
 SELECT id, fecha_partido
 FROM partidos
 WHERE id = $1;
+
+-- name: VerFechasDePartidos :many
+SELECT DISTINCT DATE(fecha_partido)::TEXT AS fecha
+FROM partidos
+ORDER BY fecha ASC;

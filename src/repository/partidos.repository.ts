@@ -4,6 +4,7 @@ import {
 	obtenerPartido,
 	type VerPartidosPorFechaArgs,
 	type VerPartidosPorFechaRow,
+	verFechasDePartidos,
 	verPartidosPorFecha,
 } from "@sqlc/partidos_sql";
 import type { DBExecutor } from "@support/db.provider";
@@ -17,6 +18,11 @@ export class PartidosRepository implements IPartidosRepository {
 		args: VerPartidosPorFechaArgs,
 	): Promise<VerPartidosPorFechaRow[]> {
 		return verPartidosPorFecha(this.pool, args);
+	}
+
+	async verFechasDePartidos(): Promise<string[]> {
+		const filas = await verFechasDePartidos(this.pool);
+		return filas.map((fila) => fila.fecha);
 	}
 
 	obtenerPartido(args: ObtenerPartidoArgs): Promise<ObtenerPartidoRow | null> {
