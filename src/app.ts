@@ -8,6 +8,32 @@ import { UsuariosRepository } from "./repository/usuarios.repository";
 import { PartidosService } from "./service/partidos.service";
 import { UsuariosService } from "./service/usuarios.service";
 
+const PARTIDOS_MESSAGE_REGEX = /^!partidos\s+(\d{4}-\d{2}-\d{2})$/;
+
+function formatPartidosReply(
+	date: string,
+	partidos: Awaited<ReturnType<PartidosService["verPartidosPorFecha"]>>,
+): string {
+	if (partidos.length === 0) {
+		return `No hay partidos para la fecha ${date}.`;
+	}
+
+	const formattedPartidos = partidos.map((partido) => {
+		const marcador =
+			partido.partidoGolesLocal !== null &&
+			partido.partidoGolesVisitante !== null
+				? ` (${partido.partidoGolesLocal}-${partido.partidoGolesVisitante})`
+				: "";
+
+		return [
+			`• ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}`,
+			`estado: ${partido.estado}${marcador}`,
+		].join(" - ");
+	});
+
+	return [`Partidos para ${date}:`, ...formattedPartidos].join("\n");
+}
+
 // * (SKETCH) Inyecciones declaracion - definicion
 export function createAppContext() {
 	const db = ProvideDB();
@@ -38,7 +64,7 @@ export function createAppContext() {
 }
 
 async function main() {
-	createAppContext();
+	const appContext = createAppContext();
 
 	const client = new Client({
 		intents: [
@@ -59,7 +85,22 @@ async function main() {
 
 		if (message.content === "!ping") {
 			await message.reply("pong");
+			return;
 		}
+
+		const partidosMessageMatch = message.content.match(PARTIDOS_MESSAGE_REGEX);
+
+		if (!partidosMessageMatch) {
+			return;
+		}
+
+		const [, date] = partidosMessageMatch;
+
+		const partidos = await appContext.services.partidos.verPartidosPorFecha({
+			date,
+		});
+
+		await message.reply(formatPartidosReply(date, partidos));
 	});
 
 	await client.login(config.discord.token);
