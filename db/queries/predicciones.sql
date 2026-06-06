@@ -35,7 +35,7 @@ JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
 WHERE prediccion.partido_id = $1;
 
--- name: VerPrediccionesHoy :many
+-- name: VerPrediccionesPorFecha :many
 SELECT 
     prediccion.partido_id AS partido_id,
     prediccion.usuario_id AS usuario_id,
@@ -59,7 +59,7 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido) = CURRENT_DATE;
+WHERE DATE(partidos.fecha_partido) = DATE($1);
 
 -- name: VerPredicciones :many
 SELECT 
@@ -100,7 +100,7 @@ INNER JOIN (
     JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id;
 
--- name: VerMisPrediccionesHoy :many
+-- name: VerMisPrediccionesPorFecha :many
 SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
     SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
@@ -112,7 +112,7 @@ INNER JOIN (
     FROM (
         SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, estado
         FROM partidos
-        WHERE DATE(fecha_partido) = CURRENT_DATE
+        WHERE DATE(fecha_partido) = DATE($2)
     ) pa 
     JOIN estatico_equipos el on el.id = partidos.equipo_local_id
     JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id

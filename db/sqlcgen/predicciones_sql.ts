@@ -124,7 +124,7 @@ export async function verPrediccionesPorPartido(client: Client, args: VerPredicc
     });
 }
 
-export const verPrediccionesHoyQuery = `-- name: VerPrediccionesHoy :many
+export const verPrediccionesPorFechaQuery = `-- name: VerPrediccionesPorFecha :many
 SELECT 
     prediccion.partido_id AS partido_id,
     prediccion.usuario_id AS usuario_id,
@@ -148,9 +148,13 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido) = CURRENT_DATE`;
+WHERE DATE(partidos.fecha_partido) = DATE($1)`;
 
-export interface VerPrediccionesHoyRow {
+export interface VerPrediccionesPorFechaArgs {
+    date: string;
+}
+
+export interface VerPrediccionesPorFechaRow {
     partidoId: number;
     usuarioId: string;
     username: string;
@@ -170,10 +174,10 @@ export interface VerPrediccionesHoyRow {
     equipoVisitanteGrupo: string;
 }
 
-export async function verPrediccionesHoy(client: Client): Promise<VerPrediccionesHoyRow[]> {
+export async function verPrediccionesPorFecha(client: Client, args: VerPrediccionesPorFechaArgs): Promise<VerPrediccionesPorFechaRow[]> {
     const result = await client.query({
-        text: verPrediccionesHoyQuery,
-        values: [],
+        text: verPrediccionesPorFechaQuery,
+        values: [args.date],
         rowMode: "array"
     });
     return result.rows.map(row => {
@@ -336,7 +340,7 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
     });
 }
 
-export const verMisPrediccionesHoyQuery = `-- name: VerMisPrediccionesHoy :many
+export const verMisPrediccionesPorFechaQuery = `-- name: VerMisPrediccionesPorFecha :many
 SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
     SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
@@ -348,17 +352,18 @@ INNER JOIN (
     FROM (
         SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, estado
         FROM partidos
-        WHERE DATE(fecha_partido) = CURRENT_DATE
+        WHERE DATE(fecha_partido) = DATE($2)
     ) pa 
     JOIN estatico_equipos el on el.id = partidos.equipo_local_id
     JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id`;
 
-export interface VerMisPrediccionesHoyArgs {
+export interface VerMisPrediccionesPorFechaArgs {
     usuarioId: string;
+    date: string;
 }
 
-export interface VerMisPrediccionesHoyRow {
+export interface VerMisPrediccionesPorFechaRow {
     partidoId: number;
     prediccionGolesLocal: number;
     prediccionGolesVisitante: number;
@@ -376,10 +381,10 @@ export interface VerMisPrediccionesHoyRow {
     equipoVisitanteGrupo: string;
 }
 
-export async function verMisPrediccionesHoy(client: Client, args: VerMisPrediccionesHoyArgs): Promise<VerMisPrediccionesHoyRow[]> {
+export async function verMisPrediccionesPorFecha(client: Client, args: VerMisPrediccionesPorFechaArgs): Promise<VerMisPrediccionesPorFechaRow[]> {
     const result = await client.query({
-        text: verMisPrediccionesHoyQuery,
-        values: [args.usuarioId],
+        text: verMisPrediccionesPorFechaQuery,
+        values: [args.usuarioId, args.date],
         rowMode: "array"
     });
     return result.rows.map(row => {

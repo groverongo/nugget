@@ -1,5 +1,5 @@
 import type { PoolClient } from "pg";
-import type { IPartidosRepository } from "../src/interface/repository/partido.repository";
+import type { IPartidosRepository } from "../src/interface/repository/partidos.repository";
 import type { IPrediccionesRepository } from "../src/interface/repository/prediccion.repository";
 import { PrediccionesService } from "../src/service/predicciones.service";
 import type { TxManager } from "../support/db.provider";
@@ -22,10 +22,10 @@ function createPrediccionesRepositoryMock(): jest.Mocked<IPrediccionesRepository
 		agregarPrediccion: jest.fn().mockResolvedValue(undefined),
 		actualizarPrediccion: jest.fn().mockResolvedValue(undefined),
 		verPrediccionesPorPartido: jest.fn().mockResolvedValue([]),
-		verPrediccionesHoy: jest.fn().mockResolvedValue([]),
+		verPrediccionesPorFecha: jest.fn().mockResolvedValue([]),
 		verPredicciones: jest.fn().mockResolvedValue([]),
 		verMisPredicciones: jest.fn().mockResolvedValue([]),
-		verMisPrediccionesHoy: jest.fn().mockResolvedValue([]),
+		verMisPrediccionesPorFecha: jest.fn().mockResolvedValue([]),
 		withTx: jest.fn(),
 	} as unknown as jest.Mocked<IPrediccionesRepository>;
 
@@ -57,10 +57,7 @@ describe("PrediccionesService", () => {
 			id: 42,
 			fechaPartido: new Date(Date.now() + 60_000),
 		});
-		const tx = {} as PoolClient;
-		const txManager = createTxManagerMock(async (fn) => {
-			await fn(tx);
-		});
+		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
 			prediccionesRepo,
 			partidosRepo,
@@ -77,15 +74,15 @@ describe("PrediccionesService", () => {
 
 		expect(partidosRepo.obtenerPartido).toHaveBeenCalledWith({ id: 42 });
 		expect(prediccionesRepo.agregarPrediccion).toHaveBeenCalledWith(args);
+		expect(txManager.runInTx).not.toHaveBeenCalled();
+		expect(prediccionesRepo.withTx).not.toHaveBeenCalled();
+		expect(partidosRepo.withTx).not.toHaveBeenCalled();
 	});
 
 	it("agregarPrediccion rejects when the partido does not exist", async () => {
 		const prediccionesRepo = createPrediccionesRepositoryMock();
 		const partidosRepo = createPartidosRepositoryMock(null);
-		const tx = {} as PoolClient;
-		const txManager = createTxManagerMock(async (fn) => {
-			await fn(tx);
-		});
+		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
 			prediccionesRepo,
 			partidosRepo,
@@ -103,6 +100,81 @@ describe("PrediccionesService", () => {
 
 		expect(partidosRepo.obtenerPartido).toHaveBeenCalledWith({ id: 99 });
 		expect(prediccionesRepo.agregarPrediccion).not.toHaveBeenCalled();
+		expect(txManager.runInTx).not.toHaveBeenCalled();
+	});
+
+	it("agregarPrediccion rejects when the partido has already started", async () => {
+		const prediccionesRepo = createPrediccionesRepositoryMock();
+		const partidosRepo = createPartidosRepositoryMock({
+			id: 42,
+			fechaPartido: new Date(Date.now() - 60_000),
+		});
+		const txManager = createTxManagerMock();
+		const service = new PrediccionesService(
+			prediccionesRepo,
+			partidosRepo,
+			txManager,
+		);
+
+		await expect(
+			service.agregarPrediccion({
+				usuarioId: "user-1",
+				partidoId: 42,
+				golesLocal: 1,
+				golesVisitante: 0,
+			}),
+		).rejects.toThrow("El partido ya inició.");
+
+		expect(partidosRepo.obtenerPartido).toHaveBeenCalledWith({ id: 42 });
+		expect(prediccionesRepo.agregarPrediccion).not.toHaveBeenCalled();
+	});
+
+	it("actualizarPrediccion updates when the partido has not started", async () => {
+		const prediccionesRepo = createPrediccionesRepositoryMock();
+		const partidosRepo = createPartidosRepositoryMock({
+			id: 42,
+			fechaPartido: new Date(Date.now() + 60_000),
+		});
+		const txManager = createTxManagerMock();
+		const service = new PrediccionesService(
+			prediccionesRepo,
+			partidosRepo,
+			txManager,
+		);
+		const args = {
+			usuarioId: "user-1",
+			partidoId: 42,
+			golesLocal: 3,
+			golesVisitante: 0,
+		};
+
+		await service.actualizarPrediccion(args);
+
+		expect(partidosRepo.obtenerPartido).toHaveBeenCalledWith({ id: 42 });
+		expect(prediccionesRepo.actualizarPrediccion).toHaveBeenCalledWith(args);
+	});
+
+	it("actualizarPrediccion rejects when the partido does not exist", async () => {
+		const prediccionesRepo = createPrediccionesRepositoryMock();
+		const partidosRepo = createPartidosRepositoryMock(null);
+		const txManager = createTxManagerMock();
+		const service = new PrediccionesService(
+			prediccionesRepo,
+			partidosRepo,
+			txManager,
+		);
+
+		await expect(
+			service.actualizarPrediccion({
+				usuarioId: "user-1",
+				partidoId: 42,
+				golesLocal: 3,
+				golesVisitante: 0,
+			}),
+		).rejects.toThrow("El partido no existe.");
+
+		expect(partidosRepo.obtenerPartido).toHaveBeenCalledWith({ id: 42 });
+		expect(prediccionesRepo.actualizarPrediccion).not.toHaveBeenCalled();
 	});
 
 	it("actualizarPrediccion rejects when the partido has already started", async () => {
@@ -156,12 +228,12 @@ describe("PrediccionesService", () => {
 		});
 	});
 
-	it("verPrediccionesHoy delegates to the repository", async () => {
+	it("verPrediccionesPorFecha delegates to the repository", async () => {
 		const predicciones = [{ partidoId: 42 }] as Awaited<
-			ReturnType<IPrediccionesRepository["verPrediccionesHoy"]>
+			ReturnType<IPrediccionesRepository["verPrediccionesPorFecha"]>
 		>;
 		const prediccionesRepo = createPrediccionesRepositoryMock();
-		prediccionesRepo.verPrediccionesHoy.mockResolvedValue(predicciones);
+		prediccionesRepo.verPrediccionesPorFecha.mockResolvedValue(predicciones);
 		const partidosRepo = createPartidosRepositoryMock();
 		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
@@ -169,9 +241,12 @@ describe("PrediccionesService", () => {
 			partidosRepo,
 			txManager,
 		);
+		const args = { date: "2026-06-06" };
 
-		await expect(service.verPrediccionesHoy()).resolves.toEqual(predicciones);
-		expect(prediccionesRepo.verPrediccionesHoy).toHaveBeenCalledTimes(1);
+		await expect(service.verPrediccionesPorFecha(args)).resolves.toEqual(
+			predicciones,
+		);
+		expect(prediccionesRepo.verPrediccionesPorFecha).toHaveBeenCalledWith(args);
 	});
 
 	it("verPredicciones delegates to the repository", async () => {
@@ -212,12 +287,12 @@ describe("PrediccionesService", () => {
 		expect(prediccionesRepo.verMisPredicciones).toHaveBeenCalledWith("user-1");
 	});
 
-	it("verMisPrediccionesHoy delegates to the repository", async () => {
+	it("verMisPrediccionesPorFecha delegates to the repository", async () => {
 		const predicciones = [{ partidoId: 42 }] as Awaited<
-			ReturnType<IPrediccionesRepository["verMisPrediccionesHoy"]>
+			ReturnType<IPrediccionesRepository["verMisPrediccionesPorFecha"]>
 		>;
 		const prediccionesRepo = createPrediccionesRepositoryMock();
-		prediccionesRepo.verMisPrediccionesHoy.mockResolvedValue(predicciones);
+		prediccionesRepo.verMisPrediccionesPorFecha.mockResolvedValue(predicciones);
 		const partidosRepo = createPartidosRepositoryMock();
 		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
@@ -225,12 +300,16 @@ describe("PrediccionesService", () => {
 			partidosRepo,
 			txManager,
 		);
+		const args = {
+			usuarioId: "user-1",
+			date: "2026-06-06",
+		};
 
-		await expect(service.verMisPrediccionesHoy("user-1")).resolves.toEqual(
+		await expect(service.verMisPrediccionesPorFecha(args)).resolves.toEqual(
 			predicciones,
 		);
-		expect(prediccionesRepo.verMisPrediccionesHoy).toHaveBeenCalledWith(
-			"user-1",
+		expect(prediccionesRepo.verMisPrediccionesPorFecha).toHaveBeenCalledWith(
+			args,
 		);
 	});
 });

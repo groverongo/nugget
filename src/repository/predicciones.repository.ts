@@ -3,16 +3,18 @@ import {
 	type AgregarPrediccionArgs,
 	actualizarPrediccion,
 	agregarPrediccion,
-	type VerMisPrediccionesHoyRow,
+	type VerMisPrediccionesPorFechaArgs,
+	type VerMisPrediccionesPorFechaRow,
 	type VerMisPrediccionesRow,
-	type VerPrediccionesHoyRow,
+	type VerPrediccionesPorFechaArgs,
+	type VerPrediccionesPorFechaRow,
 	type VerPrediccionesPorPartidoArgs,
 	type VerPrediccionesPorPartidoRow,
 	type VerPrediccionesRow,
 	verMisPredicciones,
-	verMisPrediccionesHoy,
+	verMisPrediccionesPorFecha,
 	verPredicciones,
-	verPrediccionesHoy,
+	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
 } from "@sqlc/predicciones_sql";
 import type { DBExecutor } from "@support/db.provider";
@@ -36,8 +38,10 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		return verPrediccionesPorPartido(this.pool, args);
 	}
 
-	verPrediccionesHoy(): Promise<VerPrediccionesHoyRow[]> {
-		return verPrediccionesHoy(this.pool);
+	verPrediccionesPorFecha(
+		args: VerPrediccionesPorFechaArgs,
+	): Promise<VerPrediccionesPorFechaRow[]> {
+		return verPrediccionesPorFecha(this.pool, args);
 	}
 
 	verPredicciones(): Promise<VerPrediccionesRow[]> {
@@ -48,10 +52,10 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		return verMisPredicciones(this.pool, { usuarioId });
 	}
 
-	verMisPrediccionesHoy(
-		usuarioId: string,
-	): Promise<VerMisPrediccionesHoyRow[]> {
-		return verMisPrediccionesHoy(this.pool, { usuarioId });
+	verMisPrediccionesPorFecha(
+		args: VerMisPrediccionesPorFechaArgs,
+	): Promise<VerMisPrediccionesPorFechaRow[]> {
+		return verMisPrediccionesPorFecha(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {

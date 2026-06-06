@@ -3,7 +3,9 @@ import { ProvideDB, ProvideTxManager } from "@support/db.provider";
 import { logger } from "@support/logger";
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { EstaticoRepository } from "./repository/estatico.repository";
+import { PartidosRepository } from "./repository/partidos.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
+import { PartidosService } from "./service/partidos.service";
 import { UsuariosService } from "./service/usuarios.service";
 
 // * (SKETCH) Inyecciones declaracion - definicion
@@ -12,11 +14,13 @@ export function createAppContext() {
 	const txManager = ProvideTxManager(db);
 	const usuariosRepository = new UsuariosRepository(db);
 	const estaticoRepository = new EstaticoRepository(db);
+	const partidosRepository = new PartidosRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
 		estaticoRepository,
 		txManager,
 	);
+	const partidosService = new PartidosService(partidosRepository);
 
 	return {
 		db,
@@ -24,9 +28,11 @@ export function createAppContext() {
 		repositories: {
 			usuarios: usuariosRepository,
 			estatico: estaticoRepository,
+			partidos: partidosRepository,
 		},
 		services: {
 			usuarios: usuariosService,
+			partidos: partidosService,
 		},
 	};
 }

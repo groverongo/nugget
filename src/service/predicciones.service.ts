@@ -1,16 +1,18 @@
 import type {
 	ActualizarPrediccionArgs,
 	AgregarPrediccionArgs,
-	VerMisPrediccionesHoyRow,
+	VerMisPrediccionesPorFechaArgs,
+	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
-	VerPrediccionesHoyRow,
+	VerPrediccionesPorFechaArgs,
+	VerPrediccionesPorFechaRow,
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
 	VerPrediccionesRow,
 } from "@sqlc/predicciones_sql";
 import type { TxManager } from "@support/db.provider";
-import type { ObtenerPartidoRow } from "db/sqlcgen/partido_sql";
-import type { IPartidosRepository } from "../interface/repository/partido.repository";
+import type { ObtenerPartidoRow } from "db/sqlcgen/partidos_sql";
+import type { IPartidosRepository } from "src/interface/repository/partidos.repository";
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { IPrediccionesService } from "../interface/service/predicciones.service";
 
@@ -41,8 +43,10 @@ export class PrediccionesService implements IPrediccionesService {
 		return this.prediccionesRepo.verPrediccionesPorPartido(args);
 	}
 
-	verPrediccionesHoy(): Promise<VerPrediccionesHoyRow[]> {
-		return this.prediccionesRepo.verPrediccionesHoy();
+	verPrediccionesPorFecha(
+		args: VerPrediccionesPorFechaArgs,
+	): Promise<VerPrediccionesPorFechaRow[]> {
+		return this.prediccionesRepo.verPrediccionesPorFecha(args);
 	}
 
 	verPredicciones(): Promise<VerPrediccionesRow[]> {
@@ -53,10 +57,10 @@ export class PrediccionesService implements IPrediccionesService {
 		return this.prediccionesRepo.verMisPredicciones(usuarioId);
 	}
 
-	verMisPrediccionesHoy(
-		usuarioId: string,
-	): Promise<VerMisPrediccionesHoyRow[]> {
-		return this.prediccionesRepo.verMisPrediccionesHoy(usuarioId);
+	verMisPrediccionesPorFecha(
+		args: VerMisPrediccionesPorFechaArgs,
+	): Promise<VerMisPrediccionesPorFechaRow[]> {
+		return this.prediccionesRepo.verMisPrediccionesPorFecha(args);
 	}
 
 	private async assertPartidoNoIniciado(

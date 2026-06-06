@@ -1,9 +1,11 @@
 import type {
 	ActualizarPrediccionArgs,
 	AgregarPrediccionArgs,
-	VerMisPrediccionesHoyRow,
+	VerMisPrediccionesPorFechaArgs,
+	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
-	VerPrediccionesHoyRow,
+	VerPrediccionesPorFechaArgs,
+	VerPrediccionesPorFechaRow,
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
 	VerPrediccionesRow,
@@ -18,11 +20,15 @@ export interface IPrediccionesService {
 		args: VerPrediccionesPorPartidoArgs,
 	): Promise<VerPrediccionesPorPartidoRow[]>;
 
-	verPrediccionesHoy(): Promise<VerPrediccionesHoyRow[]>;
+	verPrediccionesPorFecha(
+		args: VerPrediccionesPorFechaArgs,
+	): Promise<VerPrediccionesPorFechaRow[]>;
 
 	verPredicciones(): Promise<VerPrediccionesRow[]>;
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]>;
 
-	verMisPrediccionesHoy(usuarioId: string): Promise<VerMisPrediccionesHoyRow[]>;
+	verMisPrediccionesPorFecha(
+		args: VerMisPrediccionesPorFechaArgs,
+	): Promise<VerMisPrediccionesPorFechaRow[]>;
 }
