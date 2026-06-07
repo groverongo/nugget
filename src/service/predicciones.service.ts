@@ -1,0 +1,80 @@
+import type {
+	ActualizarPrediccionArgs,
+	AgregarPrediccionArgs,
+	VerMisPrediccionesPorFechaArgs,
+	VerMisPrediccionesPorFechaRow,
+	VerMisPrediccionesRow,
+	VerPrediccionesPorFechaArgs,
+	VerPrediccionesPorFechaRow,
+	VerPrediccionesPorPartidoArgs,
+	VerPrediccionesPorPartidoRow,
+	VerPrediccionesRow,
+} from "@sqlc/predicciones_sql";
+import type { TxManager } from "@support/db.provider";
+import type { ObtenerPartidoRow } from "db/sqlcgen/partidos_sql";
+import type { IPartidosRepository } from "src/interface/repository/partidos.repository";
+import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
+import type { IPrediccionesService } from "../interface/service/predicciones.service";
+
+export class PrediccionesService implements IPrediccionesService {
+	constructor(
+		private readonly prediccionesRepo: IPrediccionesRepository,
+		private readonly partidosRepo: IPartidosRepository,
+		// biome-ignore lint/correctness/noUnusedPrivateClassMembers: <Es el estandar para la capa de servicios>
+		private readonly txManager: TxManager,
+	) {}
+
+	async agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
+		const partido: ObtenerPartidoRow | null =
+			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
+		await this.assertPartidoNoIniciado(partido);
+		await this.prediccionesRepo.agregarPrediccion(args);
+	}
+
+	async actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {
+		const partido: ObtenerPartidoRow | null =
+			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
+		await this.assertPartidoNoIniciado(partido);
+		await this.prediccionesRepo.actualizarPrediccion(args);
+	}
+
+	verPrediccionesPorPartido(
+		args: VerPrediccionesPorPartidoArgs,
+	): Promise<VerPrediccionesPorPartidoRow[]> {
+		return this.prediccionesRepo.verPrediccionesPorPartido(args);
+	}
+
+	verPrediccionesPorFecha(
+		args: VerPrediccionesPorFechaArgs,
+	): Promise<VerPrediccionesPorFechaRow[]> {
+		return this.prediccionesRepo.verPrediccionesPorFecha(args);
+	}
+
+	verPredicciones(): Promise<VerPrediccionesRow[]> {
+		return this.prediccionesRepo.verPredicciones();
+	}
+
+	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
+		return this.prediccionesRepo.verMisPredicciones(usuarioId);
+	}
+
+	verMisPrediccionesPorFecha(
+		args: VerMisPrediccionesPorFechaArgs,
+	): Promise<VerMisPrediccionesPorFechaRow[]> {
+		return this.prediccionesRepo.verMisPrediccionesPorFecha(args);
+	}
+
+	private async assertPartidoNoIniciado(
+		partido: ObtenerPartidoRow | null,
+	): Promise<void> {
+		if (!partido) {
+			throw new Error("El partido no existe.");
+		}
+
+		const fechaPartido = partido.fechaPartido;
+
+		if (fechaPartido !== null && fechaPartido.getTime() <= Date.now()) {
+			throw new Error("El partido ya inició.");
+		}
+	}
+}

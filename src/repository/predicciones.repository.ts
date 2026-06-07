@@ -1,0 +1,64 @@
+import {
+	type ActualizarPrediccionArgs,
+	type AgregarPrediccionArgs,
+	actualizarPrediccion,
+	agregarPrediccion,
+	type VerMisPrediccionesPorFechaArgs,
+	type VerMisPrediccionesPorFechaRow,
+	type VerMisPrediccionesRow,
+	type VerPrediccionesPorFechaArgs,
+	type VerPrediccionesPorFechaRow,
+	type VerPrediccionesPorPartidoArgs,
+	type VerPrediccionesPorPartidoRow,
+	type VerPrediccionesRow,
+	verMisPredicciones,
+	verMisPrediccionesPorFecha,
+	verPredicciones,
+	verPrediccionesPorFecha,
+	verPrediccionesPorPartido,
+} from "@sqlc/predicciones_sql";
+import type { DBExecutor } from "@support/db.provider";
+import type { PoolClient } from "pg";
+import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
+
+export class PrediccionesRepository implements IPrediccionesRepository {
+	constructor(private readonly pool: DBExecutor) {}
+
+	agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
+		return agregarPrediccion(this.pool, args);
+	}
+
+	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {
+		return actualizarPrediccion(this.pool, args);
+	}
+
+	verPrediccionesPorPartido(
+		args: VerPrediccionesPorPartidoArgs,
+	): Promise<VerPrediccionesPorPartidoRow[]> {
+		return verPrediccionesPorPartido(this.pool, args);
+	}
+
+	verPrediccionesPorFecha(
+		args: VerPrediccionesPorFechaArgs,
+	): Promise<VerPrediccionesPorFechaRow[]> {
+		return verPrediccionesPorFecha(this.pool, args);
+	}
+
+	verPredicciones(): Promise<VerPrediccionesRow[]> {
+		return verPredicciones(this.pool);
+	}
+
+	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
+		return verMisPredicciones(this.pool, { usuarioId });
+	}
+
+	verMisPrediccionesPorFecha(
+		args: VerMisPrediccionesPorFechaArgs,
+	): Promise<VerMisPrediccionesPorFechaRow[]> {
+		return verMisPrediccionesPorFecha(this.pool, args);
+	}
+
+	withTx(tx: PoolClient): IPrediccionesRepository {
+		return new PrediccionesRepository(tx);
+	}
+}
