@@ -18,7 +18,7 @@ SELECT
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido) = DATE($1)`;
+WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)`;
 
 export interface VerPartidosPorFechaArgs {
     date: string;
