@@ -5,11 +5,18 @@ interface Client {
 }
 
 export const listUsuariosQuery = `-- name: ListUsuarios :many
-SELECT id, username FROM usuarios`;
+SELECT id, username, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado FROM usuarios`;
 
 export interface ListUsuariosRow {
     id: string;
     username: string;
+    partidosApostados: number;
+    partidosGanados: number;
+    partidosPerdidos: number;
+    puntos: number;
+    racha: number;
+    winRate: string;
+    premioAsociado: string | null;
 }
 
 export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
@@ -21,14 +28,22 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
     return result.rows.map(row => {
         return {
             id: row[0],
-            username: row[1]
+            username: row[1],
+            partidosApostados: row[2],
+            partidosGanados: row[3],
+            partidosPerdidos: row[4],
+            puntos: row[5],
+            racha: row[6],
+            winRate: row[7],
+            premioAsociado: row[8]
         };
     });
 }
 
 export const createUsuarioQuery = `-- name: CreateUsuario :exec
 INSERT INTO usuarios (id, username)
-VALUES ($1, $2)`;
+VALUES ($1, $2)
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username`;
 
 export interface CreateUsuarioArgs {
     id: string;
@@ -39,6 +54,24 @@ export async function createUsuario(client: Client, args: CreateUsuarioArgs): Pr
     await client.query({
         text: createUsuarioQuery,
         values: [args.id, args.username],
+        rowMode: "array"
+    });
+}
+
+export const updateUsuarioPremioQuery = `-- name: UpdateUsuarioPremio :exec
+UPDATE usuarios SET
+    premio_asociado = $1
+WHERE id = $2`;
+
+export interface UpdateUsuarioPremioArgs {
+    premioAsociado: string | null;
+    id: string;
+}
+
+export async function updateUsuarioPremio(client: Client, args: UpdateUsuarioPremioArgs): Promise<void> {
+    await client.query({
+        text: updateUsuarioPremioQuery,
+        values: [args.premioAsociado, args.id],
         rowMode: "array"
     });
 }

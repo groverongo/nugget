@@ -8,13 +8,14 @@ import { UsuariosRepository } from "./repository/usuarios.repository";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
 import { UsuariosService } from "./service/usuarios.service";
+import type { AppContext } from "./types/app-context";
 import {
 	createDiscordClient,
 	registerDiscordEventHandlers,
 } from "./ui/discord/services/client";
 
 // * (SKETCH) Inyecciones declaracion - definicion
-export function createAppContext() {
+export function createAppContext(): AppContext {
 	const db = ProvideDB();
 	const txManager = ProvideTxManager(db);
 	const usuariosRepository = new UsuariosRepository(db);
@@ -50,7 +51,7 @@ export function createAppContext() {
 	};
 }
 
-export type AppContext = ReturnType<typeof createAppContext>;
+export type { AppContext };
 
 async function main() {
 	const appContext = createAppContext();

@@ -4,8 +4,10 @@ import type {
 	ListUsuariosRow,
 } from "@sqlc/usuarios_sql";
 
+export type CreateUsuarioInput = CreateUsuarioArgs;
+
 export interface IUsuariosService {
-	createUsuario(args: CreateUsuarioArgs): Promise<void>;
+	createUsuario(args: CreateUsuarioInput): Promise<void>;
 
 	deleteUsuario(args: DeleteUsuarioArgs): Promise<void>;
 

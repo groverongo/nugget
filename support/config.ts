@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import fs from "fs";
 import yaml from "js-yaml";
 import path from "path";
@@ -10,6 +9,9 @@ const ConfigSchema = z.object({
 	}),
 	discord: z.object({
 		token: z.string().min(1),
+		owner: z.object({
+			id: z.string().optional(),
+		}),
 	}),
 	polla: z.object({
 		costo_entrada: z.number(),
@@ -27,6 +29,9 @@ const DEFAULT_CONFIG: Config = {
 	},
 	discord: {
 		token: "",
+		owner: {
+			id: "",
+		},
 	},
 	polla: {
 		costo_entrada: 100,
@@ -63,16 +68,6 @@ class ConfigService {
 	}
 
 	private load() {
-		if (this.isProduction) {
-			this.config = ConfigSchema.parse(
-				this.deepMerge(DEFAULT_CONFIG, this.fromEnv()),
-			);
-
-			return;
-		}
-
-		dotenv.config();
-
 		const yamlConfig = this.loadYaml();
 
 		const merged = this.deepMerge(

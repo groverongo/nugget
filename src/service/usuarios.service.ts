@@ -1,6 +1,5 @@
 import type {
 	AgregarPuestoPremioArgs,
-	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
 } from "@sqlc/usuarios_sql";
@@ -8,7 +7,10 @@ import type { TxManager } from "@support/db.provider";
 import { generarPremiosPolla } from "@support/pozo";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
-import type { IUsuariosService } from "../interface/service/usuarios.service";
+import type {
+	CreateUsuarioInput,
+	IUsuariosService,
+} from "../interface/service/usuarios.service";
 
 export class UsuariosService implements IUsuariosService {
 	constructor(
@@ -17,7 +19,7 @@ export class UsuariosService implements IUsuariosService {
 		private readonly txManager: TxManager,
 	) {}
 
-	async createUsuario(args: CreateUsuarioArgs) {
+	async createUsuario(args: CreateUsuarioInput) {
 		return this.txManager.runInTx(async (tx) => {
 			await this.usuariosRepo.withTx(tx).create(args);
 

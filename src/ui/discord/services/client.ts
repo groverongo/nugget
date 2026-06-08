@@ -16,7 +16,7 @@ z.config(z.locales.es());
 
 export function createDiscordClient(): Client {
 	return new Client({
-		intents: [GatewayIntentBits.Guilds],
+		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
 	});
 }
 
@@ -77,6 +77,24 @@ export function registerDiscordEventHandlers(
 			logger.error(
 				{ err: error },
 				"Error al manejar una interacción de Discord",
+			);
+		}
+	});
+
+	client.on(Events.GuildMemberAdd, async (member) => {
+		logger.info(
+			{ userId: member.id, username: member.user.username },
+			"Nuevo miembro entro al servidor",
+		);
+		try {
+			await appContext.services.usuarios.createUsuario({
+				id: member.id,
+				username: member.user.username,
+			});
+		} catch (error) {
+			logger.error(
+				{ err: error, userId: member.id },
+				"Error creando usuario en DB",
 			);
 		}
 	});

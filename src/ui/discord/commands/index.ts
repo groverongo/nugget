@@ -1,3 +1,4 @@
+import { config } from "@support/config";
 import {
 	Collection,
 	InteractionContextType,
@@ -12,6 +13,17 @@ import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 const pingCommand = new SlashCommandBuilder()
 	.setName("ping")
 	.setDescription("Responde con pong")
+	.setContexts(InteractionContextType.Guild);
+
+const anonCommand = new SlashCommandBuilder()
+	.setName("anon")
+	.setDescription("Envía un mensaje anónimo al administrador del bot")
+	.addStringOption((option) =>
+		option
+			.setName("mensaje")
+			.setDescription("El mensaje que quieres enviar")
+			.setRequired(true),
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const partidosCommand = new SlashCommandBuilder()
@@ -43,6 +55,41 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			definition: pingCommand,
 			handle: async (interaction) => {
 				await interaction.reply(`pong ${interaction.user}`);
+			},
+		},
+	],
+	[
+		"anon",
+		{
+			definition: anonCommand,
+			handle: async (interaction) => {
+				const mensaje = interaction.options.getString("mensaje", true);
+				const ownerId = config.discord.owner.id;
+
+				if (!ownerId) {
+					await interaction.reply({
+						content: "El ID del administrador no está configurado.",
+						ephemeral: true,
+					});
+					return;
+				}
+
+				try {
+					const owner = await interaction.client.users.fetch(ownerId);
+					await owner.send(
+						`📨 Mensaje anónimo de <@${interaction.user.id}>:\n${mensaje}`,
+					);
+					await interaction.reply({
+						content: "Tu mensaje anónimo ha sido enviado correctamente.",
+						ephemeral: true,
+					});
+				} catch {
+					await interaction.reply({
+						content:
+							"No se pudo enviar el mensaje. Revisa la configuración del bot.",
+						ephemeral: true,
+					});
+				}
 			},
 		},
 	],

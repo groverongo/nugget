@@ -1,7 +1,10 @@
 # AGENTS.md
 
 ## Repo reality check
-- `src/app.ts` is both the composition root and the current runtime entrypoint. It builds the DB/transaction layer, repositories, and `UsuariosService`, then boots a minimal Discord.js client with a `!ping -> pong` handler.
+- `src/app.ts` is the composition root and runtime entrypoint. It wires DB, transaction manager, repositories, and services, then boots a Discord.js client via `src/ui/discord/services/client.ts`.
+- The bot uses Discord slash commands (not message-based `!` commands). Commands are registered in `src/ui/discord/commands/index.ts`; interaction handlers live in `src/ui/discord/handlers/interactions.ts`.
+- The UI layer follows a strict call chain: slash command handler → service → repository → sqlcgen query. Never call sqlcgen or `db` directly from a command handler.
+- `src/interface/` holds TypeScript contracts (interfaces and input types) for services and repositories. Each has a matching implementation under `src/service/` or `src/repository/`.
 - Extend domain behavior under `src/service`, `src/repository`, `src/interface`, and `support`. SQL bindings in `db/sqlcgen` are generated and imported directly by repositories.
 
 ## Setup and command order
@@ -40,5 +43,6 @@
 
 ## Where to look first
 - For DB workflow changes: read `cmd/migration.ts`, `cmd/seeding.ts`, `support/config.ts`, `db/sqlc.yaml`, and the relevant files under `db/migrations` together.
-- For application logic: start with `src/app.ts`, `src/service/usuarios.service.ts`, `src/repository/*.ts`, `support/db.provider.ts`, and `support/pozo.ts`.
-- For tests: `tests/usuarios.service.test.ts` is the only current suite; it is a service-unit test with repository/transaction mocks rather than a DB integration test.
+- For application logic: start with `src/app.ts`, `src/service/`, `src/repository/`, `support/db.provider.ts`, and `support/pozo.ts`.
+- For Discord UI: start with `src/ui/discord/commands/index.ts`, `src/ui/discord/handlers/interactions.ts`, and `src/ui/discord/services/client.ts`.
+- For tests: `tests/` contains service-unit tests and a Discord interaction test; all use repository/transaction mocks rather than a DB integration test.
