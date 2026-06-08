@@ -1,6 +1,7 @@
 import { config } from "@support/config";
 import { logger } from "@support/logger";
 import { Client, Events, GatewayIntentBits, REST, Routes } from "discord.js";
+import z from "zod";
 import type { AppContext } from "../../../app";
 import { discordCommandPayloads } from "../commands";
 import {
@@ -8,6 +9,8 @@ import {
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
 } from "../handlers/interactions";
+
+z.config(z.locales.es());
 
 export function createDiscordClient(): Client {
 	return new Client({

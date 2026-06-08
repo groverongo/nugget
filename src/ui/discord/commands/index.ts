@@ -4,10 +4,8 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import {
-	buildPartidosComponents,
-	isValidDateInput,
-} from "../components/partidos";
+import { buildPartidosComponents } from "../components/partidos";
+import { fechaSchema } from "../types/shared";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 const pingCommand = new SlashCommandBuilder()
@@ -21,7 +19,7 @@ const partidosCommand = new SlashCommandBuilder()
 	.addStringOption((option) =>
 		option
 			.setName("fecha")
-			.setDescription("Fecha en formato YYYY-MM-DD")
+			.setDescription("Fecha en formato YYYY-MM-DD para Peru")
 			.setRequired(true),
 	)
 	.setContexts(InteractionContextType.Guild);
@@ -41,11 +39,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: partidosCommand,
 			handle: async (interaction, appContext) => {
-				const date = interaction.options.getString("fecha", true);
+				const dateParsed = fechaSchema.safeParse(
+					interaction.options.getString("fecha"),
+				);
 
-				if (!isValidDateInput(date)) {
+				if (!dateParsed.success) {
 					await interaction.reply({
-						content: "La fecha debe tener el formato YYYY-MM-DD.",
+						content: dateParsed.error.message,
 						ephemeral: true,
 					});
 					return;
@@ -55,13 +55,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 				const partidos = await appContext.services.partidos.verPartidosPorFecha(
 					{
-						date,
+						date: dateParsed.data,
 					},
 				);
 				const fechas = await appContext.services.partidos.verFechasDePartidos();
 
 				await interaction.editReply({
-					components: buildPartidosComponents(date, partidos, fechas),
+					components: buildPartidosComponents(
+						dateParsed.data,
+						partidos,
+						fechas,
+					),
 					flags: MessageFlags.IsComponentsV2,
 				});
 			},
