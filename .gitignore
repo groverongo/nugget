@@ -144,4 +144,6 @@ vite.config.ts.timestamp-*
 
 .sisyphus
 .vscode
+.omc
+.agents
 config.yaml

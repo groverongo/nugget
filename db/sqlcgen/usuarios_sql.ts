@@ -41,44 +41,19 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
 }
 
 export const createUsuarioQuery = `-- name: CreateUsuario :exec
-INSERT INTO usuarios (
-    id,
-    username,
-    partidos_apostados,
-    partidos_ganados,
-    partidos_perdidos,
-    puntos,
-    racha,
-    win_rate
-)
-VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8
-)
-ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;
-`;
+INSERT INTO usuarios (id, username)
+VALUES ($1, $2)
+ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username`;
 
 export interface CreateUsuarioArgs {
     id: string;
     username: string;
-    partidosApostados: number;
-    partidosGanados: number;
-    partidosPerdidos: number;
-    puntos: number;
-    racha: number;
-    winRate: string;
 }
 
 export async function createUsuario(client: Client, args: CreateUsuarioArgs): Promise<void> {
     await client.query({
         text: createUsuarioQuery,
-        values: [args.id, args.username, args.partidosApostados, args.partidosGanados, args.partidosPerdidos, args.puntos, args.racha, args.winRate],
+        values: [args.id, args.username],
         rowMode: "array"
     });
 }

@@ -4,8 +4,7 @@ import type {
 	ListUsuariosRow,
 } from "@sqlc/usuarios_sql";
 
-export type CreateUsuarioInput = Pick<CreateUsuarioArgs, "id" | "username"> &
-	Partial<Omit<CreateUsuarioArgs, "id" | "username">>;
+export type CreateUsuarioInput = CreateUsuarioArgs;
 
 export interface IUsuariosService {
 	createUsuario(args: CreateUsuarioInput): Promise<void>;

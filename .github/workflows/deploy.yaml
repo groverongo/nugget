@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
 name: Code validation, Image building and Deployment
-=======
-name: Build and Deploy
->>>>>>> Stashed changes
 
 on:
   push:
@@ -16,7 +12,6 @@ env:
   CONTAINER_NAME: nugget-bot-container
 
 jobs:
-<<<<<<< Updated upstream
 
   code-validation:
     runs-on: ubuntu-latest
@@ -95,9 +90,6 @@ jobs:
 
   deploy:
     needs: eval-migrations
-=======
-  deploy:
->>>>>>> Stashed changes
     runs-on: ubuntu-latest
 
     steps:
@@ -129,14 +121,11 @@ jobs:
             docker pull ${{ env.IMAGE }}:${{ github.sha }}
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm   ${{ env.CONTAINER_NAME }} || true
-<<<<<<< Updated upstream
             docker run --rm \
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
               -e NODE_ENV=production \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               ${{ env.IMAGE }}:${{ github.sha }} dist/cmd/migration.js up
-=======
->>>>>>> Stashed changes
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \

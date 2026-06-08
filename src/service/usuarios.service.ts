@@ -1,6 +1,5 @@
 import type {
 	AgregarPuestoPremioArgs,
-	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
 } from "@sqlc/usuarios_sql";
@@ -13,15 +12,6 @@ import type {
 	IUsuariosService,
 } from "../interface/service/usuarios.service";
 
-const defaultUsuarioValues: Omit<CreateUsuarioArgs, "id" | "username"> = {
-	partidosApostados: 0,
-	partidosGanados: 0,
-	partidosPerdidos: 0,
-	puntos: 0,
-	racha: 0,
-	winRate: "0.00",
-};
-
 export class UsuariosService implements IUsuariosService {
 	constructor(
 		private readonly usuariosRepo: IUsuariosRepository,
@@ -30,22 +20,8 @@ export class UsuariosService implements IUsuariosService {
 	) {}
 
 	async createUsuario(args: CreateUsuarioInput) {
-		const usuario: CreateUsuarioArgs = {
-			id: args.id,
-			username: args.username,
-			partidosApostados:
-				args.partidosApostados ?? defaultUsuarioValues.partidosApostados,
-			partidosGanados:
-				args.partidosGanados ?? defaultUsuarioValues.partidosGanados,
-			partidosPerdidos:
-				args.partidosPerdidos ?? defaultUsuarioValues.partidosPerdidos,
-			puntos: args.puntos ?? defaultUsuarioValues.puntos,
-			racha: args.racha ?? defaultUsuarioValues.racha,
-			winRate: args.winRate ?? defaultUsuarioValues.winRate,
-		};
-
 		return this.txManager.runInTx(async (tx) => {
-			await this.usuariosRepo.withTx(tx).create(usuario);
+			await this.usuariosRepo.withTx(tx).create(args);
 
 			const conteo = await this.usuariosRepo.withTx(tx).count();
 

@@ -74,12 +74,6 @@ describe("UsuariosService", () => {
 		const expectedCreateArgs = {
 			id: "user-1",
 			username: "alice",
-			partidosApostados: 0,
-			partidosGanados: 0,
-			partidosPerdidos: 0,
-			puntos: 0,
-			racha: 0,
-			winRate: "0.00",
 		};
 		const expectedEntries = generarPremiosPolla(3).listaPremios.flatMap(
 			(puesto) => {
