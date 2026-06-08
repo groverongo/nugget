@@ -179,7 +179,7 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido) = DATE($1)`;
+WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)`;
 
 export interface VerPrediccionesPorFechaArgs {
     date: string;
@@ -318,8 +318,8 @@ FROM (
 INNER JOIN (
     SELECT partidos.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
     FROM partidos 
-    JOIN estatico_equipos el on el.id = partidos.equipo_local_id
-    JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
+    JOIN estatico_equipos el on el.id = pa.equipo_local_id
+    JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id`;
 
 export interface VerMisPrediccionesArgs {
@@ -371,6 +371,34 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
     });
 }
 
+export const verFechasDePrediccionesPorUsuarioQuery = `-- name: VerFechasDePrediccionesPorUsuario :many
+SELECT DISTINCT DATE(partidos.fecha_partido - INTERVAL '5 hours')::TEXT AS fecha
+FROM prediccion
+JOIN partidos ON partidos.id = prediccion.partido_id
+WHERE prediccion.usuario_id = $1
+ORDER BY fecha ASC`;
+
+export interface VerFechasDePrediccionesPorUsuarioArgs {
+    usuarioId: string;
+}
+
+export interface VerFechasDePrediccionesPorUsuarioRow {
+    fecha: string;
+}
+
+export async function verFechasDePrediccionesPorUsuario(client: Client, args: VerFechasDePrediccionesPorUsuarioArgs): Promise<VerFechasDePrediccionesPorUsuarioRow[]> {
+    const result = await client.query({
+        text: verFechasDePrediccionesPorUsuarioQuery,
+        values: [args.usuarioId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            fecha: row[0]
+        };
+    });
+}
+
 export const verMisPrediccionesPorFechaQuery = `-- name: VerMisPrediccionesPorFecha :many
 SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
@@ -383,10 +411,10 @@ INNER JOIN (
     FROM (
         SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, estado
         FROM partidos
-        WHERE DATE(fecha_partido) = DATE($2)
+        WHERE DATE(fecha_partido - INTERVAL '5 hours') = DATE($2)
     ) pa 
-    JOIN estatico_equipos el on el.id = partidos.equipo_local_id
-    JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
+    JOIN estatico_equipos el on el.id = pa.equipo_local_id
+    JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id`;
 
 export interface VerMisPrediccionesPorFechaArgs {

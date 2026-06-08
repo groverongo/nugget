@@ -62,6 +62,10 @@ export class PrediccionesService implements IPrediccionesService {
 		return this.prediccionesRepo.verMisPredicciones(usuarioId);
 	}
 
+	verFechasDePrediccionesPorUsuario(usuarioId: string): Promise<string[]> {
+		return this.prediccionesRepo.verFechasDePrediccionesPorUsuario(usuarioId);
+	}
+
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]> {

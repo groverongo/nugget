@@ -8,6 +8,7 @@ import {
 	handleCommandInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
+	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
 
@@ -70,6 +71,7 @@ export function registerDiscordEventHandlers(
 
 			if (interaction.isStringSelectMenu()) {
 				await handlePartidosDateSelectInteraction(interaction, appContext);
+				await handlePrediccionesDateSelectInteraction(interaction, appContext);
 			}
 		} catch (error) {
 			logger.error(

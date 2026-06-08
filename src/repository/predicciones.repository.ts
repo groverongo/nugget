@@ -13,6 +13,7 @@ import {
 	type VerPrediccionesRow,
 	type VerPrediccionPorUsuarioYPartidoArgs,
 	type VerPrediccionPorUsuarioYPartidoRow,
+	verFechasDePrediccionesPorUsuario,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
 	verPredicciones,
@@ -59,6 +60,16 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
 		return verMisPredicciones(this.pool, { usuarioId });
+	}
+
+	async verFechasDePrediccionesPorUsuario(
+		usuarioId: string,
+	): Promise<string[]> {
+		const filas = await verFechasDePrediccionesPorUsuario(this.pool, {
+			usuarioId,
+		});
+
+		return filas.map((fila) => fila.fecha);
 	}
 
 	verMisPrediccionesPorFecha(

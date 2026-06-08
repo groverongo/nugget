@@ -17,6 +17,10 @@ import {
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
 } from "../components/partidos";
+import {
+	buildMisPrediccionesComponents,
+	PREDICCIONES_DATE_SELECT_CUSTOM_ID,
+} from "../components/predicciones";
 import { golesSchema } from "../types/shared";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
@@ -201,6 +205,46 @@ export async function handlePartidosDateSelectInteraction(
 
 	await interaction.editReply({
 		components: buildPartidosComponents(selectedDate, partidos, fechas),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+export async function handlePrediccionesDateSelectInteraction(
+	interaction: StringSelectMenuInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (interaction.customId !== PREDICCIONES_DATE_SELECT_CUSTOM_ID) {
+		return;
+	}
+
+	const selectedDate = interaction.values[0];
+	const fechas =
+		await appContext.services.predicciones.verFechasDePrediccionesPorUsuario(
+			interaction.user.id,
+		);
+
+	if (!fechas.includes(selectedDate as (typeof fechas)[number])) {
+		await interaction.reply({
+			content: "La fecha seleccionada no es válida.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferUpdate();
+
+	const predicciones =
+		await appContext.services.predicciones.verMisPrediccionesPorFecha({
+			usuarioId: interaction.user.id,
+			date: selectedDate,
+		});
+
+	await interaction.editReply({
+		components: buildMisPrediccionesComponents(
+			selectedDate,
+			predicciones,
+			fechas,
+		),
 		flags: MessageFlags.IsComponentsV2,
 	});
 }

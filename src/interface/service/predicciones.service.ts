@@ -25,6 +25,8 @@ export interface IPrediccionesService {
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]>;
 
+	verFechasDePrediccionesPorUsuario(usuarioId: string): Promise<string[]>;
+
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]>;
