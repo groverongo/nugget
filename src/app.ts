@@ -1,7 +1,6 @@
 import { config } from "@support/config";
 import { ProvideDB, ProvideTxManager } from "@support/db.provider";
 import { logger } from "@support/logger";
-import type { AppContext } from "./types/app-context";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
@@ -9,6 +8,7 @@ import { UsuariosRepository } from "./repository/usuarios.repository";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
 import { UsuariosService } from "./service/usuarios.service";
+import type { AppContext } from "./types/app-context";
 import {
 	createDiscordClient,
 	registerDiscordEventHandlers,

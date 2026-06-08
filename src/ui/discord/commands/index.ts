@@ -1,10 +1,10 @@
+import { config } from "@support/config";
 import {
 	Collection,
 	InteractionContextType,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { config } from "@support/config";
 import { buildPartidosComponents } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import { fechaSchema } from "../types/shared";
@@ -85,7 +85,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					});
 				} catch {
 					await interaction.reply({
-						content: "No se pudo enviar el mensaje. Revisa la configuración del bot.",
+						content:
+							"No se pudo enviar el mensaje. Revisa la configuración del bot.",
 						ephemeral: true,
 					});
 				}
