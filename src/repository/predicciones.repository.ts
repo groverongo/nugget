@@ -11,11 +11,15 @@ import {
 	type VerPrediccionesPorPartidoArgs,
 	type VerPrediccionesPorPartidoRow,
 	type VerPrediccionesRow,
+	type VerPrediccionPorUsuarioYPartidoArgs,
+	type VerPrediccionPorUsuarioYPartidoRow,
+	verFechasDePrediccionesPorUsuario,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
 	verPredicciones,
 	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
+	verPrediccionPorUsuarioYPartido,
 } from "@sqlc/predicciones_sql";
 import type { DBExecutor } from "@support/db.provider";
 import type { PoolClient } from "pg";
@@ -30,6 +34,12 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {
 		return actualizarPrediccion(this.pool, args);
+	}
+
+	verPrediccionPorUsuarioYPartido(
+		args: VerPrediccionPorUsuarioYPartidoArgs,
+	): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
+		return verPrediccionPorUsuarioYPartido(this.pool, args);
 	}
 
 	verPrediccionesPorPartido(
@@ -50,6 +60,16 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
 		return verMisPredicciones(this.pool, { usuarioId });
+	}
+
+	async verFechasDePrediccionesPorUsuario(
+		usuarioId: string,
+	): Promise<string[]> {
+		const filas = await verFechasDePrediccionesPorUsuario(this.pool, {
+			usuarioId,
+		});
+
+		return filas.map((fila) => fila.fecha);
 	}
 
 	verMisPrediccionesPorFecha(

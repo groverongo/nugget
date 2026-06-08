@@ -1,5 +1,4 @@
 import type {
-	ActualizarPrediccionArgs,
 	AgregarPrediccionArgs,
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
@@ -12,9 +11,7 @@ import type {
 } from "@sqlc/predicciones_sql";
 
 export interface IPrediccionesService {
-	agregarPrediccion(args: AgregarPrediccionArgs): Promise<void>;
-
-	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void>;
+	guardarPrediccion(args: AgregarPrediccionArgs): Promise<void>;
 
 	verPrediccionesPorPartido(
 		args: VerPrediccionesPorPartidoArgs,
@@ -27,6 +24,8 @@ export interface IPrediccionesService {
 	verPredicciones(): Promise<VerPrediccionesRow[]>;
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]>;
+
+	verFechasDePrediccionesPorUsuario(usuarioId: string): Promise<string[]>;
 
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,

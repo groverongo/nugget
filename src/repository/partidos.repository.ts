@@ -2,9 +2,12 @@ import {
 	type ObtenerPartidoArgs,
 	type ObtenerPartidoRow,
 	obtenerPartido,
+	type VerInformacionPartidoArgs,
+	type VerInformacionPartidoRow,
 	type VerPartidosPorFechaArgs,
 	type VerPartidosPorFechaRow,
 	verFechasDePartidos,
+	verInformacionPartido,
 	verPartidosPorFecha,
 } from "@sqlc/partidos_sql";
 import type { DBExecutor } from "@support/db.provider";
@@ -27,6 +30,12 @@ export class PartidosRepository implements IPartidosRepository {
 
 	obtenerPartido(args: ObtenerPartidoArgs): Promise<ObtenerPartidoRow | null> {
 		return obtenerPartido(this.pool, args);
+	}
+
+	verInformacionPartido(
+		args: VerInformacionPartidoArgs,
+	): Promise<VerInformacionPartidoRow | null> {
+		return verInformacionPartido(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPartidosRepository {

@@ -1,4 +1,6 @@
 import type {
+	VerInformacionPartidoArgs,
+	VerInformacionPartidoRow,
 	VerPartidosPorFechaArgs,
 	VerPartidosPorFechaRow,
 } from "@sqlc/partidos_sql";
@@ -16,5 +18,11 @@ export class PartidosService implements IPartidosService {
 		args: VerPartidosPorFechaArgs,
 	): Promise<VerPartidosPorFechaRow[]> {
 		return this.partidosRepo.verPorFecha(args);
+	}
+
+	verInformacionPartido(
+		args: VerInformacionPartidoArgs,
+	): Promise<VerInformacionPartidoRow | null> {
+		return this.partidosRepo.verInformacionPartido(args);
 	}
 }

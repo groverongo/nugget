@@ -9,6 +9,8 @@ import type {
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
 	VerPrediccionesRow,
+	VerPrediccionPorUsuarioYPartidoArgs,
+	VerPrediccionPorUsuarioYPartidoRow,
 } from "@sqlc/predicciones_sql";
 import type { PoolClient } from "pg";
 
@@ -16,6 +18,10 @@ export interface IPrediccionesRepository {
 	agregarPrediccion(args: AgregarPrediccionArgs): Promise<void>;
 
 	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void>;
+
+	verPrediccionPorUsuarioYPartido(
+		args: VerPrediccionPorUsuarioYPartidoArgs,
+	): Promise<VerPrediccionPorUsuarioYPartidoRow | null>;
 
 	verPrediccionesPorPartido(
 		args: VerPrediccionesPorPartidoArgs,
@@ -28,6 +34,8 @@ export interface IPrediccionesRepository {
 	verPredicciones(): Promise<VerPrediccionesRow[]>;
 
 	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]>;
+
+	verFechasDePrediccionesPorUsuario(usuarioId: string): Promise<string[]>;
 
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,
