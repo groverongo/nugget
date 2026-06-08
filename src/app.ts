@@ -3,8 +3,10 @@ import { ProvideDB, ProvideTxManager } from "@support/db.provider";
 import { logger } from "@support/logger";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
+import { PrediccionesRepository } from "./repository/predicciones.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { PartidosService } from "./service/partidos.service";
+import { PrediccionesService } from "./service/predicciones.service";
 import { UsuariosService } from "./service/usuarios.service";
 import {
 	createDiscordClient,
@@ -18,12 +20,18 @@ export function createAppContext() {
 	const usuariosRepository = new UsuariosRepository(db);
 	const estaticoRepository = new EstaticoRepository(db);
 	const partidosRepository = new PartidosRepository(db);
+	const prediccionesRepository = new PrediccionesRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
 		estaticoRepository,
 		txManager,
 	);
 	const partidosService = new PartidosService(partidosRepository);
+	const prediccionesService = new PrediccionesService(
+		prediccionesRepository,
+		partidosRepository,
+		txManager,
+	);
 
 	return {
 		db,
@@ -32,10 +40,12 @@ export function createAppContext() {
 			usuarios: usuariosRepository,
 			estatico: estaticoRepository,
 			partidos: partidosRepository,
+			predicciones: prediccionesRepository,
 		},
 		services: {
 			usuarios: usuariosService,
 			partidos: partidosService,
+			predicciones: prediccionesService,
 		},
 	};
 }

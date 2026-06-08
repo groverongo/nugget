@@ -8,6 +8,7 @@ import {
 	handleCommandInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
+	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
 
 z.config(z.locales.es());
@@ -59,6 +60,11 @@ export function registerDiscordEventHandlers(
 
 			if (interaction.isButton()) {
 				await handlePartidosButtonInteraction(interaction, appContext);
+				return;
+			}
+
+			if (interaction.isModalSubmit()) {
+				await handlePrediccionModalSubmitInteraction(interaction, appContext);
 				return;
 			}
 
