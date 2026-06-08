@@ -8,7 +8,7 @@ type PartidosServiceMock = {
 };
 
 type PrediccionesServiceMock = {
-	agregarPrediccion: jest.Mock;
+	guardarPrediccion: jest.Mock;
 };
 
 type DiscordAppContextMock = {
@@ -48,7 +48,7 @@ describe("Discord interaction handlers", () => {
 						.mockResolvedValue(createPartidoDetalle()),
 				},
 				predicciones: {
-					agregarPrediccion: jest.fn(),
+					guardarPrediccion: jest.fn(),
 				},
 			},
 		} satisfies DiscordAppContextMock;
@@ -95,7 +95,7 @@ describe("Discord interaction handlers", () => {
 					verInformacionPartido: jest.fn(),
 				},
 				predicciones: {
-					agregarPrediccion: jest.fn(),
+					guardarPrediccion: jest.fn(),
 				},
 			},
 		} satisfies DiscordAppContextMock;
@@ -113,7 +113,7 @@ describe("Discord interaction handlers", () => {
 			content: "Juan es un webonaso, puso mal el resultado",
 		});
 		expect(
-			appContext.services.predicciones.agregarPrediccion,
+			appContext.services.predicciones.guardarPrediccion,
 		).not.toHaveBeenCalled();
 	});
 
@@ -140,7 +140,7 @@ describe("Discord interaction handlers", () => {
 						.mockResolvedValue(createPartidoDetalle()),
 				},
 				predicciones: {
-					agregarPrediccion: jest.fn().mockResolvedValue(undefined),
+					guardarPrediccion: jest.fn().mockResolvedValue(undefined),
 				},
 			},
 		} satisfies DiscordAppContextMock;
@@ -159,7 +159,7 @@ describe("Discord interaction handlers", () => {
 			appContext.services.partidos.verInformacionPartido,
 		).toHaveBeenCalledWith({ id: 42 });
 		expect(
-			appContext.services.predicciones.agregarPrediccion,
+			appContext.services.predicciones.guardarPrediccion,
 		).toHaveBeenCalledWith({
 			usuarioId: "discord-user-1",
 			partidoId: 42,

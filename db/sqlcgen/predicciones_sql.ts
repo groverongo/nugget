@@ -45,6 +45,37 @@ export async function actualizarPrediccion(client: Client, args: ActualizarPredi
     });
 }
 
+export const verPrediccionPorUsuarioYPartidoQuery = `-- name: VerPrediccionPorUsuarioYPartido :one
+SELECT usuario_id, partido_id
+FROM prediccion
+WHERE usuario_id = $1 AND partido_id = $2`;
+
+export interface VerPrediccionPorUsuarioYPartidoArgs {
+    usuarioId: string;
+    partidoId: number;
+}
+
+export interface VerPrediccionPorUsuarioYPartidoRow {
+    usuarioId: string;
+    partidoId: number;
+}
+
+export async function verPrediccionPorUsuarioYPartido(client: Client, args: VerPrediccionPorUsuarioYPartidoArgs): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
+    const result = await client.query({
+        text: verPrediccionPorUsuarioYPartidoQuery,
+        values: [args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        usuarioId: row[0],
+        partidoId: row[1]
+    };
+}
+
 export const verPrediccionesPorPartidoQuery = `-- name: VerPrediccionesPorPartido :many
 SELECT 
     prediccion.partido_id AS partido_id,

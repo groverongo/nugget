@@ -152,7 +152,7 @@ export async function handlePrediccionModalSubmitInteraction(
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		await appContext.services.predicciones.agregarPrediccion({
+		await appContext.services.predicciones.guardarPrediccion({
 			usuarioId: interaction.user.id,
 			partidoId,
 			golesLocal: golesLocalParsed.data,

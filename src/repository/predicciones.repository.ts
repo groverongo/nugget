@@ -11,11 +11,14 @@ import {
 	type VerPrediccionesPorPartidoArgs,
 	type VerPrediccionesPorPartidoRow,
 	type VerPrediccionesRow,
+	type VerPrediccionPorUsuarioYPartidoArgs,
+	type VerPrediccionPorUsuarioYPartidoRow,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
 	verPredicciones,
 	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
+	verPrediccionPorUsuarioYPartido,
 } from "@sqlc/predicciones_sql";
 import type { DBExecutor } from "@support/db.provider";
 import type { PoolClient } from "pg";
@@ -30,6 +33,12 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {
 		return actualizarPrediccion(this.pool, args);
+	}
+
+	verPrediccionPorUsuarioYPartido(
+		args: VerPrediccionPorUsuarioYPartidoArgs,
+	): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
+		return verPrediccionPorUsuarioYPartido(this.pool, args);
 	}
 
 	verPrediccionesPorPartido(

@@ -1,5 +1,4 @@
 import type {
-	ActualizarPrediccionArgs,
 	AgregarPrediccionArgs,
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
@@ -24,18 +23,23 @@ export class PrediccionesService implements IPrediccionesService {
 		private readonly txManager: TxManager,
 	) {}
 
-	async agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
+	async guardarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
 		const partido: ObtenerPartidoRow | null =
 			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
 		await this.assertPartidoNoIniciado(partido);
-		await this.prediccionesRepo.agregarPrediccion(args);
-	}
 
-	async actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {
-		const partido: ObtenerPartidoRow | null =
-			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
-		await this.assertPartidoNoIniciado(partido);
-		await this.prediccionesRepo.actualizarPrediccion(args);
+		const prediccionExistente =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.usuarioId,
+				partidoId: args.partidoId,
+			});
+
+		if (prediccionExistente) {
+			await this.prediccionesRepo.actualizarPrediccion(args);
+			return;
+		}
+
+		await this.prediccionesRepo.agregarPrediccion(args);
 	}
 
 	verPrediccionesPorPartido(

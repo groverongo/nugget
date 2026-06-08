@@ -78,7 +78,7 @@ export function buildPartidosComponents(
 						.setCustomId(
 							`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
 						)
-						.setLabel("Ver")
+						.setLabel("Predecir")
 						.setStyle(ButtonStyle.Primary),
 				),
 		);

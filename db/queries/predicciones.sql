@@ -9,6 +9,11 @@ goles_visitante = $2,
 actualizado_en = NOW()
 WHERE usuario_id = $3 AND partido_id = $4;
 
+-- name: VerPrediccionPorUsuarioYPartido :one
+SELECT usuario_id, partido_id
+FROM prediccion
+WHERE usuario_id = $1 AND partido_id = $2;
+
 -- name: VerPrediccionesPorPartido :many
 SELECT 
     prediccion.partido_id AS partido_id,
