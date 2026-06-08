@@ -17,12 +17,17 @@ import {
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
 } from "../components/partidos";
+import { golesSchema } from "../types/shared";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
 
-function buildPrediccionModal(partidoId: number): ModalBuilder {
+function buildPrediccionModal(
+	partidoId: number,
+	nombreEquipoLocal: string,
+	nombreEquipoVisitante: string,
+): ModalBuilder {
 	return new ModalBuilder()
 		.setCustomId(`${PREDICCION_MODAL_CUSTOM_ID}:${partidoId}`)
 		.setTitle("Registrar predicción")
@@ -30,7 +35,8 @@ function buildPrediccionModal(partidoId: number): ModalBuilder {
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_LOCAL_FIELD_ID)
-					.setLabel("Goles del local")
+					.setLabel(`Goles de ${nombreEquipoLocal}`)
+					.setPlaceholder("Equipo local")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
 					.setMaxLength(2),
@@ -38,7 +44,8 @@ function buildPrediccionModal(partidoId: number): ModalBuilder {
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_VISITANTE_FIELD_ID)
-					.setLabel("Goles del visitante")
+					.setLabel(`Goles de ${nombreEquipoVisitante}`)
+					.setPlaceholder("Equipo visitante")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
 					.setMaxLength(2),
@@ -62,16 +69,6 @@ function parsePrediccionModalCustomId(customId: string): number | null {
 	return partidoId;
 }
 
-function parseScoreInput(value: string): number | null {
-	const normalized = value.trim();
-
-	if (!/^\d{1,2}$/.test(normalized)) {
-		return null;
-	}
-
-	return Number(normalized);
-}
-
 export async function handlePartidosButtonInteraction(
 	interaction: ButtonInteraction,
 	appContext: AppContext,
@@ -92,7 +89,7 @@ export async function handlePartidosButtonInteraction(
 		return;
 	}
 
-	const partido = await appContext.repositories.partidos.obtenerPartido({
+	const partido = await appContext.services.partidos.verInformacionPartido({
 		id: selectedPartidoId,
 	});
 
@@ -104,7 +101,13 @@ export async function handlePartidosButtonInteraction(
 		return;
 	}
 
-	await interaction.showModal(buildPrediccionModal(partido.id));
+	await interaction.showModal(
+		buildPrediccionModal(
+			partido.partidoId,
+			partido.equipoLocalNombre,
+			partido.equipoVisitanteNombre,
+		),
+	);
 }
 
 export async function handlePrediccionModalSubmitInteraction(
@@ -117,22 +120,24 @@ export async function handlePrediccionModalSubmitInteraction(
 		return;
 	}
 
-	const golesLocal = parseScoreInput(
+	const golesLocalParsed = golesSchema.safeParse(
 		interaction.fields.getTextInputValue(PREDICCION_GOLES_LOCAL_FIELD_ID),
 	);
-	const golesVisitante = parseScoreInput(
+	const golesVisitanteParsed = golesSchema.safeParse(
 		interaction.fields.getTextInputValue(PREDICCION_GOLES_VISITANTE_FIELD_ID),
 	);
 
-	if (golesLocal === null || golesVisitante === null) {
+	if (!golesLocalParsed.success || !golesVisitanteParsed.success) {
+		logger.error(
+			golesLocalParsed.error?.message || golesVisitanteParsed.error?.message,
+		);
 		await interaction.reply({
-			content: "Ingresa goles válidos usando números enteros entre 0 y 99.",
-			ephemeral: true,
+			content: `${interaction.user.displayName} es un webonaso, puso mal el resultado`,
 		});
 		return;
 	}
 
-	const partido = await appContext.repositories.partidos.obtenerPartido({
+	const partido = await appContext.services.partidos.verInformacionPartido({
 		id: partidoId,
 	});
 
@@ -150,12 +155,12 @@ export async function handlePrediccionModalSubmitInteraction(
 		await appContext.services.predicciones.agregarPrediccion({
 			usuarioId: interaction.user.id,
 			partidoId,
-			golesLocal,
-			golesVisitante,
+			golesLocal: golesLocalParsed.data,
+			golesVisitante: golesVisitanteParsed.data,
 		});
 
 		await interaction.editReply(
-			`Predicción registrada para el partido ${partido.id}: ${golesLocal}-${golesVisitante}.`,
+			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}.`,
 		);
 	} catch (error) {
 		logger.error(

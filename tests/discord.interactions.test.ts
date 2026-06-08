@@ -3,8 +3,8 @@ import {
 	handlePrediccionModalSubmitInteraction,
 } from "../src/ui/discord/handlers/interactions";
 
-type PartidosRepoMock = {
-	obtenerPartido: jest.Mock;
+type PartidosServiceMock = {
+	verInformacionPartido: jest.Mock;
 };
 
 type PrediccionesServiceMock = {
@@ -12,13 +12,25 @@ type PrediccionesServiceMock = {
 };
 
 type DiscordAppContextMock = {
-	repositories: {
-		partidos: PartidosRepoMock;
-	};
-	services?: {
+	services: {
+		partidos: PartidosServiceMock;
 		predicciones: PrediccionesServiceMock;
 	};
 };
+
+function createPartidoDetalle(partidoId = 42) {
+	return {
+		partidoId,
+		equipoLocalNombre: "Peru",
+		equipoVisitanteNombre: "Brasil",
+		equipoLocalGrupo: "A",
+		equipoVisitanteGrupo: "B",
+		estado: "pendiente",
+		partidoGolesLocal: null,
+		partidoGolesVisitante: null,
+		fechaPartido: new Date("2026-06-06T10:00:00.000Z"),
+	};
+}
 
 describe("Discord interaction handlers", () => {
 	it("shows a prediction modal when the Ver button references an existing partido", async () => {
@@ -29,9 +41,14 @@ describe("Discord interaction handlers", () => {
 			reply: jest.fn(),
 		} as const;
 		const appContext = {
-			repositories: {
+			services: {
 				partidos: {
-					obtenerPartido: jest.fn().mockResolvedValue({ id: 42 }),
+					verInformacionPartido: jest
+						.fn()
+						.mockResolvedValue(createPartidoDetalle()),
+				},
+				predicciones: {
+					agregarPrediccion: jest.fn(),
 				},
 			},
 		} satisfies DiscordAppContextMock;
@@ -46,13 +63,16 @@ describe("Discord interaction handlers", () => {
 		);
 
 		expect(
-			appContext.repositories.partidos.obtenerPartido,
+			appContext.services.partidos.verInformacionPartido,
 		).toHaveBeenCalledWith({
 			id: 42,
 		});
 		expect(showModal).toHaveBeenCalledTimes(1);
 		const modal = showModal.mock.calls[0][0];
 		expect(modal.toJSON().custom_id).toBe("prediccion:create:42");
+		expect(modal.toJSON().components[0].components[0].label).toContain(
+			"Goles de Peru",
+		);
 	});
 
 	it("replies with validation error when modal scores are invalid", async () => {
@@ -67,15 +87,13 @@ describe("Discord interaction handlers", () => {
 			reply,
 			deferReply: jest.fn(),
 			editReply: jest.fn(),
-			user: { id: "discord-user-1" },
+			user: { id: "discord-user-1", displayName: "Juan" },
 		} as const;
 		const appContext = {
-			repositories: {
-				partidos: {
-					obtenerPartido: jest.fn(),
-				},
-			},
 			services: {
+				partidos: {
+					verInformacionPartido: jest.fn(),
+				},
 				predicciones: {
 					agregarPrediccion: jest.fn(),
 				},
@@ -92,15 +110,14 @@ describe("Discord interaction handlers", () => {
 		);
 
 		expect(reply).toHaveBeenCalledWith({
-			content: "Ingresa goles válidos usando números enteros entre 0 y 99.",
-			ephemeral: true,
+			content: "Juan es un webonaso, puso mal el resultado",
 		});
 		expect(
 			appContext.services.predicciones.agregarPrediccion,
 		).not.toHaveBeenCalled();
 	});
 
-	it("submits a valid prediction with the Discord user id", async () => {
+	it("submits a valid prediction with the Discord user id and partido description", async () => {
 		const deferReply = jest.fn().mockResolvedValue(undefined);
 		const editReply = jest.fn().mockResolvedValue(undefined);
 		const interaction = {
@@ -116,12 +133,12 @@ describe("Discord interaction handlers", () => {
 			user: { id: "discord-user-1" },
 		} as const;
 		const appContext = {
-			repositories: {
-				partidos: {
-					obtenerPartido: jest.fn().mockResolvedValue({ id: 42 }),
-				},
-			},
 			services: {
+				partidos: {
+					verInformacionPartido: jest
+						.fn()
+						.mockResolvedValue(createPartidoDetalle()),
+				},
 				predicciones: {
 					agregarPrediccion: jest.fn().mockResolvedValue(undefined),
 				},
@@ -139,6 +156,9 @@ describe("Discord interaction handlers", () => {
 
 		expect(deferReply).toHaveBeenCalledWith({ ephemeral: true });
 		expect(
+			appContext.services.partidos.verInformacionPartido,
+		).toHaveBeenCalledWith({ id: 42 });
+		expect(
 			appContext.services.predicciones.agregarPrediccion,
 		).toHaveBeenCalledWith({
 			usuarioId: "discord-user-1",
@@ -147,7 +167,7 @@ describe("Discord interaction handlers", () => {
 			golesVisitante: 1,
 		});
 		expect(editReply).toHaveBeenCalledWith(
-			"Predicción registrada para el partido 42: 2-1.",
+			"Predicción registrada para Peru vs Brasil: 2-1.",
 		);
 	});
 });
