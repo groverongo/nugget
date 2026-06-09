@@ -30,7 +30,9 @@ const anonCommand = new SlashCommandBuilder()
 
 const partidosCommand = new SlashCommandBuilder()
 	.setName("partidos")
-	.setDescription("Muestra los partidos de hoy (hora Perú)")
+	.setDescription(
+		"Muestra los partidos programados y en vivo de hoy (hora Perú)",
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const actualizarPartidoCommand = new SlashCommandBuilder()
@@ -99,12 +101,14 @@ const actualizarPartidoMtCommand = new SlashCommandBuilder()
 
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
-	.setDescription("Muestra mis predicciones de una fecha")
+	.setDescription(
+		"Muestra todas tus predicciones, o solo las de una fecha específica",
+	)
 	.addStringOption((option) =>
 		option
 			.setName("fecha")
-			.setDescription("Fecha en formato YYYY-MM-DD para Peru")
-			.setRequired(true),
+			.setDescription("(Opcional) Fecha en formato YYYY-MM-DD para Peru")
+			.setRequired(false),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -306,33 +310,45 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: misPrediccionesCommand,
 			handle: async (interaction, appContext) => {
-				const dateParsed = fechaSchema.safeParse(
-					interaction.options.getString("fecha"),
-				);
+				const fechaInput = interaction.options.getString("fecha");
 
-				if (!dateParsed.success) {
-					await interaction.reply({
-						content: dateParsed.error.message,
-						ephemeral: true,
-					});
-					return;
+				if (fechaInput !== null) {
+					const dateParsed = fechaSchema.safeParse(fechaInput);
+					if (!dateParsed.success) {
+						await interaction.reply({
+							content: dateParsed.error.message,
+							ephemeral: true,
+						});
+						return;
+					}
 				}
 
 				await interaction.deferReply({ ephemeral: true });
 
-				const predicciones =
-					await appContext.services.predicciones.verMisPrediccionesPorFecha({
-						usuarioId: interaction.user.id,
-						date: dateParsed.data,
-					});
 				const fechas =
 					await appContext.services.predicciones.verFechasDePrediccionesPorUsuario(
 						interaction.user.id,
 					);
 
+				if (fechas.length === 0) {
+					await interaction.editReply({
+						content: "Aún no has realizado ninguna predicción.",
+					});
+					return;
+				}
+
+				const predicciones = fechaInput
+					? await appContext.services.predicciones.verMisPrediccionesPorFecha({
+							usuarioId: interaction.user.id,
+							date: fechaInput,
+						})
+					: await appContext.services.predicciones.verMisPredicciones(
+							interaction.user.id,
+						);
+
 				await interaction.editReply({
 					components: buildMisPrediccionesComponents(
-						dateParsed.data,
+						fechaInput,
 						predicciones,
 						fechas,
 					),
