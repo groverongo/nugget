@@ -1,0 +1,2 @@
+ALTER TABLE estatico_fases
+    ADD COLUMN es_gran_final BOOLEAN NOT NULL DEFAULT FALSE;
