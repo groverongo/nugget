@@ -1,4 +1,9 @@
 import {
+	type VerEquiposArgs,
+	type VerEquiposRow,
+	verEquipos,
+} from "@sqlc/equipos_sql";
+import {
 	type AgregarPuestoPremioArgs,
 	agregarPuestoPremio,
 	limpiezaDistribucionPremios,
@@ -20,6 +25,10 @@ export class EstaticoRepository implements IEstaticoRepository {
 		for (const arg of args) {
 			await agregarPuestoPremio(this.pool, arg);
 		}
+	}
+
+	verEquipos(args: VerEquiposArgs): Promise<VerEquiposRow[]> {
+		return verEquipos(this.pool, args);
 	}
 
 	withTx(tx: PoolClient) {

@@ -39,6 +39,7 @@ function createEstaticoRepositoryMock(): jest.Mocked<IEstaticoRepository> {
 	const repo = {
 		limpiezaDistribucionPremios: jest.fn().mockResolvedValue(undefined),
 		agregarEntradaDistribucionPremio: jest.fn().mockResolvedValue(undefined),
+		verEquipos: jest.fn().mockResolvedValue([]),
 		withTx: jest.fn(),
 	} as unknown as jest.Mocked<IEstaticoRepository>;
 
@@ -60,6 +61,26 @@ describe("UsuariosService", () => {
 
 		await expect(service.listUsuarios()).resolves.toEqual(expected);
 		expect(usuariosRepo.list).toHaveBeenCalledTimes(1);
+	});
+
+	it("verEquipos delegates to estaticoRepo.verEquipos with nullable optional filters", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock();
+		const estaticoRepo = createEstaticoRepositoryMock();
+		const txManager = createTxManagerMock();
+		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
+		const expected = [{ id: 1, nombre: "Argentina" }];
+
+		estaticoRepo.verEquipos.mockResolvedValue(
+			expected as Awaited<ReturnType<IEstaticoRepository["verEquipos"]>>,
+		);
+
+		await expect(service.verEquipos({ blanco: false })).resolves.toEqual(
+			expected,
+		);
+		expect(estaticoRepo.verEquipos).toHaveBeenCalledWith({
+			blanco: false,
+			negro: null,
+		});
 	});
 
 	it("createUsuario runs repository updates inside a transaction and rebuilds prize distribution", async () => {

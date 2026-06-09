@@ -1,3 +1,4 @@
+import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
@@ -6,10 +7,17 @@ import type {
 
 export type CreateUsuarioInput = CreateUsuarioArgs;
 
+export interface VerEquiposInput {
+	blanco?: boolean;
+	negro?: boolean;
+}
+
 export interface IUsuariosService {
 	createUsuario(args: CreateUsuarioInput): Promise<void>;
 
 	deleteUsuario(args: DeleteUsuarioArgs): Promise<void>;
 
 	listUsuarios(): Promise<ListUsuariosRow[]>;
+
+	verEquipos(args?: VerEquiposInput): Promise<VerEquiposRow[]>;
 }
