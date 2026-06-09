@@ -168,9 +168,9 @@ export const verPartidoParaCalculoQuery = `-- name: VerPartidoParaCalculo :one
 SELECT
     p.id AS partido_id,
     p.fase_id,
+    f.nombre AS fase_nombre,
     f.puntos_base,
     f.puntos_buen_intento,
-    f.es_gran_final,
     el.puntos_fifa AS equipo_local_puntos_fifa,
     ev.puntos_fifa AS equipo_visitante_puntos_fifa
 FROM partidos p
@@ -186,9 +186,9 @@ export interface VerPartidoParaCalculoArgs {
 export interface VerPartidoParaCalculoRow {
     partidoId: number;
     faseId: number;
+    faseNombre: string;
     puntosBase: number;
     puntosBuenIntento: number;
-    esGranFinal: boolean;
     equipoLocalPuntosFifa: string | null;
     equipoVisitantePuntosFifa: string | null;
 }
@@ -206,9 +206,9 @@ export async function verPartidoParaCalculo(client: Client, args: VerPartidoPara
     return {
         partidoId: row[0],
         faseId: row[1],
-        puntosBase: row[2],
-        puntosBuenIntento: row[3],
-        esGranFinal: row[4],
+        faseNombre: row[2],
+        puntosBase: row[3],
+        puntosBuenIntento: row[4],
         equipoLocalPuntosFifa: row[5],
         equipoVisitantePuntosFifa: row[6]
     };

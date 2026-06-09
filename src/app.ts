@@ -5,6 +5,7 @@ import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
+import { AdminService } from "./service/admin.service";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
 import { UsuariosService } from "./service/usuarios.service";
@@ -33,6 +34,11 @@ export function createAppContext(): AppContext {
 		partidosRepository,
 		txManager,
 	);
+	const adminService = new AdminService(
+		partidosRepository,
+		prediccionesRepository,
+		txManager,
+	);
 
 	return {
 		db,
@@ -47,6 +53,7 @@ export function createAppContext(): AppContext {
 			usuarios: usuariosService,
 			partidos: partidosService,
 			predicciones: prediccionesService,
+			admin: adminService,
 		},
 	};
 }

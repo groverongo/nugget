@@ -1,7 +1,9 @@
 import {
 	type ActualizarPrediccionArgs,
+	type ActualizarPuntajePrediccionArgs,
 	type AgregarPrediccionArgs,
 	actualizarPrediccion,
+	actualizarPuntajePrediccion,
 	agregarPrediccion,
 	type VerMisPrediccionesPorFechaArgs,
 	type VerMisPrediccionesPorFechaRow,
@@ -13,6 +15,8 @@ import {
 	type VerPrediccionesRow,
 	type VerPrediccionPorUsuarioYPartidoArgs,
 	type VerPrediccionPorUsuarioYPartidoRow,
+	type VerResultadosRecientesUsuarioArgs,
+	type VerResultadosRecientesUsuarioRow,
 	verFechasDePrediccionesPorUsuario,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
@@ -20,6 +24,7 @@ import {
 	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
 	verPrediccionPorUsuarioYPartido,
+	verResultadosRecientesUsuario,
 } from "@sqlc/predicciones_sql";
 import type { DBExecutor } from "@support/db.provider";
 import type { PoolClient } from "pg";
@@ -76,6 +81,18 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]> {
 		return verMisPrediccionesPorFecha(this.pool, args);
+	}
+
+	actualizarPuntajePrediccion(
+		args: ActualizarPuntajePrediccionArgs,
+	): Promise<void> {
+		return actualizarPuntajePrediccion(this.pool, args);
+	}
+
+	verResultadosRecientesUsuario(
+		args: VerResultadosRecientesUsuarioArgs,
+	): Promise<VerResultadosRecientesUsuarioRow[]> {
+		return verResultadosRecientesUsuario(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {

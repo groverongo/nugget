@@ -1,6 +1,7 @@
 import { logger } from "@support/logger";
 import {
 	ActionRowBuilder,
+	type AutocompleteInteraction,
 	type ButtonInteraction,
 	type ChatInputCommandInteraction,
 	MessageFlags,
@@ -247,6 +248,22 @@ export async function handlePrediccionesDateSelectInteraction(
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});
+}
+
+export async function handleAutocompleteInteraction(
+	interaction: AutocompleteInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const command = discordCommands.get(interaction.commandName);
+	if (!command?.autocomplete) return;
+	try {
+		await command.autocomplete(interaction, appContext);
+	} catch (error) {
+		logger.error(
+			{ err: error, commandName: interaction.commandName },
+			"Error al manejar autocomplete de Discord",
+		);
+	}
 }
 
 export async function handleCommandInteraction(

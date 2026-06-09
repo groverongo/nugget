@@ -1,5 +1,6 @@
 import type {
 	ActualizarPrediccionArgs,
+	ActualizarPuntajePrediccionArgs,
 	AgregarPrediccionArgs,
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
@@ -11,6 +12,8 @@ import type {
 	VerPrediccionesRow,
 	VerPrediccionPorUsuarioYPartidoArgs,
 	VerPrediccionPorUsuarioYPartidoRow,
+	VerResultadosRecientesUsuarioArgs,
+	VerResultadosRecientesUsuarioRow,
 } from "@sqlc/predicciones_sql";
 import type { PoolClient } from "pg";
 
@@ -40,6 +43,14 @@ export interface IPrediccionesRepository {
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]>;
+
+	actualizarPuntajePrediccion(
+		args: ActualizarPuntajePrediccionArgs,
+	): Promise<void>;
+
+	verResultadosRecientesUsuario(
+		args: VerResultadosRecientesUsuarioArgs,
+	): Promise<VerResultadosRecientesUsuarioRow[]>;
 
 	withTx(tx: PoolClient): IPrediccionesRepository;
 }

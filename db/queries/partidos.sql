@@ -44,9 +44,9 @@ ORDER BY fecha ASC;
 SELECT
     p.id AS partido_id,
     p.fase_id,
+    f.nombre AS fase_nombre,
     f.puntos_base,
     f.puntos_buen_intento,
-    f.es_gran_final,
     el.puntos_fifa AS equipo_local_puntos_fifa,
     ev.puntos_fifa AS equipo_visitante_puntos_fifa
 FROM partidos p
