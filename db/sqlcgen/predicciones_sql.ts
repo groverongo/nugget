@@ -467,3 +467,74 @@ export async function verMisPrediccionesPorFecha(client: Client, args: VerMisPre
     });
 }
 
+export const actualizarPuntajePrediccionQuery = `-- name: ActualizarPuntajePrediccion :exec
+UPDATE prediccion SET
+    resultado = $1,
+    puntos_base = $2,
+    puntos_en_racha = $3,
+    puntos_partidazo = $4,
+    puntos_milagro = $5,
+    puntos_batacazo = $6,
+    puntos_el_elegido = $7,
+    puntos_gran_final = $8,
+    puntos_total = $9
+WHERE usuario_id = $10 AND partido_id = $11`;
+
+export interface ActualizarPuntajePrediccionArgs {
+    resultado: string;
+    puntosBase: number;
+    puntosEnRacha: number;
+    puntosPartidazo: number;
+    puntosMilagro: number;
+    puntosBatacazo: number;
+    puntosElElegido: number;
+    puntosGranFinal: number;
+    puntosTotal: number;
+    usuarioId: string;
+    partidoId: number;
+}
+
+export async function actualizarPuntajePrediccion(client: Client, args: ActualizarPuntajePrediccionArgs): Promise<void> {
+    await client.query({
+        text: actualizarPuntajePrediccionQuery,
+        values: [
+            args.resultado, args.puntosBase, args.puntosEnRacha, args.puntosPartidazo,
+            args.puntosMilagro, args.puntosBatacazo, args.puntosElElegido,
+            args.puntosGranFinal, args.puntosTotal, args.usuarioId, args.partidoId
+        ],
+        rowMode: "array"
+    });
+}
+
+export const verResultadosRecientesUsuarioQuery = `-- name: VerResultadosRecientesUsuario :many
+SELECT prediccion.resultado
+FROM prediccion
+JOIN partidos ON partidos.id = prediccion.partido_id
+WHERE prediccion.usuario_id = $1
+  AND prediccion.partido_id != $2
+  AND partidos.estado = 'finalizado'
+ORDER BY partidos.fecha_partido DESC
+LIMIT 20`;
+
+export interface VerResultadosRecientesUsuarioArgs {
+    usuarioId: string;
+    partidoId: number;
+}
+
+export interface VerResultadosRecientesUsuarioRow {
+    resultado: string;
+}
+
+export async function verResultadosRecientesUsuario(client: Client, args: VerResultadosRecientesUsuarioArgs): Promise<VerResultadosRecientesUsuarioRow[]> {
+    const result = await client.query({
+        text: verResultadosRecientesUsuarioQuery,
+        values: [args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            resultado: row[0]
+        };
+    });
+}
+

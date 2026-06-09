@@ -39,3 +39,49 @@ WHERE partidos.id = $1;
 SELECT DISTINCT DATE(fecha_partido)::TEXT AS fecha
 FROM partidos
 ORDER BY fecha ASC;
+
+-- name: VerPartidoParaCalculo :one
+SELECT
+    p.id AS partido_id,
+    p.fase_id,
+    f.puntos_base,
+    f.puntos_buen_intento,
+    f.es_gran_final,
+    el.puntos_fifa AS equipo_local_puntos_fifa,
+    ev.puntos_fifa AS equipo_visitante_puntos_fifa
+FROM partidos p
+JOIN estatico_fases f ON f.id = p.fase_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE p.id = $1;
+
+-- name: ActualizarPartidoFinalizado :exec
+UPDATE partidos SET
+    goles_local = $1,
+    goles_visitante = $2,
+    extra_milagro = $3,
+    extra_partidazo = $4,
+    extra_batacazo = $5,
+    extra_el_elegido = $6,
+    estado = 'finalizado'
+WHERE id = $7;
+
+-- name: ActualizarPartidoMedioTiempo :exec
+UPDATE partidos SET
+    goles_local = $1,
+    goles_visitante = $2,
+    estado = 'medio_tiempo'
+WHERE id = $3;
+
+-- name: VerPartidosNoFinalizados :many
+SELECT
+    partidos.id AS partido_id,
+    el.nombre AS equipo_local_nombre,
+    ev.nombre AS equipo_visitante_nombre,
+    partidos.estado,
+    partidos.fecha_partido
+FROM partidos
+JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
+WHERE partidos.estado != 'finalizado'
+ORDER BY partidos.fecha_partido ASC;
