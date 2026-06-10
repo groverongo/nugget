@@ -12,6 +12,10 @@ import {
 	verJugadoresPorEquipo,
 } from "@sqlc/jugadores_sql";
 import {
+	type VerPuntosMejorGolPorPosicionRow,
+	verPuntosMejorGolPorPosicion,
+} from "@sqlc/mejor_gol_sql";
+import {
 	type AgregarPuestoPremioArgs,
 	agregarPuestoPremio,
 	limpiezaDistribucionPremios,
@@ -47,6 +51,12 @@ export class EstaticoRepository implements IEstaticoRepository {
 
 	buscarJugadores(args: BuscarJugadoresArgs): Promise<BuscarJugadoresRow[]> {
 		return buscarJugadores(this.pool, args);
+	}
+
+	verPuntosMejorGolPorPosicion(
+		posicion: number,
+	): Promise<VerPuntosMejorGolPorPosicionRow | null> {
+		return verPuntosMejorGolPorPosicion(this.pool, { posicion });
 	}
 
 	withTx(tx: PoolClient) {

@@ -13,19 +13,6 @@ import type {
 	ResumenActualizacionAwards,
 } from "../interface/service/awards.service";
 
-const PUNTOS_MEJOR_GOL: Record<number, number> = {
-	1: 8,
-	2: 5,
-	3: 3,
-	4: 2,
-	5: 2,
-	6: 2,
-	7: 1,
-	8: 1,
-	9: 1,
-	10: 1,
-};
-
 export class AwardsService implements IAwardsService {
 	constructor(
 		private readonly awardsRepo: IAwardsRepository,
@@ -50,7 +37,10 @@ export class AwardsService implements IAwardsService {
 	async actualizarAwards(
 		resultados: ResultadosAwards,
 	): Promise<ResumenActualizacionAwards> {
-		const puntosMejorGol = PUNTOS_MEJOR_GOL[resultados.mejorGolPosicion] ?? 0;
+		const fila = await this.estaticoRepo.verPuntosMejorGolPorPosicion(
+			resultados.mejorGolPosicion,
+		);
+		const puntosMejorGol = fila?.puntos ?? 0;
 
 		return this.txManager.runInTx(async (tx) => {
 			const repo = this.awardsRepo.withTx(tx);
