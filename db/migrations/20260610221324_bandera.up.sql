@@ -1,0 +1,4 @@
+-- UP MIGRATION: 20260610221324_bandera
+ALTER TABLE estatico_equipos
+    ADD COLUMN bandera VARCHAR(10) NOT NULL,
+    ADD COLUMN siglas VARCHAR(3) NOT NULL;
