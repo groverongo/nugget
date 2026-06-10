@@ -1,3 +1,4 @@
+import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	AgregarPuestoPremioArgs,
 	DeleteUsuarioArgs,
@@ -10,6 +11,7 @@ import type { IUsuariosRepository } from "../interface/repository/usuarios.repos
 import type {
 	CreateUsuarioInput,
 	IUsuariosService,
+	VerEquiposInput,
 } from "../interface/service/usuarios.service";
 
 export class UsuariosService implements IUsuariosService {
@@ -81,5 +83,12 @@ export class UsuariosService implements IUsuariosService {
 
 	listUsuarios(): Promise<ListUsuariosRow[]> {
 		return this.usuariosRepo.list();
+	}
+
+	verEquipos(args: VerEquiposInput = {}): Promise<VerEquiposRow[]> {
+		return this.estaticoRepo.verEquipos({
+			blanco: args.blanco ?? null,
+			negro: args.negro ?? null,
+		});
 	}
 }

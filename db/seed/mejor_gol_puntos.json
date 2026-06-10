@@ -1,0 +1,15 @@
+{
+	"table": "estatico_mejor_gol_puntos",
+	"rows": [
+		{ "posicion": 1, "puntos": 8 },
+		{ "posicion": 2, "puntos": 5 },
+		{ "posicion": 3, "puntos": 3 },
+		{ "posicion": 4, "puntos": 2 },
+		{ "posicion": 5, "puntos": 2 },
+		{ "posicion": 6, "puntos": 2 },
+		{ "posicion": 7, "puntos": 1 },
+		{ "posicion": 8, "puntos": 1 },
+		{ "posicion": 9, "puntos": 1 },
+		{ "posicion": 10, "puntos": 1 }
+	]
+}

@@ -1,0 +1,6245 @@
+{
+	"table": "estatico_jugadores",
+	"rows": [
+		{
+			"nombre": "Raúl Rangel",
+			"equipo_id": 1,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Carlos Acevedo",
+			"equipo_id": 1,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Guillermo Ochoa",
+			"equipo_id": 1,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jorge Sánchez",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "César Montes",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Edson Álvarez",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Johan Vásquez",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Israel Reyes",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mateo Chávez",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jesús Gallardo",
+			"equipo_id": 1,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Érik Lira",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Luis Romo",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Álvaro Fidalgo",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Orbelín Pineda",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Obed Vargas",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gilberto Mora",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Luis Chávez",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Brian Gutiérrez",
+			"equipo_id": 1,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Raúl Jiménez",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexis Vega",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Santiago Giménez",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Armando González",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Julián Quiñones",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "César Huerta",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Guillermo Martínez",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Roberto Alvarado",
+			"equipo_id": 1,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ronwen Williams",
+			"equipo_id": 2,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Sipho Chaine",
+			"equipo_id": 2,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ricardo Goss",
+			"equipo_id": 2,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Thabang Matuludi",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Khulumani Ndamane",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aubrey Modiba",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mbekezeli Mbokazi",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Samukele Kabini",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nkosinathi Sibisi",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Khuliso Mudau",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ime Okon",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Olwethu Makhanya",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Bradley Cross",
+			"equipo_id": 2,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Teboho Mokoena",
+			"equipo_id": 2,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Thalente Mbatha",
+			"equipo_id": 2,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Sphephelo Sithole",
+			"equipo_id": 2,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jayden Adams",
+			"equipo_id": 2,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Themba Zwane",
+			"equipo_id": 2,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Oswin Appollis",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tshepang Moremi",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Lyle Foster",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Relebohile Mofokeng",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Thapelo Maseko",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Iqraam Rayners",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Evidence Makgopa",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kamogelo Sebelebele",
+			"equipo_id": 2,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kim Seung-gyu",
+			"equipo_id": 3,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Song Bum-keun",
+			"equipo_id": 3,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jo Hyeon-woo",
+			"equipo_id": 3,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Lee Han-beom",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kim Min-jae",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kim Tae-hyeon",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lee Tae-seok",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Cho Wi-je",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kim Moon-hwan",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Park Jin-seob",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Seol Young-woo",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jens Castrop",
+			"equipo_id": 3,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lee Gi-hyuk",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hwang In-beom",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Paik Seung-ho",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lee Jae-sung",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hwang Hee-chan",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bae Jun-ho",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lee Kang-in",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yang Hyun-jun",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kim Jin-gyu",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Eom Ji-sung",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lee Dong-gyeong",
+			"equipo_id": 3,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Son Heung-min",
+			"equipo_id": 3,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cho Gue-sung",
+			"equipo_id": 3,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Oh Hyeon-gyu",
+			"equipo_id": 3,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Matěj Kovář",
+			"equipo_id": 4,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jindřich Staněk",
+			"equipo_id": 4,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Lukáš Horníček",
+			"equipo_id": 4,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "David Zima",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tomáš Holeš",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Robin Hranáč",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Vladimír Coufal",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Štěpán Chaloupek",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ladislav Krejčí",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "David Jurásek",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jaroslav Zelený",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "David Douděra",
+			"equipo_id": 4,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Vladimír Darida",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lukáš Červ",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lukáš Provod",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Michal Sadílek",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Tomáš Souček",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alexandr Sojka",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hugo Sochůrek",
+			"equipo_id": 4,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Adam Hložek",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Patrik Schick",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jan Kuchta",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mojmír Chytil",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Pavel Šulc",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tomáš Chorý",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Denis Višinský",
+			"equipo_id": 4,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dayne St. Clair",
+			"equipo_id": 5,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Maxime Crépeau",
+			"equipo_id": 5,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Owen Goodman",
+			"equipo_id": 5,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alistair Johnston",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alfie Jones",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Luc de Fougerolles",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joel Waterman",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Derek Cornelius",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Moïse Bombito",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alphonso Davies",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Richie Laryea",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Niko Sigur",
+			"equipo_id": 5,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mathieu Choinière",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Stephen Eustáquio",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ismaël Koné",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Liam Millar",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jacob Shaffelburg",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jonathan Osorio",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nathan Saliba",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jayden Nelson",
+			"equipo_id": 5,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cyle Larin",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jonathan David",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tani Oluwaseyi",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tajon Buchanan",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ali Ahmed",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Promise David",
+			"equipo_id": 5,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nikola Vasilj",
+			"equipo_id": 6,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mladen Jurkas",
+			"equipo_id": 6,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Martin Zlomislić",
+			"equipo_id": 6,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Nihad Mujakić",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Dennis Hadžikadunić",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tarik Muharemović",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sead Kolašinac",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Amar Dedić",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nikola Katić",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Stjepan Radeljić",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nidal Čelik",
+			"equipo_id": 6,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Benjamin Tahirović",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Armin Gigović",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ivan Bašić",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ivan Šunjić",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amar Memić",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amir Hadžiahmetović",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Dženis Burnić",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ermin Mahmić",
+			"equipo_id": 6,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Samed Baždar",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ermedin Demirović",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Edin Džeko",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kerim Alajbegović",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Esmir Bajraktarević",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Haris Tabaković",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jovo Lukić",
+			"equipo_id": 6,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Meshaal Barsham",
+			"equipo_id": 7,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mahmoud Abunada",
+			"equipo_id": 7,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Salah Zakaria",
+			"equipo_id": 7,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Pedro Miguel",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lucas Mendes",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Boualem Khoukhi",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ahmed Al Janhi",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ahmed Fathi",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sultan Al Braik",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Al Hashmi Al Hussein",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Issa Lai",
+			"equipo_id": 7,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdulaziz Hatem",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Karim Boudiaf",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ayoub Al Aloui",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Tahseen Mohammed",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohamed Al Mannai",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jassem Jaber",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Homam Ahmed",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yusuf Abdurisag",
+			"equipo_id": 7,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ahmed Alaaeldin",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Edmilson Junior",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohammed Muntari",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Hassan Al-Haydos",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Akram Afif",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Almoez Ali",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yousuf Abdurisag",
+			"equipo_id": 7,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gregor Kobel",
+			"equipo_id": 8,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Yvon Mvogo",
+			"equipo_id": 8,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Pascal Loretz",
+			"equipo_id": 8,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Manuel Akanji",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nico Elvedi",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ricardo Rodriguez",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Silvan Widmer",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Eray Coemert",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aurele Amenda",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Luca Jaquez",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Miro Muheim",
+			"equipo_id": 8,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Granit Xhaka",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Remo Freuler",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Denis Zakaria",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Fabian Rieder",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Michel Aebischer",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Vincent Sierro",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Johan Manzambi",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ardon Jashari",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Xherdan Shaqiri",
+			"equipo_id": 8,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Breel Embolo",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dan Ndoye",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Noah Okafor",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Zeki Amdouni",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ruben Vargas",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexis Saelemaekers",
+			"equipo_id": 8,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alisson Becker",
+			"equipo_id": 9,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ederson",
+			"equipo_id": 9,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Weverton",
+			"equipo_id": 9,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Marquinhos",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Gabriel Magalhães",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Bremer",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Danilo",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alex Sandro",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Douglas Santos",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Roger Ibañez",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Léo Pereira",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Éderson Silva",
+			"equipo_id": 9,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Casemiro",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bruno Guimarães",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lucas Paquetá",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Fabinho",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Danilo Santos",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Raphinha",
+			"equipo_id": 9,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Neymar",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Vinícius Júnior",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Matheus Cunha",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gabriel Martinelli",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Endrick",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Igor Thiago",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Luiz Henrique",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Rayan",
+			"equipo_id": 9,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yassine Bounou",
+			"equipo_id": 10,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Munir El Kajoui",
+			"equipo_id": 10,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ahmed Reda Tagnaouti",
+			"equipo_id": 10,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Achraf Hakimi",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nayef Aguerd",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Noussair Mazraoui",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Chadi Riad",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zakaria El Ouahdi",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Issa Diop",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Anass Salah-Eddine",
+			"equipo_id": 10,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sofyan Amrabat",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Azzedine Ounahi",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ismael Saibari",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ayyoub Bouaddi",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bilal El Khannouss",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Neil El Aynaoui",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Redouane Halhal",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Chemsdine Talbi",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Youssef Belammari",
+			"equipo_id": 10,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Brahim Díaz",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Soufiane Rahimi",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Abde Ezzalzouli",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ayoub El Kaabi",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ayoube Amaimouni",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Samir El Mourabet",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gessime Yassine",
+			"equipo_id": 10,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Johny Placide",
+			"equipo_id": 11,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alexandre Pierre",
+			"equipo_id": 11,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Josué Duverger",
+			"equipo_id": 11,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Carlens Arcus",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Wilguens Paugain",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Duke Lacroix",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Martin Experience",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jean-Kevin Duverne",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ricardo Adé",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hannes Delcroix",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Keeto Thermoncy",
+			"equipo_id": 11,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Leverton Pierre",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Carl-Fred Sainthe",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Danley Jean-Jacques",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jean-Ricner Bellegarde",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Woodenski Pierre",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Dominique Simon",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lenny Joseph",
+			"equipo_id": 11,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Louicius Deedson",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ruben Providence",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Josué Casimir",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Derrick Etienne Jr.",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Wilson Isidor",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Duckens Nazon",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Frantzdy Pierrot",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yassin Fortune",
+			"equipo_id": 11,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Craig Gordon",
+			"equipo_id": 12,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Angus Gunn",
+			"equipo_id": 12,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Liam Kelly",
+			"equipo_id": 12,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Grant Hanley",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jack Hendry",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aaron Hickey",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Dom Hyam",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Scott McKenna",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nathan Patterson",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Anthony Ralston",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Andy Robertson",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "John Souttar",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kieran Tierney",
+			"equipo_id": 12,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ryan Christie",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Findlay Curtis",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lewis Ferguson",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ben Gannon-Doak",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Billy Gilmour",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "John McGinn",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kenny McLean",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Scott McTominay",
+			"equipo_id": 12,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Che Adams",
+			"equipo_id": 12,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Lyndon Dykes",
+			"equipo_id": 12,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "George Hirst",
+			"equipo_id": 12,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Lawrence Shankland",
+			"equipo_id": 12,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ross Stewart",
+			"equipo_id": 12,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Luis Mejía",
+			"equipo_id": 48,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Orlando Mosquera",
+			"equipo_id": 48,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "César Samudio",
+			"equipo_id": 48,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Eric Davis",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Fidel Escobar",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Michael Amir Murillo",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Roderick Miller",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Andrés Andrade",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "César Blackman",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "José Córdoba",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jiovany Ramos",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jorge Gutiérrez",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Edgardo Fariña",
+			"equipo_id": 48,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aníbal Godoy",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alberto Quintero",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yoel Bárcenas",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Adalberto Carrasquilla",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "José Luis Rodríguez",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cristian Martínez",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "César Yanis",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Carlos Harvey",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Azarías Londoño",
+			"equipo_id": 48,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "José Fajardo",
+			"equipo_id": 48,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ismael Díaz",
+			"equipo_id": 48,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cecilio Waterman",
+			"equipo_id": 48,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tomás Rodríguez",
+			"equipo_id": 48,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Chris Brady",
+			"equipo_id": 13,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Matt Freese",
+			"equipo_id": 13,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Matt Turner",
+			"equipo_id": 13,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Max Arfsten",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sergiño Dest",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alex Freeman",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mark McKenzie",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tim Ream",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Chris Richards",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Antonee Robinson",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Miles Robinson",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joe Scally",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Auston Trusty",
+			"equipo_id": 13,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tyler Adams",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Sebastian Berhalter",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Weston McKennie",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gio Reyna",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cristian Roldan",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Malik Tillman",
+			"equipo_id": 13,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Brenden Aaronson",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Folarin Balogun",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ricardo Pepi",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Christian Pulisic",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tim Weah",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Haji Wright",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alex Zendejas",
+			"equipo_id": 13,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Emiliano Martínez",
+			"equipo_id": 37,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Gerónimo Rulli",
+			"equipo_id": 37,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Juan Musso",
+			"equipo_id": 37,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Nahuel Molina",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Cristian Romero",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nicolás Otamendi",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lisandro Martínez",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Leonardo Balerdi",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Facundo Medina",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nicolás Tagliafico",
+			"equipo_id": 37,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Valentín Barco",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Leandro Paredes",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rodrigo De Paul",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Enzo Fernández",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alexis Mac Allister",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Exequiel Palacios",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Giovani Lo Celso",
+			"equipo_id": 37,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lionel Messi",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Julián Álvarez",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Lautaro Martínez",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nico Paz",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Thiago Almada",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nicolás González",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Giuliano Simeone",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "José Manuel López",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Santiago Castro",
+			"equipo_id": 37,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Antony Silva",
+			"equipo_id": 14,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alfredo Aguilar",
+			"equipo_id": 14,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Rodrigo Muñoz",
+			"equipo_id": 14,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Gustavo Gómez",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Omar Alderete",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Junior Alonso",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Fabián Balbuena",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Matías Espinoza",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Robert Rojas",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Santiago Arzamendia",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Iván Piris",
+			"equipo_id": 14,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Miguel Almirón",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Andrés Cubas",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mathías Villasanti",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Richard Sánchez",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hernán Pérez",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Diego Gómez",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Carlos Sánchez",
+			"equipo_id": 14,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Angel Romero",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Julio Enciso",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Antonio Sanabria",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Braian Ojeda",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Óscar Romero",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Robert Morales",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ramón Sosa",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ronaldo Martínez",
+			"equipo_id": 14,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mat Ryan",
+			"equipo_id": 15,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Danny Vukovic",
+			"equipo_id": 15,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jordan Tevolved",
+			"equipo_id": 15,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Aziz Behich",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jordan Bos",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Cameron Burgess",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alessandro Circati",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Milos Degenek",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jason Geria",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lucas Herrington",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jacob Italiano",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Harry Souttar",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kai Trewin",
+			"equipo_id": 15,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Cameron Devlin",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jackson Irvine",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Connor Metcalfe",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mathew Leckie",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Paul Okon-Engstler",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aiden O'Neill",
+			"equipo_id": 15,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ajdin Hrustic",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nestory Irankunda",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Awer Mabil",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohamed Toure",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nishan Velupillay",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cristian Volpato",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tete Yengi",
+			"equipo_id": 15,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Altay Bayındır",
+			"equipo_id": 16,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mert Günok",
+			"equipo_id": 16,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Uğurcan Çakır",
+			"equipo_id": 16,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ferdi Kadıoğlu",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Merih Demiral",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mert Müldür",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdülkerim Bardakcı",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Çağlar Söyüncü",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Eren Elmalı",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ozan Kabak",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Samet Akaydın",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zeki Çelik",
+			"equipo_id": 16,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hakan Çalhanoğlu",
+			"equipo_id": 16,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Orkun Kökçü",
+			"equipo_id": 16,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "İsmail Yüksek",
+			"equipo_id": 16,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Salih Özcan",
+			"equipo_id": 16,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kaan Ayhan",
+			"equipo_id": 16,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Arda Güler",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kenan Yıldız",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Barış Alper Yılmaz",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kerem Aktürkoğlu",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "İrfan Can Kahveci",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Can Uzun",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Deniz Gül",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Oğuz Aydın",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yunus Akgün",
+			"equipo_id": 16,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Manuel Neuer",
+			"equipo_id": 17,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Oliver Baumann",
+			"equipo_id": 17,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alexander Nübel",
+			"equipo_id": 17,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Waldemar Anton",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nathaniel Brown",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joshua Kimmich",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "David Raum",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Antonio Rüdiger",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nico Schlotterbeck",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jonathan Tah",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Malick Thiaw",
+			"equipo_id": 17,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nadiem Amiri",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Leon Goretzka",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Pascal Groß",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jamie Leweling",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jamal Musiala",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Felix Nmecha",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alexander Pavlovic",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Angelo Stiller",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Assan Ouédraogo",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Florian Wirtz",
+			"equipo_id": 17,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Maximilian Beier",
+			"equipo_id": 17,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kai Havertz",
+			"equipo_id": 17,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Leroy Sané",
+			"equipo_id": 17,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Denis Undav",
+			"equipo_id": 17,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nick Woltemade",
+			"equipo_id": 17,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yahia Fofana",
+			"equipo_id": 19,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Élisha Kossivi",
+			"equipo_id": 19,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "David Sangaré",
+			"equipo_id": 19,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ousmane Diomande",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Evan Ndicka",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Wilfried Singo",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ghislain Konan",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Odilon Kossounou",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Simon Deli",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Christopher Opéri",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Franck Kessié",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jean Seri",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ibrahim Sangaré",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amad Diallo",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yan Diomande",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Evann Guessand",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bazoumana Touré",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Emmanuel Agbadou",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Seko Fofana",
+			"equipo_id": 19,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yoan-Ange Bonny",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nicolas Pépé",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Max-Alain Gradel",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Christian Kouamé",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jonathan Bamba",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Wilfried Gnonto",
+			"equipo_id": 19,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Serge Aurier",
+			"equipo_id": 19,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tyrick Bodak",
+			"equipo_id": 18,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Trevor Doornbusch",
+			"equipo_id": 18,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Eloy Room",
+			"equipo_id": 18,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Riechedly Bazoer",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joshua Brenet",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Roshon van Eijma",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sherel Floranus",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Deveron Fonville",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jurien Gaari",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Armando Obispo",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Shurandy Sambo",
+			"equipo_id": 18,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Juninho Bacuna",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Leandro Bacuna",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Livano Comenencia",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kevin Felida",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ar'jany Martha",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Tyrese Noslin",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Godfried Roemeratoe",
+			"equipo_id": 18,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jeremy Antonisse",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tahith Chong",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kenji Gorre",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Sontje Hansen",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gervane Kastaneer",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Brandley Kuwas",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jurgen Locadia",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jearl Margaritha",
+			"equipo_id": 18,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Hernán Galíndez",
+			"equipo_id": 20,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Moisés Ramírez",
+			"equipo_id": 20,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Gonzalo Valle",
+			"equipo_id": 20,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Piero Hincapié",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Willian Pacho",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Félix Torres",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jackson Porozo",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Angelo Preciado",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Diego Palacios",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Pervis Estupiñán",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "John Yeboah",
+			"equipo_id": 20,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Moisés Caicedo",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "José Cifuentes",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Carlos Gruezo",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alan Franco",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jeremy Sarmiento",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kendry Páez",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Romario Ibarra",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bryan Angulo",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gonzalo Plata",
+			"equipo_id": 20,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Enner Valencia",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Michael Estrada",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kevin Rodríguez",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Leonardo Campana",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jaime Ayoví",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jordy Caicedo",
+			"equipo_id": 20,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Zion Suzuki",
+			"equipo_id": 22,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Keisuke Ōsako",
+			"equipo_id": 22,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Tomoki Hayakawa",
+			"equipo_id": 22,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Yūto Nagatomo",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Takehiro Tomiyasu",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kō Itakura",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Shōgo Taniguchi",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hiroki Itō",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Yukinari Sugawara",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ayumu Seko",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tsuyoshi Watanabe",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Junnosuke Suzuki",
+			"equipo_id": 22,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Wataru Endo",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Junya Itō",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ritsu Dōan",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Daichi Kamada",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Takefusa Kubo",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ao Tanaka",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Keito Nakamura",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kaishū Sano",
+			"equipo_id": 22,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ayase Ueda",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Daizen Maeda",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kōki Ogawa",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yuito Suzuki",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Keisuke Gotō",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kento Shiogai",
+			"equipo_id": 22,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Bart Verbruggen",
+			"equipo_id": 21,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mark Flekken",
+			"equipo_id": 21,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Robin Roefs",
+			"equipo_id": 21,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Virgil van Dijk",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Stefan de Vrij",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nathan Aké",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Denzel Dumfries",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jan Paul van Hecke",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Micky van de Ven",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jorrel Hato",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lutsharel Geertruida",
+			"equipo_id": 21,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Frenkie de Jong",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ryan Gravenberch",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Tijjani Reijnders",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Teun Koopmeiners",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Quinten Timber",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Marten de Roon",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Xavi Simons",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Memphis Depay",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cody Gakpo",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Donyell Malen",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Wout Weghorst",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Steven Bergwijn",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Noa Lang",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Brian Brobbey",
+			"equipo_id": 21,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Sander Westerveld",
+			"equipo_id": 21,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kristoffer Nordfeldt",
+			"equipo_id": 23,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Viktor Johansson",
+			"equipo_id": 23,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jacob Widell Zetterstrom",
+			"equipo_id": 23,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Gustaf Lagerbielke",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Victor Lindelöf",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Gabriel Gudmundsson",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Daniel Svensson",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Elliot Stroud",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Carl Starfelt",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Isak Hien",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Emil Holm",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hjalmar Ekdal",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Eric Smith",
+			"equipo_id": 23,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lucas Bergvall",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jesper Karlstrom",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yasin Ayari",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mattias Svanberg",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Besfort Zeneli",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ken Sema",
+			"equipo_id": 23,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gustaf Nilsson",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Benjamin Nygren",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Anthony Elanga",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Viktor Gyökeres",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Taha Ali",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexander Isak",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexander Bernhardsson",
+			"equipo_id": 23,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Aymen Dahmen",
+			"equipo_id": 24,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ben Hessen",
+			"equipo_id": 24,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ali Jarboui",
+			"equipo_id": 24,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ali Abdi",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Montassar Talbi",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nasser Bronn",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Yan Valery",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Wajdi Kechrida",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ali Maaloul",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hamza Rafia",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ben Slimane",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hannibal Mejbri",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Firas Khedira",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ellyes Skhiri",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Iissa Arous",
+			"equipo_id": 24,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sabri Lamouchi",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ghazi Gharbi",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Achouri",
+			"equipo_id": 24,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Saad Bguir",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Seifeddine Jaziri",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Naïm Sliti",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Taha Yassine Khenissi",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Aymen Chaouat",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tounekti",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ibrahim Mastouri",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Youssef Msakni",
+			"equipo_id": 24,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Thibaut Courtois",
+			"equipo_id": 25,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Senne Lammens",
+			"equipo_id": 25,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mike Penders",
+			"equipo_id": 25,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Timothy Castagne",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zeno Debast",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Maxim de Cuyper",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Koni de Winter",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Brandon Mechele",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Thomas Meunier",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nathan Ngoy",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joaquin Seys",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Arthur Theate",
+			"equipo_id": 25,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kevin De Bruyne",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amadou Onana",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nicolas Raskin",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Youri Tielemans",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hans Vanaken",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Axel Witsel",
+			"equipo_id": 25,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Charles De Ketelaere",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jeremy Doku",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Matias Fernandez-Pardo",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Romelu Lukaku",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dodi Lukebakio",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Diego Moreira",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexis Saelemaekers",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Leandro Trossard",
+			"equipo_id": 25,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohamed El Shenawy",
+			"equipo_id": 26,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Moustafa Shobeir",
+			"equipo_id": 26,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "El Mahdy Soliman",
+			"equipo_id": 26,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mohamed Hany",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tarek Alaa",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hamdy Fathy",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ramy Rabia",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Yasser Ibrahim",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hossam Abdelmaguid",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohamed Abdelmonem",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ahmed El Fotouh",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Karim Hafez",
+			"equipo_id": 26,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marwan Attia",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohanad Lasheen",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Donga",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mahmoud Saber",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Zizo",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Trézéguet",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Emam Ashour",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ibrahim Adel",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Haissem Hassan",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohamed Salah",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Omar Marmoush",
+			"equipo_id": 26,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Hamza Abdelkarim",
+			"equipo_id": 26,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mostafa Ziko",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Pape Ciss",
+			"equipo_id": 26,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alireza Beiranvand",
+			"equipo_id": 27,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Seyed Hossein Hosseini",
+			"equipo_id": 27,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Payam Niazmand",
+			"equipo_id": 27,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Danial Eiri",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ehsan Hajsafi",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Saleh Hardani",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hossein Kanaani",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Shoja Khalilzadeh",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Milad Mohammadi",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ali Nemati",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ramin Rezaeian",
+			"equipo_id": 27,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Rouzbeh Cheshmi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Saeid Ezatolahi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mehdi Ghaedi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Saman Ghoddos",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohammad Ghorbani",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alireza Jahanbakhsh",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohammad Mohebi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amir Mohammad Razzaghinia",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mehdi Torabi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aria Yousefi",
+			"equipo_id": 27,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ali Alipour",
+			"equipo_id": 27,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dennis Dargahi",
+			"equipo_id": 27,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Amirhossein Hosseinzadeh",
+			"equipo_id": 27,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mehdi Taremi",
+			"equipo_id": 27,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Shahriar Moghanlou",
+			"equipo_id": 27,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mathew Ryan",
+			"equipo_id": 28,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Paul Izzo",
+			"equipo_id": 28,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Patrick Beach",
+			"equipo_id": 28,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jordan Bos",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aziz Behich",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Harry Souttar",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alessandro Circati",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lucas Herrington",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Cameron Burgess",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kai Trewin",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Milos Degenek",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jason Geria",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jacob Italiano",
+			"equipo_id": 28,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jackson Irvine",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aiden O'Neill",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Paul Okon-Engstler",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cameron Devlin",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Connor Metcalfe",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mathew Leckie",
+			"equipo_id": 28,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nishan Velupillay",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cristian Volpato",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nestory Irankunda",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Awer Mabil",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ajdin Hrustic",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohamed Toure",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Tete Yengi",
+			"equipo_id": 28,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Vozinha",
+			"equipo_id": 30,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Marcio Rosa",
+			"equipo_id": 30,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "CJ dos Santos",
+			"equipo_id": 30,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Stopira",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Roberto Lopes",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joao Paulo",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Diney",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Logan Costa",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Steven Moreira",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Wagner Pina",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sidny Lopes Cabral",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kelvin Pires",
+			"equipo_id": 30,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jamiro Monteiro",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kevin Pina",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Deroy Duarte",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Telmo Arcanjo",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Laros Duarte",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yannick Semedo",
+			"equipo_id": 30,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ryan Mendes",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Garry Rodrigues",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Willy Semedo",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jovane Cabral",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gilson Tavares",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dailon Livramento",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Helio Varela",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nuno da Costa",
+			"equipo_id": 30,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohammed Al Owais",
+			"equipo_id": 31,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Nawaf Al Aqidi",
+			"equipo_id": 31,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ahmed Al Kassar",
+			"equipo_id": 31,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Abdulelah Al Amri",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hassan Tambakti",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jehad Thikri",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ali Lajami",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Hassan Kadesh",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Saud Abdulhamid",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohammed Abu Al Shamat",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ali Majrashi",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Moteb Al Harbi",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nawaf Boushal",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sultan Al-Ghannam",
+			"equipo_id": 31,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohammed Kanno",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Abdullah Al Khaibari",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ziyad Al Johani",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Salem Al-Dawsari",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Musab Al Juwayr",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alaa Al Hajji",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Khalid Al Ghannam",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ayman Yahya",
+			"equipo_id": 31,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Feras Al Buraikan",
+			"equipo_id": 31,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Saleh Al Shehri",
+			"equipo_id": 31,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Abdullah Al Hamdan",
+			"equipo_id": 31,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Sultan Mandash",
+			"equipo_id": 31,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Unai Simón",
+			"equipo_id": 29,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Joan Garcia",
+			"equipo_id": 29,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "David Raya",
+			"equipo_id": 29,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Pau Cubarsí",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Eric García",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marc Cucurella",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Pedro Porro",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aymeric Laporte",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alejandro Grimaldo",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marc Pubill",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marcos Llorente",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Víctor Muñoz",
+			"equipo_id": 29,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Pedri",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rodri",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Fabián Ruiz",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Martín Zubimendi",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gavi",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mikel Merino",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Álex Baena",
+			"equipo_id": 29,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ferran Torres",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mikel Oyarzabal",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Lamine Yamal",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nico Williams",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Borja Iglesias",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yeremy Pino",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dani Olmo",
+			"equipo_id": 29,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Sergio Rochet",
+			"equipo_id": 32,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Fernando Muslera",
+			"equipo_id": 32,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Santiago Mele",
+			"equipo_id": 32,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Guillermo Varela",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ronald Araújo",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "José María Giménez",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Santiago Bueno",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sebastián Cáceres",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mathías Olivera",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joaquín Piquerez",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Matías Viña",
+			"equipo_id": 32,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Manuel Ugarte",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Emiliano Martínez",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rodrigo Bentancur",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Federico Valverde",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Agustín Canobbio",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Giorgan de Arrascaeta",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nicolás de la Cruz",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rodrigo Zalazar",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Facundo Pellistri",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Maximiliano Araújo",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Brian Rodríguez",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Juan Manuel Sanabria",
+			"equipo_id": 32,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rodrigo Aguirre",
+			"equipo_id": 32,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Federico Viñas",
+			"equipo_id": 32,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Darwin Núñez",
+			"equipo_id": 32,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mike Maignan",
+			"equipo_id": 33,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Robin Risser",
+			"equipo_id": 33,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Brice Samba",
+			"equipo_id": 33,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Lucas Digne",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Malo Gusto",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Lucas Hernandez",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Theo Hernandez",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ibrahima Konaté",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jules Koundé",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Maxence Lacroix",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "William Saliba",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Dayot Upamecano",
+			"equipo_id": 33,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "N'Golo Kanté",
+			"equipo_id": 33,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Manu Koné",
+			"equipo_id": 33,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Adrien Rabiot",
+			"equipo_id": 33,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aurélien Tchouaméni",
+			"equipo_id": 33,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Warren Zaïre-Emery",
+			"equipo_id": 33,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Maghnes Akliouche",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Bradley Barcola",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Rayan Cherki",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ousmane Dembélé",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Désiré Doué",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jean-Philippe Mateta",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Kylian Mbappé",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Michael Olise",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Marcus Thuram",
+			"equipo_id": 33,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Fahad Talib",
+			"equipo_id": 35,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Jalal Hassan",
+			"equipo_id": 35,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ahmed Basil",
+			"equipo_id": 35,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Hussein Ali",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Manaf Younis",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ahmed Yahya",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mustafa Saadoon",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zaid Tahseen",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Rebin Sulaka",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Akam Hashim",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Merchas Doski",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zaid Ismail",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Frans Putros",
+			"equipo_id": 35,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Amir Al-Ammari",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kevin Yakob",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Zidane Iqbal",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aimar Sher",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ibrahim Bayesh",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ahmed Qasem",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Youssef Amyn",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Marko Farji",
+			"equipo_id": 35,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ali Jassim",
+			"equipo_id": 35,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ali Al-Hamadi",
+			"equipo_id": 35,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ali Yousef",
+			"equipo_id": 35,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Aymen Hussein",
+			"equipo_id": 35,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohanad Ali",
+			"equipo_id": 35,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Orjan Nyland",
+			"equipo_id": 36,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Egil Selvik",
+			"equipo_id": 36,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Sander Tangvik",
+			"equipo_id": 36,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Julian Ryerson",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marcus Holmgren Pedersen",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "David Moller Wolfe",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Fredrik Bjorkan",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kristoffer Ajer",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Torbjorn Heggem",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Leo Skiri Ostigard",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sondre Langas",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Henrik Falchener",
+			"equipo_id": 36,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Martin Odegaard",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Sander Berge",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Fredrik Aursnes",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Patrick Berg",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kristian Thorstvedt",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Morten Thorsby",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Thelo Aasgaard",
+			"equipo_id": 36,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Erling Haaland",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Alexander Sørloth",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jorgen Strand Larsen",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Antonio Nusa",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Oscar Bobb",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Andreas Schjelderup",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jens Petter Hauge",
+			"equipo_id": 36,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Edouard Mendy",
+			"equipo_id": 34,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Mory Diaw",
+			"equipo_id": 34,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Yehvann Diouf",
+			"equipo_id": 34,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Krepin Diatta",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Antoine Mendy",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kalidou Koulibaly",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "El Hadji Malick Diouf",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mamadou Sarr",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Moussa Niakhate",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Moustapha Mbow",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdoulaye Seck",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ismail Jakobs",
+			"equipo_id": 34,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Idrissa Gana Gueye",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Pape Gueye",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Lamine Camara",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Habib Diarra",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Pathe Ciss",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Pape Matar Sarr",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bara Sapoko Ndiaye",
+			"equipo_id": 34,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Sadio Mane",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ismaila Sarr",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Iliman Ndiaye",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Assane Diao",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nicolas Jackson",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Bamba Dieng",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Cherif Ndiaye",
+			"equipo_id": 34,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ramy Bensebaïni",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Rayan Aït-Nouri",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aïssa Mandi",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Rafik Belghali",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Samir Chergui",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jaouen Hadjam",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Zinedine Belaïd",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohamed Amine Tougaï",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Achraf Abada",
+			"equipo_id": 38,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nabil Bentaleb",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Hicham Boudaoui",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Houssem Aouar",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Farès Chaïbi",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ibrahim Maza",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Yacine Titraoui",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ramiz Zerrouki",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohamed Amine Amoura",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Nadhir Benbouali",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Adil Boulbina",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Farès Ghedjemis",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Amine Gouiri",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Anis Hadj Moussa",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Riyad Mahrez",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Sofiane Feghouli",
+			"equipo_id": 38,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Islam Slimani",
+			"equipo_id": 38,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Rayane Messi",
+			"equipo_id": 38,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alexander Schlager",
+			"equipo_id": 39,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Florian Wiegele",
+			"equipo_id": 39,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Patrick Pentz",
+			"equipo_id": 39,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "David Affengruber",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kevin Danso",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Stefan Posch",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "David Alaba",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Philipp Lienhart",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Phillipp Mwene",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alexander Prass",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marco Friedl",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Michael Svoboda",
+			"equipo_id": 39,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Xaver Schlager",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nicolas Seiwald",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Marcel Sabitzer",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Florian Grillitsch",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Carney Chukwuemeka",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Romano Schmid",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Christoph Baumgartner",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Konrad Laimer",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Patrick Wimmer",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Paul Wanner",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Alessandro Schöpf",
+			"equipo_id": 39,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Marko Arnautović",
+			"equipo_id": 39,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Michael Gregoritsch",
+			"equipo_id": 39,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Saša Kalajdžić",
+			"equipo_id": 39,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yazeed Abulaila",
+			"equipo_id": 40,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Abdullah Al-Fakhouri",
+			"equipo_id": 40,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Noor Bani Attiah",
+			"equipo_id": 40,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Abdallah Nasib",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ehsan Haddad",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Saed Al-Rosan",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Saleem Obaid",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Yazan Al-Arab",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohammad Abualnadi",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Husam Abu Dahab",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Anas Banawi",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohannad Abu Taha",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Mohammad Abu Hasheesh",
+			"equipo_id": 40,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Noor Al-Rawabdeh",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nizar Al-Rashdan",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ibrahim Saadeh",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rajaei Ayed",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mahmoud Al-Mardi",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Amer Jamous",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mohammad Al-Dawoud",
+			"equipo_id": 40,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mousa Al-Tamari",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Odeh Al-Fakhouri",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Mohammad Abu Zrayq",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ali Azaizeh",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ibrahim Sabra",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ali Olwan",
+			"equipo_id": 40,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "David Ospina",
+			"equipo_id": 44,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Camilo Vargas",
+			"equipo_id": 44,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Alvaro Montero",
+			"equipo_id": 44,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Davinson Sánchez",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Yerry Mina",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Daniel Muñoz",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Carlos Cuesta",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Johan Mojica",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jhon Lucumí",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Stefan Medina",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "William Tesillo",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "James Rodríguez",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jhon Arias",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mateus Uribe",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Richard Ríos",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gustavo Puerta",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jorman Campuzano",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cucho Hernández",
+			"equipo_id": 44,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Luis Díaz",
+			"equipo_id": 44,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Rafael Santos Borré",
+			"equipo_id": 44,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jhon Córdoba",
+			"equipo_id": 44,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jhohan Romaña",
+			"equipo_id": 44,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Harold Mosquera",
+			"equipo_id": 44,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Yaser Asprilla",
+			"equipo_id": 44,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Eder Balanta",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kevin Castaño",
+			"equipo_id": 44,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Matthieu Epolo",
+			"equipo_id": 42,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Timothy Fayulu",
+			"equipo_id": 42,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Lionel Mpasi",
+			"equipo_id": 42,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Dylan Batubinsika",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Gedeon Kalulu",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Steve Kapuadi",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Joris Kayembe",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Arthur Masuaku",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Chancel Mbemba",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Axel Tuanzebe",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Aaron Wan-Bissaka",
+			"equipo_id": 42,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Theo Bongonda",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Brian Cipenga",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Meshack Elia",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Gael Kakuta",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Edo Kayembe",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nathanael Mbuku",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Samuel Moutoussamy",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ngal'ayel Mukau",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Charles Pickel",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Noah Sadiki",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Aaron Tshibola",
+			"equipo_id": 42,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cedric Bakambu",
+			"equipo_id": 42,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Simon Banza",
+			"equipo_id": 42,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Fiston Mayele",
+			"equipo_id": 42,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Yoane Wissa",
+			"equipo_id": 42,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Diogo Costa",
+			"equipo_id": 41,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Rui Silva",
+			"equipo_id": 41,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "José Sá",
+			"equipo_id": 41,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Rúben Dias",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Gonçalo Inácio",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "João Cancelo",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nuno Mendes",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Diogo Dalot",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nélson Semedo",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tomás Araújo",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Renato Veiga",
+			"equipo_id": 41,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Vitinha",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "João Neves",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bruno Fernandes",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Rúben Neves",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Matheus Nunes",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Samú Costa",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Bernardo Silva",
+			"equipo_id": 41,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Cristiano Ronaldo",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Francisco Trincão",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "João Félix",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gonçalo Ramos",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Pedro Neto",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Francisco Conceição",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Rafael Leão",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Gonçalo Guedes",
+			"equipo_id": 41,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Utkir Yusupov",
+			"equipo_id": 43,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Abduvohid Nematov",
+			"equipo_id": 43,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Botirali Ergashev",
+			"equipo_id": 43,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Rustam Ashurmatov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Farrukh Sayfiev",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Khojiakbar Alijonov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Sherzod Nasrullaev",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Umar Eshmurodov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdukodir Khusanov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdulla Abdullaev",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Bekhruz Karimov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jakhongir Urozov",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Avazbek Ulmasaliev",
+			"equipo_id": 43,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Otabek Shukurov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jaloliddin Masharipov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Odiljon Hamrobekov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Oston Urunov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jamshid Iskanderov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Dostonbek Khamdamov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Abbosbek Fayzullaev",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Akmal Mozgovoy",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Azizjon Ganiev",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Sherzod Esanov",
+			"equipo_id": 43,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Eldor Shomurodov",
+			"equipo_id": 43,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Igor Sergeev",
+			"equipo_id": 43,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Azizbek Amonov",
+			"equipo_id": 43,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Dominik Livaković",
+			"equipo_id": 46,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Dominik Kotarski",
+			"equipo_id": 46,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Ivor Pandur",
+			"equipo_id": 46,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Joško Gvardiol",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Duje Caleta-Car",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Josip Šutalo",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Josip Staniić",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marin Pongračić",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Martin Erlić",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Luka Vušković",
+			"equipo_id": 46,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Luka Modrić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mateo Kovačić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Mario Pašalić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nikola Vlašić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Luka Sučić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Martin Baturina",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kristijan Jakić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Petar Sučić",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Nikola Moro",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Toni Fruk",
+			"equipo_id": 46,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Ivan Perišić",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Andrej Kramarić",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ante Budimir",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Marco Pašalić",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Petar Musa",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Igor Matanović",
+			"equipo_id": 46,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jordan Pickford",
+			"equipo_id": 45,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Dean Henderson",
+			"equipo_id": 45,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "James Trafford",
+			"equipo_id": 45,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Dan Burn",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marc Guéhi",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Reece James",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Ezri Konsa",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Tino Livramento",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Nico O'Reilly",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jarell Quansah",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Djed Spence",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "John Stones",
+			"equipo_id": 45,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Elliot Anderson",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jude Bellingham",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Eberechi Eze",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Jordan Henderson",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kobbie Mainoo",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Declan Rice",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Morgan Rogers",
+			"equipo_id": 45,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Anthony Gordon",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Harry Kane",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Noni Madueke",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Marcus Rashford",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Bukayo Saka",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ivan Toney",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ollie Watkins",
+			"equipo_id": 45,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Benjamin Asare",
+			"equipo_id": 47,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Lawrence Ati-Zigi",
+			"equipo_id": 47,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Joseph Anang",
+			"equipo_id": 47,
+			"posicion": "arquero"
+		},
+		{
+			"nombre": "Baba Abdul Rahman",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Gideon Mensah",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Marvin Senaya",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Alidu Seidu",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Abdul Mumin",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jerome Opoku",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Jonas Adjetey",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Kojo Oppong Peprah",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Elisha Owusu",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Derrick Luckassen",
+			"equipo_id": 47,
+			"posicion": "defensa"
+		},
+		{
+			"nombre": "Thomas Partey",
+			"equipo_id": 47,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kwasi Sibo",
+			"equipo_id": 47,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Augustine Boakye",
+			"equipo_id": 47,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Caleb Yirenkyi",
+			"equipo_id": 47,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Abdul Fatawu Issahaku",
+			"equipo_id": 47,
+			"posicion": "mediocampo"
+		},
+		{
+			"nombre": "Kamaldeen Sulemana",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Christopher Bonsu Baah",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Ernest Nuamah",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Antoine Semenyo",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Brandon Thomas-Asante",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Prince Kwabena Adu",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Inaki Williams",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		},
+		{
+			"nombre": "Jordan Ayew",
+			"equipo_id": 47,
+			"posicion": "delantero"
+		}
+	]
+}

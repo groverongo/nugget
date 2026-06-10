@@ -6,347 +6,432 @@
 			"puntos_fifa": 1687.48,
 			"grupo": "A",
 			"bandera": "🇲🇽",
-			"siglas": "MEX"
+			"siglas": "MEX",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Sudáfrica",
 			"puntos_fifa": 1432.71,
 			"grupo": "A",
 			"bandera": "🇿🇦",
-			"siglas": "RSA"
+			"siglas": "RSA",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "República de Corea",
 			"puntos_fifa": 1591.63,
 			"grupo": "A",
 			"bandera": "🇰🇷",
-			"siglas": "KOR"
+			"siglas": "KOR",
+			"blanco": false,
+			"negro": false
 		},
 		{
 			"nombre": "República Checa",
 			"puntos_fifa": 1505.74,
 			"grupo": "A",
 			"bandera": "🇨🇿",
-			"siglas": "CZE"
+			"siglas": "CZE",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "Canadá",
 			"puntos_fifa": 1559.48,
 			"grupo": "B",
 			"bandera": "🇨🇦",
-			"siglas": "CAN"
+			"siglas": "CAN",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Bosnia y Herzegovina",
 			"puntos_fifa": 1387.22,
 			"grupo": "B",
 			"bandera": "🇧🇦",
-			"siglas": "BIH"
+			"siglas": "BIH",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Catar",
 			"puntos_fifa": 1450.31,
 			"grupo": "B",
 			"bandera": "🇶🇦",
-			"siglas": "QAT"
+			"siglas": "QAT",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Suiza",
 			"puntos_fifa": 1650.07,
 			"grupo": "B",
 			"bandera": "🇨🇭",
-			"siglas": "SUI"
+			"siglas": "SUI",
+			"blanco": false,
+			"negro": false
 		},
-
 		{
 			"nombre": "Brasil",
 			"puntos_fifa": 1765.86,
 			"grupo": "C",
 			"bandera": "🇧🇷",
-			"siglas": "BRA"
+			"siglas": "BRA",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Marruecos",
 			"puntos_fifa": 1755.44,
 			"grupo": "C",
 			"bandera": "🇲🇦",
-			"siglas": "MAR"
+			"siglas": "MAR",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Haití",
 			"puntos_fifa": 1293.09,
 			"grupo": "C",
 			"bandera": "🇭🇹",
-			"siglas": "HAI"
+			"siglas": "HAI",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Escocia",
 			"puntos_fifa": 1503.34,
 			"grupo": "C",
 			"bandera": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-			"siglas": "SCO"
+			"siglas": "SCO",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "Estados Unidos",
 			"puntos_fifa": 1671.24,
 			"grupo": "D",
 			"bandera": "🇺🇸",
-			"siglas": "USA"
+			"siglas": "USA",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Paraguay",
 			"puntos_fifa": 1505.35,
 			"grupo": "D",
 			"bandera": "🇵🇾",
-			"siglas": "PAR"
+			"siglas": "PAR",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Australia",
 			"puntos_fifa": 1579.34,
 			"grupo": "D",
 			"bandera": "🇦🇺",
-			"siglas": "AUS"
+			"siglas": "AUS",
+			"blanco": false,
+			"negro": false
 		},
 		{
 			"nombre": "Turquía",
 			"puntos_fifa": 1605.73,
 			"grupo": "D",
 			"bandera": "🇹🇷",
-			"siglas": "TUR"
+			"siglas": "TUR",
+			"blanco": false,
+			"negro": false
 		},
-
 		{
 			"nombre": "Alemania",
 			"puntos_fifa": 1735.77,
 			"grupo": "E",
 			"bandera": "🇩🇪",
-			"siglas": "GER"
+			"siglas": "GER",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Curazao",
 			"puntos_fifa": 1294.77,
 			"grupo": "E",
 			"bandera": "🇨🇼",
-			"siglas": "CUW"
+			"siglas": "CUW",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Costa de Marfil",
 			"puntos_fifa": 1540.87,
 			"grupo": "E",
 			"bandera": "🇨🇮",
-			"siglas": "CIV"
+			"siglas": "CIV",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Ecuador",
 			"puntos_fifa": 1598.51,
 			"grupo": "E",
 			"bandera": "🇪🇨",
-			"siglas": "ECU"
+			"siglas": "ECU",
+			"blanco": false,
+			"negro": false
 		},
-
 		{
 			"nombre": "Países Bajos",
 			"puntos_fifa": 1753.57,
 			"grupo": "F",
 			"bandera": "🇳🇱",
-			"siglas": "NED"
+			"siglas": "NED",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Japón",
 			"puntos_fifa": 1661.58,
 			"grupo": "F",
 			"bandera": "🇯🇵",
-			"siglas": "JPN"
+			"siglas": "JPN",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Suecia",
 			"puntos_fifa": 1509.79,
 			"grupo": "F",
 			"bandera": "🇸🇪",
-			"siglas": "SWE"
+			"siglas": "SWE",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Túnez",
 			"puntos_fifa": 1476.4,
 			"grupo": "F",
 			"bandera": "🇹🇳",
-			"siglas": "TUN"
+			"siglas": "TUN",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "Bélgica",
 			"puntos_fifa": 1742.23,
 			"grupo": "G",
 			"bandera": "🇧🇪",
-			"siglas": "BEL"
+			"siglas": "BEL",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Egipto",
 			"puntos_fifa": 1562.37,
 			"grupo": "G",
 			"bandera": "🇪🇬",
-			"siglas": "EGY"
+			"siglas": "EGY",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Irán",
 			"puntos_fifa": 1619.58,
 			"grupo": "G",
 			"bandera": "🇮🇷",
-			"siglas": "IRN"
+			"siglas": "IRN",
+			"blanco": false,
+			"negro": false
 		},
 		{
 			"nombre": "Nueva Zelanda",
 			"puntos_fifa": 1275.58,
 			"grupo": "G",
 			"bandera": "🇳🇿",
-			"siglas": "NZL"
+			"siglas": "NZL",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "España",
 			"puntos_fifa": 1873.87,
 			"grupo": "H",
 			"bandera": "🇪🇸",
-			"siglas": "ESP"
+			"siglas": "ESP",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Cabo Verde",
 			"puntos_fifa": 1371.11,
 			"grupo": "H",
 			"bandera": "🇨🇻",
-			"siglas": "CPV"
+			"siglas": "CPV",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Arabia Saudí",
 			"puntos_fifa": 1421.54,
 			"grupo": "H",
 			"bandera": "🇸🇦",
-			"siglas": "KSA"
+			"siglas": "KSA",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Uruguay",
 			"puntos_fifa": 1673.07,
 			"grupo": "H",
 			"bandera": "🇺🇾",
-			"siglas": "URU"
+			"siglas": "URU",
+			"blanco": true,
+			"negro": false
 		},
-
 		{
 			"nombre": "Francia",
 			"puntos_fifa": 1870.69,
 			"grupo": "I",
 			"bandera": "🇫🇷",
-			"siglas": "FRA"
+			"siglas": "FRA",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Senegal",
 			"puntos_fifa": 1686.41,
 			"grupo": "I",
 			"bandera": "🇸🇳",
-			"siglas": "SEN"
+			"siglas": "SEN",
+			"blanco": false,
+			"negro": false
 		},
 		{
 			"nombre": "Irak",
 			"puntos_fifa": 1451.16,
 			"grupo": "I",
 			"bandera": "🇮🇶",
-			"siglas": "IRQ"
+			"siglas": "IRQ",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Noruega",
 			"puntos_fifa": 1557.44,
 			"grupo": "I",
 			"bandera": "🇳🇴",
-			"siglas": "NOR"
+			"siglas": "NOR",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "Argentina",
 			"puntos_fifa": 1876.11,
 			"grupo": "J",
 			"bandera": "🇦🇷",
-			"siglas": "ARG"
+			"siglas": "ARG",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Argelia",
 			"puntos_fifa": 1571.04,
 			"grupo": "J",
 			"bandera": "🇩🇿",
-			"siglas": "ALG"
+			"siglas": "ALG",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Austria",
 			"puntos_fifa": 1597.41,
 			"grupo": "J",
 			"bandera": "🇦🇹",
-			"siglas": "AUT"
+			"siglas": "AUT",
+			"blanco": false,
+			"negro": false
 		},
 		{
 			"nombre": "Jordania",
 			"puntos_fifa": 1387.73,
 			"grupo": "J",
 			"bandera": "🇯🇴",
-			"siglas": "JOR"
+			"siglas": "JOR",
+			"blanco": false,
+			"negro": true
 		},
-
 		{
 			"nombre": "Portugal",
 			"puntos_fifa": 1766.17,
 			"grupo": "K",
 			"bandera": "🇵🇹",
-			"siglas": "POR"
+			"siglas": "POR",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "RD Congo",
 			"puntos_fifa": 1477.06,
 			"grupo": "K",
 			"bandera": "🇨🇩",
-			"siglas": "COD"
+			"siglas": "COD",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Uzbekistán",
 			"puntos_fifa": 1458.73,
 			"grupo": "K",
 			"bandera": "🇺🇿",
-			"siglas": "UZB"
+			"siglas": "UZB",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Colombia",
 			"puntos_fifa": 1698.35,
 			"grupo": "K",
 			"bandera": "🇨🇴",
-			"siglas": "COL"
+			"siglas": "COL",
+			"blanco": true,
+			"negro": false
 		},
-
 		{
 			"nombre": "Inglaterra",
 			"puntos_fifa": 1827.05,
 			"grupo": "L",
 			"bandera": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-			"siglas": "ENG"
+			"siglas": "ENG",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Croacia",
 			"puntos_fifa": 1714.87,
 			"grupo": "L",
 			"bandera": "🇭🇷",
-			"siglas": "CRO"
+			"siglas": "CRO",
+			"blanco": true,
+			"negro": false
 		},
 		{
 			"nombre": "Ghana",
 			"puntos_fifa": 1346.88,
 			"grupo": "L",
 			"bandera": "🇬🇭",
-			"siglas": "GHA"
+			"siglas": "GHA",
+			"blanco": false,
+			"negro": true
 		},
 		{
 			"nombre": "Panamá",
 			"puntos_fifa": 1539.15,
 			"grupo": "L",
 			"bandera": "🇵🇦",
-			"siglas": "PAN"
+			"siglas": "PAN",
+			"blanco": false,
+			"negro": true
 		}
 	]
 }

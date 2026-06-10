@@ -5,6 +5,7 @@ import type { PartidosRepository } from "../repository/partidos.repository";
 import type { PrediccionesRepository } from "../repository/predicciones.repository";
 import type { UsuariosRepository } from "../repository/usuarios.repository";
 import type { AdminService } from "../service/admin.service";
+import type { AwardsService } from "../service/awards.service";
 import type { PartidosService } from "../service/partidos.service";
 import type { PrediccionesService } from "../service/predicciones.service";
 import type { UsuariosService } from "../service/usuarios.service";
@@ -23,5 +24,6 @@ export interface AppContext {
 		partidos: PartidosService;
 		predicciones: PrediccionesService;
 		admin: AdminService;
+		awards: AwardsService;
 	};
 }

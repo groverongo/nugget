@@ -1,11 +1,13 @@
 import { config } from "@support/config";
 import { ProvideDB, ProvideTxManager } from "@support/db.provider";
 import { logger } from "@support/logger";
+import { AwardsRepository } from "./repository/awards.repository";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { AdminService } from "./service/admin.service";
+import { AwardsService } from "./service/awards.service";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
 import { UsuariosService } from "./service/usuarios.service";
@@ -23,6 +25,7 @@ export function createAppContext(): AppContext {
 	const estaticoRepository = new EstaticoRepository(db);
 	const partidosRepository = new PartidosRepository(db);
 	const prediccionesRepository = new PrediccionesRepository(db);
+	const awardsRepository = new AwardsRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
 		estaticoRepository,
@@ -37,6 +40,11 @@ export function createAppContext(): AppContext {
 	const adminService = new AdminService(
 		partidosRepository,
 		prediccionesRepository,
+		txManager,
+	);
+	const awardsService = new AwardsService(
+		awardsRepository,
+		estaticoRepository,
 		txManager,
 	);
 
@@ -54,6 +62,7 @@ export function createAppContext(): AppContext {
 			partidos: partidosService,
 			predicciones: prediccionesService,
 			admin: adminService,
+			awards: awardsService,
 		},
 	};
 }
