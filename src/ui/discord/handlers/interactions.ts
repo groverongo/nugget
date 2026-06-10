@@ -43,18 +43,20 @@ function buildPrediccionModal(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_LOCAL_FIELD_ID)
 					.setLabel(`Goles de ${nombreEquipoLocal}`)
-					.setPlaceholder("Equipo local")
+					.setPlaceholder("Ej: 0, 1, 2...")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
+					.setMinLength(1)
 					.setMaxLength(2),
 			),
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_VISITANTE_FIELD_ID)
 					.setLabel(`Goles de ${nombreEquipoVisitante}`)
-					.setPlaceholder("Equipo visitante")
+					.setPlaceholder("Ej: 0, 1, 2...")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
+					.setMinLength(1)
 					.setMaxLength(2),
 			),
 		);

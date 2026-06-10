@@ -11,6 +11,7 @@ import {
 	TextDisplayBuilder,
 } from "discord.js";
 import type { PrediccionesService } from "../../../service/predicciones.service";
+import { formatearFechaLegible } from "../utils/fecha";
 import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
@@ -51,7 +52,7 @@ export function buildMisPrediccionesComponents(
 	fechas: string[],
 ): APIMessageTopLevelComponent[] {
 	const titulo = date
-		? `## Mis predicciones para ${date} (Hora Perú)`
+		? `## Mis predicciones del ${formatearFechaLegible(date)} (Hora Perú)`
 		: "## Todas mis predicciones";
 
 	const container = new ContainerBuilder().addTextDisplayComponents(
@@ -62,7 +63,7 @@ export function buildMisPrediccionesComponents(
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
 				date
-					? `No registraste predicciones para la fecha ${date}.`
+					? `No registraste predicciones para el ${formatearFechaLegible(date)}.`
 					: "No has realizado ninguna predicción.",
 			),
 		);

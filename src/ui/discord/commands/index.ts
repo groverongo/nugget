@@ -124,6 +124,18 @@ const actualizarPartidoMtCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const sayCommand = new SlashCommandBuilder()
+	.setName("say")
+	.setDescription("[ADMIN] Hace que Nugget envíe un mensaje en el canal actual")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("mensaje")
+			.setDescription("El mensaje que enviará Nugget")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
 	.setDescription(
@@ -397,6 +409,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		},
 	],
 	[
+		"say",
+		{
+			definition: sayCommand,
+			handle: async (interaction) => {
+				const mensaje = interaction.options.getString("mensaje", true);
+
+				await interaction.reply({ ephemeral: true, content: "✅" });
+				await interaction.channel?.send(mensaje);
+			},
+		},
+	],
+	[
 		"ping",
 		{
 			definition: pingCommand,
@@ -449,8 +473,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: partidosCommand,
 			handle: async (interaction, appContext) => {
-				if (!(await assertPollero(interaction))) return;
-				await interaction.deferReply();
+				await interaction.deferReply({ ephemeral: true });
 
 				const fechas = await appContext.services.partidos.verFechasDePartidos();
 				const hoy = obtenerYYYYMMDDPeru();
