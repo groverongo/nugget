@@ -4,6 +4,14 @@ import {
 	verEquipos,
 } from "@sqlc/equipos_sql";
 import {
+	type BuscarJugadoresArgs,
+	type BuscarJugadoresRow,
+	buscarJugadores,
+	type VerJugadoresPorEquipoArgs,
+	type VerJugadoresPorEquipoRow,
+	verJugadoresPorEquipo,
+} from "@sqlc/jugadores_sql";
+import {
 	type AgregarPuestoPremioArgs,
 	agregarPuestoPremio,
 	limpiezaDistribucionPremios,
@@ -29,6 +37,16 @@ export class EstaticoRepository implements IEstaticoRepository {
 
 	verEquipos(args: VerEquiposArgs): Promise<VerEquiposRow[]> {
 		return verEquipos(this.pool, args);
+	}
+
+	verJugadoresPorEquipo(
+		args: VerJugadoresPorEquipoArgs,
+	): Promise<VerJugadoresPorEquipoRow[]> {
+		return verJugadoresPorEquipo(this.pool, args);
+	}
+
+	buscarJugadores(args: BuscarJugadoresArgs): Promise<BuscarJugadoresRow[]> {
+		return buscarJugadores(this.pool, args);
 	}
 
 	withTx(tx: PoolClient) {

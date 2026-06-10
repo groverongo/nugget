@@ -12,6 +12,16 @@ import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
+const POLLERO_ROLE_ID = "1513773724074250350";
+
+const AWARDS_PLAYER_FIELDS = [
+	"goleador",
+	"mejor_jugador",
+	"mejor_arquero",
+	"mejor_jugador_joven",
+	"mejor_gol",
+] as const;
+
 const pingCommand = new SlashCommandBuilder()
 	.setName("ping")
 	.setDescription("Responde con pong")
@@ -109,6 +119,139 @@ const misPrediccionesCommand = new SlashCommandBuilder()
 			.setName("fecha")
 			.setDescription("(Opcional) Fecha en formato YYYY-MM-DD para Peru")
 			.setRequired(false),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const predecirAwardsCommand = new SlashCommandBuilder()
+	.setName("predecir-awards")
+	.setDescription("Predice los premios del Mundial 2026")
+	.addStringOption((option) =>
+		option
+			.setName("campeon")
+			.setDescription("Equipo campeón del Mundial 2026")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("goleador")
+			.setDescription("Goleador del torneo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_jugador")
+			.setDescription("Mejor jugador del torneo (Balón de Oro)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_arquero")
+			.setDescription("Mejor arquero del torneo (Guante de Oro)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_jugador_joven")
+			.setDescription("Mejor jugador joven del torneo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_gol")
+			.setDescription("Jugador autor del mejor gol del torneo (Premio Puskás)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("seleccion_decepcion")
+			.setDescription("Selección decepción del torneo (White Horse)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("seleccion_sorpresa")
+			.setDescription("Selección sorpresa del torneo (Dark Horse)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const actualizarAwardsCommand = new SlashCommandBuilder()
+	.setName("actualizar-awards")
+	.setDescription(
+		"[ADMIN] Asigna los premios del Mundial y suma puntos a los usuarios",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("campeon")
+			.setDescription("Equipo campeón del Mundial 2026")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("goleador")
+			.setDescription("Goleador del torneo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_jugador")
+			.setDescription("Mejor jugador del torneo (Balón de Oro)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_arquero")
+			.setDescription("Mejor arquero del torneo (Guante de Oro)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_jugador_joven")
+			.setDescription("Mejor jugador joven del torneo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_gol")
+			.setDescription("Jugador autor del mejor gol del torneo (Premio Puskás)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("seleccion_decepcion")
+			.setDescription("Selección decepción del torneo (White Horse)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("seleccion_sorpresa")
+			.setDescription("Selección sorpresa del torneo (Dark Horse)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("mejor_gol_posicion")
+			.setDescription("Posición del mejor gol entre todos los nominados (1-10)")
+			.setRequired(true)
+			.setMinValue(1)
+			.setMaxValue(10),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -354,6 +497,260 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					),
 					flags: MessageFlags.IsComponentsV2,
 				});
+			},
+		},
+	],
+	[
+		"predecir-awards",
+		{
+			definition: predecirAwardsCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const query = focused.value.toString();
+
+				if (focused.name === "campeon") {
+					const equipos = await appContext.services.awards.verEquipos();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (focused.name === "seleccion_decepcion") {
+					const equipos =
+						await appContext.services.awards.verEquiposWhiteHorse();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (focused.name === "seleccion_sorpresa") {
+					const equipos =
+						await appContext.services.awards.verEquiposDarkHorse();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (
+					AWARDS_PLAYER_FIELDS.includes(
+						focused.name as (typeof AWARDS_PLAYER_FIELDS)[number],
+					)
+				) {
+					const jugadores =
+						await appContext.services.awards.buscarJugadores(query);
+					const opciones = jugadores.slice(0, 25).map((j) => ({
+						name: `${j.nombre} (${j.equipo_nombre})`,
+						value: String(j.id),
+					}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const campeon = parseInt(
+						interaction.options.getString("campeon", true),
+					);
+					const goleador = parseInt(
+						interaction.options.getString("goleador", true),
+					);
+					const mejorJugador = parseInt(
+						interaction.options.getString("mejor_jugador", true),
+					);
+					const mejorArquero = parseInt(
+						interaction.options.getString("mejor_arquero", true),
+					);
+					const mejorJugadorJoven = parseInt(
+						interaction.options.getString("mejor_jugador_joven", true),
+					);
+					const mejorGol = parseInt(
+						interaction.options.getString("mejor_gol", true),
+					);
+					const seleccionDecepcion = parseInt(
+						interaction.options.getString("seleccion_decepcion", true),
+					);
+					const seleccionSorpresa = parseInt(
+						interaction.options.getString("seleccion_sorpresa", true),
+					);
+
+					if (
+						[
+							campeon,
+							goleador,
+							mejorJugador,
+							mejorArquero,
+							mejorJugadorJoven,
+							mejorGol,
+							seleccionDecepcion,
+							seleccionSorpresa,
+						].some(Number.isNaN)
+					) {
+						await interaction.editReply({
+							content: "❌ Selecciona los valores desde el autocompletado.",
+						});
+						return;
+					}
+
+					await appContext.services.awards.guardarAwards({
+						usuarioId: interaction.user.id,
+						campeon,
+						goleador,
+						mejorJugador,
+						mejorArquero,
+						mejorJugadorJoven,
+						mejorGol,
+						seleccionDecepcion,
+						seleccionSorpresa,
+					});
+
+					const member =
+						interaction.guild?.members.cache.get(interaction.user.id) ??
+						(await interaction.guild?.members.fetch(interaction.user.id));
+					await member?.roles.add(POLLERO_ROLE_ID);
+
+					await interaction.editReply({
+						content:
+							"✅ Tus predicciones de awards han sido guardadas. ¡Ya eres un Pollero! 🐔",
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"actualizar-awards",
+		{
+			definition: actualizarAwardsCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const query = focused.value.toString();
+
+				if (focused.name === "campeon") {
+					const equipos = await appContext.services.awards.verEquipos();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (focused.name === "seleccion_decepcion") {
+					const equipos =
+						await appContext.services.awards.verEquiposWhiteHorse();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (focused.name === "seleccion_sorpresa") {
+					const equipos =
+						await appContext.services.awards.verEquiposDarkHorse();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (
+					AWARDS_PLAYER_FIELDS.includes(
+						focused.name as (typeof AWARDS_PLAYER_FIELDS)[number],
+					)
+				) {
+					const jugadores =
+						await appContext.services.awards.buscarJugadores(query);
+					const opciones = jugadores.slice(0, 25).map((j) => ({
+						name: `${j.nombre} (${j.equipo_nombre})`,
+						value: String(j.id),
+					}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const campeon = parseInt(
+						interaction.options.getString("campeon", true),
+					);
+					const goleador = parseInt(
+						interaction.options.getString("goleador", true),
+					);
+					const mejorJugador = parseInt(
+						interaction.options.getString("mejor_jugador", true),
+					);
+					const mejorArquero = parseInt(
+						interaction.options.getString("mejor_arquero", true),
+					);
+					const mejorJugadorJoven = parseInt(
+						interaction.options.getString("mejor_jugador_joven", true),
+					);
+					const mejorGol = parseInt(
+						interaction.options.getString("mejor_gol", true),
+					);
+					const seleccionDecepcion = parseInt(
+						interaction.options.getString("seleccion_decepcion", true),
+					);
+					const seleccionSorpresa = parseInt(
+						interaction.options.getString("seleccion_sorpresa", true),
+					);
+					const mejorGolPosicion = interaction.options.getInteger(
+						"mejor_gol_posicion",
+						true,
+					);
+
+					if (
+						[
+							campeon,
+							goleador,
+							mejorJugador,
+							mejorArquero,
+							mejorJugadorJoven,
+							mejorGol,
+							seleccionDecepcion,
+							seleccionSorpresa,
+						].some(Number.isNaN)
+					) {
+						await interaction.editReply({
+							content: "❌ Selecciona los valores desde el autocompletado.",
+						});
+						return;
+					}
+
+					const resumen = await appContext.services.awards.actualizarAwards({
+						campeon,
+						goleador,
+						mejorJugador,
+						mejorArquero,
+						mejorJugadorJoven,
+						mejorGolJugadorId: mejorGol,
+						mejorGolPosicion,
+						seleccionDecepcion,
+						seleccionSorpresa,
+					});
+
+					const lineas = resumen.resultados
+						.filter((r) => r.puntosGanados > 0)
+						.sort((a, b) => b.puntosGanados - a.puntosGanados)
+						.slice(0, 10)
+						.map(
+							(r) =>
+								`**${r.username}**: +${r.puntosGanados}pts (${r.aciertos.join(", ")})`,
+						);
+
+					await interaction.editReply({
+						content: [
+							`✅ Awards del Mundial actualizados. ${resumen.totalUsuarios} usuarios procesados.`,
+							lineas.length > 0
+								? `\n**Top puntuadores:**\n${lineas.join("\n")}`
+								: "",
+						].join(""),
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
 			},
 		},
 	],
