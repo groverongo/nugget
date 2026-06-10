@@ -416,7 +416,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const mensaje = interaction.options.getString("mensaje", true);
 
 				await interaction.reply({ ephemeral: true, content: "✅" });
-				await interaction.channel?.send(mensaje);
+				if (interaction.channel && "send" in interaction.channel) {
+					await interaction.channel.send(mensaje);
+				}
 			},
 		},
 	],
