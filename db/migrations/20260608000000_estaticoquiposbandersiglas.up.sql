@@ -1,5 +1,0 @@
--- UP MIGRATION: 20260608000000_estaticoquiposbandersiglas
-
-ALTER TABLE estatico_equipos
-ADD COLUMN bandera TEXT DEFAULT NULL,
-ADD COLUMN siglas VARCHAR(10) DEFAULT NULL;
