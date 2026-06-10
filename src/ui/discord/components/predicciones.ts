@@ -16,7 +16,7 @@ import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
 
 type MisPrediccionesPorFecha = Awaited<
-	ReturnType<PrediccionesService["verMisPrediccionesPorFecha"]>
+	ReturnType<PrediccionesService["verMisPredicciones"]>
 >;
 type MiPrediccionPorFecha = MisPrediccionesPorFecha[number];
 
@@ -46,20 +46,24 @@ function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 }
 
 export function buildMisPrediccionesComponents(
-	date: string,
+	date: string | null,
 	predicciones: MisPrediccionesPorFecha,
 	fechas: string[],
 ): APIMessageTopLevelComponent[] {
+	const titulo = date
+		? `## Mis predicciones para ${date} (Hora Perú)`
+		: "## Todas mis predicciones";
+
 	const container = new ContainerBuilder().addTextDisplayComponents(
-		new TextDisplayBuilder().setContent(
-			`## Mis predicciones para ${date} (Fechas Peru)`,
-		),
+		new TextDisplayBuilder().setContent(titulo),
 	);
 
 	if (predicciones.length === 0) {
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
-				`No registraste predicciones para la fecha ${date}.`,
+				date
+					? `No registraste predicciones para la fecha ${date}.`
+					: "No has realizado ninguna predicción.",
 			),
 		);
 	} else {

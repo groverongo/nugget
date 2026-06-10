@@ -3,6 +3,10 @@ SELECT
 	partidos.id AS partido_id,
 	el.nombre AS equipo_local_nombre,
 	ev.nombre AS equipo_visitante_nombre,
+	el.siglas AS equipo_local_siglas,
+	ev.siglas AS equipo_visitante_siglas,
+	el.bandera AS equipo_local_bandera,
+	ev.bandera AS equipo_visitante_bandera,
 	el.grupo AS equipo_local_grupo,
 	ev.grupo AS equipo_visitante_grupo,
 	partidos.estado,
@@ -44,9 +48,9 @@ ORDER BY fecha ASC;
 SELECT
     p.id AS partido_id,
     p.fase_id,
+    f.nombre AS fase_nombre,
     f.puntos_base,
     f.puntos_buen_intento,
-    f.es_gran_final,
     el.puntos_fifa AS equipo_local_puntos_fifa,
     ev.puntos_fifa AS equipo_visitante_puntos_fifa
 FROM partidos p

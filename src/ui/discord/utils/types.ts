@@ -1,4 +1,5 @@
 import type {
+	AutocompleteInteraction,
 	ChatInputCommandInteraction,
 	RESTPostAPIApplicationCommandsJSONBody,
 	SlashCommandBuilder,
@@ -11,9 +12,15 @@ export type DiscordCommandHandler = (
 	appContext: AppContext,
 ) => Promise<void>;
 
+export type DiscordAutocompleteHandler = (
+	interaction: AutocompleteInteraction,
+	appContext: AppContext,
+) => Promise<void>;
+
 export type DiscordCommand = {
 	definition: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
 	handle: DiscordCommandHandler;
+	autocomplete?: DiscordAutocompleteHandler;
 };
 
 export type DiscordCommandPayload = RESTPostAPIApplicationCommandsJSONBody;

@@ -29,19 +29,19 @@ export function isValidDateInput(value: string): boolean {
 function formatPartidoLine(partido: PartidoPorFecha): string {
 	const marcador =
 		partido.partidoGolesLocal !== null && partido.partidoGolesVisitante !== null
-			? ` (${partido.partidoGolesLocal}-${partido.partidoGolesVisitante})`
+			? ` **${partido.partidoGolesLocal} - ${partido.partidoGolesVisitante}**`
 			: "";
 
-	const indicadorFecha = {
-		regresivo: partido.fechaPartido
-			? `<t:${partido.fechaPartido.getTime() / 1_000}:R>`
-			: null,
-		local: partido.fechaPartido
-			? `<t:${partido.fechaPartido.getTime() / 1_000}:s>`
-			: null,
-	};
+	const timestamp = partido.fechaPartido
+		? partido.fechaPartido.getTime() / 1_000
+		: null;
 
-	return `${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre} (${indicadorFecha.local}) — ${partido.estado}${marcador} — ${indicadorFecha.regresivo}`;
+	const local = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`;
+	const visitante = `${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`;
+	const hora = timestamp ? `<t:${timestamp}:t>` : "";
+	const regresivo = timestamp ? ` — <t:${timestamp}:R>` : "";
+
+	return `${local} vs ${visitante}${marcador} (${hora})${regresivo}`;
 }
 
 export function buildPartidosComponents(
@@ -49,37 +49,44 @@ export function buildPartidosComponents(
 	partidos: PartidosPorFecha,
 	fechas: string[],
 ): APIMessageTopLevelComponent[] {
-	if (partidos.length === 0) {
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(`## Partidos para ${date} (Hora Perú)`),
+	);
+
+	const partidosMostrar = partidos.filter((p) => p.estado !== "finalizado");
+
+	if (partidosMostrar.length === 0) {
 		return [
 			new ContainerBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`# Partidos para ${date}\nNo hay partidos para la fecha ${date}.`,
+						`# Partidos para ${date}\nNo hay partidos pendientes para la fecha ${date}.`,
 					),
 				)
 				.toJSON(),
 		];
 	}
 
-	const container = new ContainerBuilder().addTextDisplayComponents(
-		new TextDisplayBuilder().setContent(
-			`## Partidos para ${date} (Fechas Peru)`,
-		),
-	);
-
-	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+	for (const partido of partidosMostrar.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		const enVivo = partido.estado === "medio_tiempo";
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
 				)
 				.setButtonAccessory(
-					new ButtonBuilder()
-						.setCustomId(
-							`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
-						)
-						.setLabel("Predecir")
-						.setStyle(ButtonStyle.Primary),
+					enVivo
+						? new ButtonBuilder()
+								.setCustomId(`noop:${partido.partidoId}`)
+								.setLabel("🔴 En vivo")
+								.setStyle(ButtonStyle.Secondary)
+								.setDisabled(true)
+						: new ButtonBuilder()
+								.setCustomId(
+									`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+								)
+								.setLabel("Predecir")
+								.setStyle(ButtonStyle.Primary),
 				),
 		);
 

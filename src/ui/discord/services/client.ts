@@ -5,6 +5,7 @@ import z from "zod";
 import type { AppContext } from "../../../app";
 import { discordCommandPayloads } from "../commands";
 import {
+	handleAutocompleteInteraction,
 	handleCommandInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
@@ -54,6 +55,11 @@ export function registerDiscordEventHandlers(
 
 	client.on(Events.InteractionCreate, async (interaction) => {
 		try {
+			if (interaction.isAutocomplete()) {
+				await handleAutocompleteInteraction(interaction, appContext);
+				return;
+			}
+
 			if (interaction.isChatInputCommand()) {
 				await handleCommandInteraction(interaction, appContext);
 				return;
