@@ -11,7 +11,7 @@ import {
 	TextDisplayBuilder,
 } from "discord.js";
 import type { PartidosService } from "../../../service/partidos.service";
-import { formatearFechaLegible } from "../utils/fecha";
+import { fechaADiscordTimestamp } from "../utils/fecha";
 
 type PartidosPorFecha = Awaited<
 	ReturnType<PartidosService["verPartidosPorFecha"]>
@@ -52,7 +52,7 @@ export function buildPartidosComponents(
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
-			`## Partidos del ${formatearFechaLegible(date)} (Hora Perú)`,
+			`## Partidos del <t:${fechaADiscordTimestamp(date)}:D> (Hora Perú)`,
 		),
 	);
 
@@ -63,7 +63,7 @@ export function buildPartidosComponents(
 			new ContainerBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`# Partidos del ${formatearFechaLegible(date)}\nNo hay partidos pendientes para esta fecha.`,
+						`# Partidos del <t:${fechaADiscordTimestamp(date)}:D>\nNo hay partidos pendientes para esta fecha.`,
 					),
 				)
 				.toJSON(),

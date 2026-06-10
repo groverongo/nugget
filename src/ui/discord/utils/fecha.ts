@@ -1,32 +1,5 @@
-const DIAS = [
-	"Domingo",
-	"Lunes",
-	"Martes",
-	"Miércoles",
-	"Jueves",
-	"Viernes",
-	"Sábado",
-];
-
-const MESES = [
-	"enero",
-	"febrero",
-	"marzo",
-	"abril",
-	"mayo",
-	"junio",
-	"julio",
-	"agosto",
-	"septiembre",
-	"octubre",
-	"noviembre",
-	"diciembre",
-];
-
-export function formatearFechaLegible(yyyymmdd: string): string {
-	const [year, month, day] = yyyymmdd.split("-").map(Number);
-	const date = new Date(year, month - 1, day);
-	return `${DIAS[date.getDay()]} ${day} de ${MESES[month - 1]}`;
+export function fechaADiscordTimestamp(yyyymmdd: string): number {
+	return Math.floor(new Date(`${yyyymmdd}T12:00:00Z`).getTime() / 1000);
 }
 
 export const obtenerYYYYMMDDPeru = () => {
