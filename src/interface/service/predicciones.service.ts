@@ -11,7 +11,9 @@ import type {
 } from "@sqlc/predicciones_sql";
 
 export interface IPrediccionesService {
-	guardarPrediccion(args: AgregarPrediccionArgs): Promise<void>;
+	guardarPrediccion(
+		args: AgregarPrediccionArgs,
+	): Promise<"created" | "updated">;
 
 	verPrediccionesPorPartido(
 		args: VerPrediccionesPorPartidoArgs,

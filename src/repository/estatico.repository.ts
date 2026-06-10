@@ -9,7 +9,10 @@ import {
 	buscarJugadores,
 	type VerJugadoresPorEquipoArgs,
 	type VerJugadoresPorEquipoRow,
+	type VerJugadoresPorIdsArgs,
+	type VerJugadoresPorIdsRow,
 	verJugadoresPorEquipo,
+	verJugadoresPorIds,
 } from "@sqlc/jugadores_sql";
 import {
 	type VerPuntosMejorGolPorPosicionRow,
@@ -51,6 +54,12 @@ export class EstaticoRepository implements IEstaticoRepository {
 
 	buscarJugadores(args: BuscarJugadoresArgs): Promise<BuscarJugadoresRow[]> {
 		return buscarJugadores(this.pool, args);
+	}
+
+	verJugadoresPorIds(
+		args: VerJugadoresPorIdsArgs,
+	): Promise<VerJugadoresPorIdsRow[]> {
+		return verJugadoresPorIds(this.pool, args);
 	}
 
 	verPuntosMejorGolPorPosicion(

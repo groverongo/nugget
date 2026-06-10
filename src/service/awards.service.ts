@@ -3,12 +3,14 @@ import type {
 	BuscarJugadoresRow,
 	VerJugadoresPorEquipoRow,
 } from "@sqlc/jugadores_sql";
+import { config } from "@support/config";
 import type { TxManager } from "@support/db.provider";
 import type { IAwardsRepository } from "../interface/repository/awards.repository";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type {
 	GuardarAwardsInput,
 	IAwardsService,
+	MisAwardsResueltos,
 	ResultadosAwards,
 	ResumenActualizacionAwards,
 } from "../interface/service/awards.service";
@@ -20,7 +22,20 @@ export class AwardsService implements IAwardsService {
 		private readonly txManager: TxManager,
 	) {}
 
-	async guardarAwards(input: GuardarAwardsInput): Promise<void> {
+	async guardarAwards(
+		input: GuardarAwardsInput,
+	): Promise<"created" | "updated"> {
+		const fechaInicio = new Date(config.polla.fecha_inicio_torneo);
+		if (Date.now() >= fechaInicio.getTime()) {
+			throw new Error("Las predicciones de awards ya están cerradas.");
+		}
+
+		const existing = await this.awardsRepo.verAwardsDeUsuario({
+			id: input.usuarioId,
+		});
+		const eraVacio =
+			!existing || Object.values(existing).every((v) => v === null);
+
 		await this.awardsRepo.guardarAwards({
 			id: input.usuarioId,
 			award_campeon: input.campeon,
@@ -32,6 +47,58 @@ export class AwardsService implements IAwardsService {
 			award_seleccion_decepcion: input.seleccionDecepcion,
 			award_seleccion_sorpresa: input.seleccionSorpresa,
 		});
+
+		return eraVacio ? "created" : "updated";
+	}
+
+	async verMisAwards(usuarioId: string): Promise<MisAwardsResueltos | null> {
+		const raw = await this.awardsRepo.verAwardsDeUsuario({ id: usuarioId });
+		if (!raw || Object.values(raw).every((v) => v === null)) {
+			return null;
+		}
+
+		const equipos = await this.estaticoRepo.verEquipos({
+			blanco: null,
+			negro: null,
+		});
+		const equipoMap = new Map(equipos.map((e) => [e.id, e.nombre]));
+
+		const playerIds = [
+			raw.award_goleador,
+			raw.award_mejor_jugador,
+			raw.award_mejor_arquero,
+			raw.award_mejor_jugador_joven,
+			raw.award_mejor_gol,
+		].filter((id): id is number => id !== null);
+
+		const jugadores =
+			playerIds.length > 0
+				? await this.estaticoRepo.verJugadoresPorIds({ ids: playerIds })
+				: [];
+		const jugadorMap = new Map(jugadores.map((j) => [j.id, j]));
+
+		const resolveJugador = (id: number | null): string | null => {
+			if (id === null) return null;
+			const j = jugadorMap.get(id);
+			return j ? `${j.nombre} (${j.equipo_nombre})` : null;
+		};
+
+		return {
+			campeon: raw.award_campeon
+				? (equipoMap.get(raw.award_campeon) ?? null)
+				: null,
+			goleador: resolveJugador(raw.award_goleador),
+			mejorJugador: resolveJugador(raw.award_mejor_jugador),
+			mejorArquero: resolveJugador(raw.award_mejor_arquero),
+			mejorJugadorJoven: resolveJugador(raw.award_mejor_jugador_joven),
+			mejorGol: resolveJugador(raw.award_mejor_gol),
+			seleccionDecepcion: raw.award_seleccion_decepcion
+				? (equipoMap.get(raw.award_seleccion_decepcion) ?? null)
+				: null,
+			seleccionSorpresa: raw.award_seleccion_sorpresa
+				? (equipoMap.get(raw.award_seleccion_sorpresa) ?? null)
+				: null,
+		};
 	}
 
 	async actualizarAwards(

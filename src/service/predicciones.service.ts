@@ -23,7 +23,9 @@ export class PrediccionesService implements IPrediccionesService {
 		private readonly txManager: TxManager,
 	) {}
 
-	async guardarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
+	async guardarPrediccion(
+		args: AgregarPrediccionArgs,
+	): Promise<"created" | "updated"> {
 		const partido: ObtenerPartidoRow | null =
 			await this.partidosRepo.obtenerPartido({ id: args.partidoId });
 		await this.assertPartidoNoIniciado(partido);
@@ -36,10 +38,11 @@ export class PrediccionesService implements IPrediccionesService {
 
 		if (prediccionExistente) {
 			await this.prediccionesRepo.actualizarPrediccion(args);
-			return;
+			return "updated";
 		}
 
 		await this.prediccionesRepo.agregarPrediccion(args);
+		return "created";
 	}
 
 	verPrediccionesPorPartido(

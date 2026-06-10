@@ -1,3 +1,4 @@
+import { config } from "@support/config";
 import { logger } from "@support/logger";
 import {
 	ActionRowBuilder,
@@ -8,6 +9,7 @@ import {
 	ModalBuilder,
 	type ModalSubmitInteraction,
 	type StringSelectMenuInteraction,
+	type TextBasedChannel,
 	TextInputBuilder,
 	TextInputStyle,
 } from "discord.js";
@@ -157,7 +159,7 @@ export async function handlePrediccionModalSubmitInteraction(
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		await appContext.services.predicciones.guardarPrediccion({
+		const resultado = await appContext.services.predicciones.guardarPrediccion({
 			usuarioId: interaction.user.id,
 			partidoId,
 			golesLocal: golesLocalParsed.data,
@@ -166,6 +168,13 @@ export async function handlePrediccionModalSubmitInteraction(
 
 		await interaction.editReply(
 			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}.`,
+		);
+
+		await sendAnnouncementChannel(
+			interaction.client,
+			resultado === "created"
+				? `🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!`
+				: `✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!`,
 		);
 	} catch (error) {
 		logger.error(
@@ -324,5 +333,31 @@ export async function handleCommandInteraction(
 		}
 
 		await interaction.reply(errorReply);
+	}
+}
+
+export async function sendAnnouncementChannel(
+	client: {
+		channels: {
+			cache: { get(id: string): unknown };
+			fetch(id: string): Promise<unknown>;
+		};
+	},
+	message: string,
+): Promise<void> {
+	const channelId = config.discord.announcements_channel_id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "send" in channel) {
+			await channel.send(message);
+		}
+	} catch (error) {
+		logger.error({ err: error }, "Error enviando anuncio al canal");
 	}
 }

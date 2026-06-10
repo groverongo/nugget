@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { buildPartidosComponents } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
+import { sendAnnouncementChannel } from "../handlers/interactions";
 import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
@@ -120,6 +121,11 @@ const misPrediccionesCommand = new SlashCommandBuilder()
 			.setDescription("(Opcional) Fecha en formato YYYY-MM-DD para Peru")
 			.setRequired(false),
 	)
+	.setContexts(InteractionContextType.Guild);
+
+const misAwardsCommand = new SlashCommandBuilder()
+	.setName("mis-awards")
+	.setDescription("Muestra tus predicciones de awards del Mundial 2026")
 	.setContexts(InteractionContextType.Guild);
 
 const predecirAwardsCommand = new SlashCommandBuilder()
@@ -501,6 +507,41 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		},
 	],
 	[
+		"mis-awards",
+		{
+			definition: misAwardsCommand,
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				const awards = await appContext.services.awards.verMisAwards(
+					interaction.user.id,
+				);
+
+				if (!awards) {
+					await interaction.editReply({
+						content: "Aún no has enviado tus predicciones de awards.",
+					});
+					return;
+				}
+
+				const lineas = [
+					`🏆 **Campeón:** ${awards.campeon ?? "—"}`,
+					`⚽ **Goleador:** ${awards.goleador ?? "—"}`,
+					`🌟 **Mejor Jugador (Balón de Oro):** ${awards.mejorJugador ?? "—"}`,
+					`🧤 **Mejor Arquero (Guante de Oro):** ${awards.mejorArquero ?? "—"}`,
+					`🌱 **Mejor Jugador Joven:** ${awards.mejorJugadorJoven ?? "—"}`,
+					`💫 **Mejor Gol (Puskás):** ${awards.mejorGol ?? "—"}`,
+					`💀 **Selección Decepción (White Horse):** ${awards.seleccionDecepcion ?? "—"}`,
+					`🐴 **Selección Sorpresa (Dark Horse):** ${awards.seleccionSorpresa ?? "—"}`,
+				];
+
+				await interaction.editReply({
+					content: `**Tus predicciones de Awards del Mundial 2026:**\n${lineas.join("\n")}`,
+				});
+			},
+		},
+	],
+	[
 		"predecir-awards",
 		{
 			definition: predecirAwardsCommand,
@@ -592,7 +633,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						return;
 					}
 
-					await appContext.services.awards.guardarAwards({
+					const resultado = await appContext.services.awards.guardarAwards({
 						usuarioId: interaction.user.id,
 						campeon,
 						goleador,
@@ -613,6 +654,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content:
 							"✅ Tus predicciones de awards han sido guardadas. ¡Ya eres un Pollero! 🐔",
 					});
+
+					await sendAnnouncementChannel(
+						interaction.client,
+						resultado === "created"
+							? `🎯 ¡<@${interaction.user.id}> ha enviado sus predicciones de Awards del Mundial!`
+							: `✏️ ¡<@${interaction.user.id}> ha actualizado sus predicciones de Awards del Mundial!`,
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,

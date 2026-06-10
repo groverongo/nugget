@@ -4,6 +4,8 @@ import type {
 	BuscarJugadoresRow,
 	VerJugadoresPorEquipoArgs,
 	VerJugadoresPorEquipoRow,
+	VerJugadoresPorIdsArgs,
+	VerJugadoresPorIdsRow,
 } from "@sqlc/jugadores_sql";
 import type { VerPuntosMejorGolPorPosicionRow } from "@sqlc/mejor_gol_sql";
 import type { AgregarPuestoPremioArgs } from "@sqlc/usuarios_sql";
@@ -19,6 +21,9 @@ export interface IEstaticoRepository {
 		args: VerJugadoresPorEquipoArgs,
 	): Promise<VerJugadoresPorEquipoRow[]>;
 	buscarJugadores(args: BuscarJugadoresArgs): Promise<BuscarJugadoresRow[]>;
+	verJugadoresPorIds(
+		args: VerJugadoresPorIdsArgs,
+	): Promise<VerJugadoresPorIdsRow[]>;
 	verPuntosMejorGolPorPosicion(
 		posicion: number,
 	): Promise<VerPuntosMejorGolPorPosicionRow | null>;
