@@ -1,2 +1,0 @@
-ALTER TABLE estatico_fases
-    ADD COLUMN IF NOT EXISTS es_gran_final BOOLEAN NOT NULL DEFAULT FALSE;
