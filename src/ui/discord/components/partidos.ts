@@ -52,7 +52,7 @@ export function buildPartidosComponents(
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
-			`## Partidos del <t:${fechaADiscordTimestamp(date)}:D> (Hora Perú)`,
+			`## Partidos del <t:${fechaADiscordTimestamp(date)}:D>`,
 		),
 	);
 

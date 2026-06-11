@@ -42,7 +42,7 @@ function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 		`Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}`,
 		formatMarcadorReal(prediccion),
 		`Estado: ${prediccion.estado}`,
-		`Hora Perú: ${fechaPartido}`,
+		fechaPartido,
 	].join("\n");
 }
 
@@ -52,7 +52,7 @@ export function buildMisPrediccionesComponents(
 	fechas: string[],
 ): APIMessageTopLevelComponent[] {
 	const titulo = date
-		? `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D> (Hora Perú)`
+		? `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D>`
 		: "## Todas mis predicciones";
 
 	const container = new ContainerBuilder().addTextDisplayComponents(
