@@ -170,3 +170,65 @@ export async function sumarPuntosAward(client: Client, args: SumarPuntosAwardArg
         rowMode: "array"
     });
 }
+
+export const verPrediccionesAwardsQuery = `-- name: VerPrediccionesAwards :many
+SELECT
+    u.id AS usuario_id,
+    ec.nombre AS campeon_nombre,
+    ec.bandera AS campeon_bandera,
+    jg.nombre AS goleador_nombre,
+    jmj.nombre AS mejor_jugador_nombre,
+    jma.nombre AS mejor_arquero_nombre,
+    jmjj.nombre AS mejor_jugador_joven_nombre,
+    jmg.nombre AS mejor_gol_nombre,
+    esd.nombre AS seleccion_decepcion_nombre,
+    esd.bandera AS seleccion_decepcion_bandera,
+    ess.nombre AS seleccion_sorpresa_nombre,
+    ess.bandera AS seleccion_sorpresa_bandera
+FROM usuarios u
+JOIN estatico_equipos ec ON ec.id = u.award_campeon
+JOIN estatico_jugadores jg ON jg.id = u.award_goleador
+JOIN estatico_jugadores jmj ON jmj.id = u.award_mejor_jugador
+JOIN estatico_jugadores jma ON jma.id = u.award_mejor_arquero
+JOIN estatico_jugadores jmjj ON jmjj.id = u.award_mejor_jugador_joven
+JOIN estatico_jugadores jmg ON jmg.id = u.award_mejor_gol
+JOIN estatico_equipos esd ON esd.id = u.award_seleccion_decepcion
+JOIN estatico_equipos ess ON ess.id = u.award_seleccion_sorpresa
+WHERE u.participante = TRUE AND u.award_campeon IS NOT NULL`;
+
+export interface VerPrediccionesAwardsRow {
+    usuarioId: string;
+    campeonNombre: string;
+    campeonBandera: string;
+    goleadorNombre: string;
+    mejorJugadorNombre: string;
+    mejorArqueroNombre: string;
+    mejorJugadorJovenNombre: string;
+    mejorGolNombre: string;
+    seleccionDecepcionNombre: string;
+    seleccionDecepcionBandera: string;
+    seleccionSorpresaNombre: string;
+    seleccionSorpresaBandera: string;
+}
+
+export async function verPrediccionesAwards(client: Client): Promise<VerPrediccionesAwardsRow[]> {
+    const result = await client.query({
+        text: verPrediccionesAwardsQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        usuarioId: row[0],
+        campeonNombre: row[1],
+        campeonBandera: row[2],
+        goleadorNombre: row[3],
+        mejorJugadorNombre: row[4],
+        mejorArqueroNombre: row[5],
+        mejorJugadorJovenNombre: row[6],
+        mejorGolNombre: row[7],
+        seleccionDecepcionNombre: row[8],
+        seleccionDecepcionBandera: row[9],
+        seleccionSorpresaNombre: row[10],
+        seleccionSorpresaBandera: row[11],
+    }));
+}

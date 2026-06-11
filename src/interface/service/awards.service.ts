@@ -1,3 +1,4 @@
+import type { VerPrediccionesAwardsRow } from "@sqlc/awards_sql";
 import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	BuscarJugadoresRow,
@@ -60,4 +61,5 @@ export interface IAwardsService {
 	verEquipos(): Promise<VerEquiposRow[]>;
 	buscarJugadores(query: string): Promise<BuscarJugadoresRow[]>;
 	verJugadoresPorEquipo(equipoId: number): Promise<VerJugadoresPorEquipoRow[]>;
+	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]>;
 }
