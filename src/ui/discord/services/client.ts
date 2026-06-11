@@ -12,6 +12,7 @@ import {
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
+import { MatchScheduler } from "./match-scheduler";
 
 z.config(z.locales.es());
 
@@ -42,6 +43,8 @@ export function registerDiscordEventHandlers(
 	client.once(Events.ClientReady, async (readyClient) => {
 		try {
 			await registerApplicationCommands(readyClient);
+			const scheduler = new MatchScheduler(appContext.services, readyClient);
+			await scheduler.init();
 			logger.info({ user: readyClient.user.tag }, "Discord bot listo");
 		} catch (error) {
 			logger.error(
