@@ -11,7 +11,10 @@ import {
 	buildPartidosComponents,
 } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
-import { sendAnnouncementChannel } from "../handlers/interactions";
+import {
+	sendAlertsChannel,
+	sendAnnouncementChannel,
+} from "../handlers/interactions";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
@@ -445,13 +448,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					]);
 
 					if (info) {
-						await sendAnnouncementChannel(
+						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaFinPartido(info, predicciones),
 						);
 						const mensajeAura = buildAlertaAuraPoints(puntajes);
 						if (mensajeAura) {
-							await sendAnnouncementChannel(interaction.client, mensajeAura);
+							await sendAlertsChannel(interaction.client, mensajeAura);
 						}
 					}
 				} catch (error) {
@@ -517,7 +520,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					]);
 
 					if (info) {
-						await sendAnnouncementChannel(
+						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaMedioTiempo(info, predicciones),
 						);

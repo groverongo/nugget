@@ -21,6 +21,11 @@ const ConfigSchema = z.object({
 				id: z.string().min(1),
 			}),
 		}),
+		alerts: z.object({
+			channel: z.object({
+				id: z.string().default(""),
+			}),
+		}),
 	}),
 	polla: z.object({
 		costo_entrada: z.number(),
@@ -44,6 +49,11 @@ const DEFAULT_CONFIG: Config = {
 			id: [],
 		},
 		announcements: {
+			channel: {
+				id: "",
+			},
+		},
+		alerts: {
 			channel: {
 				id: "",
 			},

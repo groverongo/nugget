@@ -3,7 +3,7 @@ import { config } from "@support/config";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
-import { sendAnnouncementChannel } from "../handlers/interactions";
+import { sendAlertsChannel } from "../handlers/interactions";
 
 type Services = AppContext["services"];
 
@@ -112,6 +112,6 @@ export class AwardsScheduler {
 
 	private async fireAlerta(): Promise<void> {
 		const rows = await this.services.awards.verPrediccionesAwards();
-		await sendAnnouncementChannel(this.client, buildAlertaAwards(rows));
+		await sendAlertsChannel(this.client, buildAlertaAwards(rows));
 	}
 }

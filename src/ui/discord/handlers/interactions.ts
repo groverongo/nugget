@@ -544,16 +544,18 @@ export async function handleCommandInteraction(
 	}
 }
 
-export async function sendAnnouncementChannel(
-	client: {
-		channels: {
-			cache: { get(id: string): unknown };
-			fetch(id: string): Promise<unknown>;
-		};
-	},
+type DiscordClient = {
+	channels: {
+		cache: { get(id: string): unknown };
+		fetch(id: string): Promise<unknown>;
+	};
+};
+
+async function sendToChannel(
+	client: DiscordClient,
+	channelId: string,
 	message: string,
 ): Promise<void> {
-	const channelId = config.discord.announcements.channel.id;
 	if (!channelId) return;
 
 	try {
@@ -566,6 +568,24 @@ export async function sendAnnouncementChannel(
 			await channel.send(message);
 		}
 	} catch (error) {
-		logger.error({ err: error }, "Error enviando anuncio al canal");
+		logger.error({ err: error, channelId }, "Error enviando mensaje al canal");
 	}
+}
+
+export function sendAnnouncementChannel(
+	client: DiscordClient,
+	message: string,
+): Promise<void> {
+	return sendToChannel(
+		client,
+		config.discord.announcements.channel.id,
+		message,
+	);
+}
+
+export function sendAlertsChannel(
+	client: DiscordClient,
+	message: string,
+): Promise<void> {
+	return sendToChannel(client, config.discord.alerts.channel.id, message);
 }
