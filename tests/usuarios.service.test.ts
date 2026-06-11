@@ -18,15 +18,14 @@ function createTxManagerMock(
 	} as unknown as TxManager;
 }
 
-function createUsuariosRepositoryMock(
-	count = 3,
-): jest.Mocked<IUsuariosRepository> {
+function createUsuariosRepositoryMock(): jest.Mocked<IUsuariosRepository> {
 	const repo = {
 		create: jest.fn().mockResolvedValue(undefined),
 		delete: jest.fn().mockResolvedValue(undefined),
 		list: jest.fn().mockResolvedValue([]),
 		updateUsername: jest.fn().mockResolvedValue(undefined),
-		count: jest.fn().mockResolvedValue(count),
+		actualizarParticipante: jest.fn().mockResolvedValue(undefined),
+		count: jest.fn().mockResolvedValue(0),
 		withTx: jest.fn(),
 	} as unknown as jest.Mocked<IUsuariosRepository>;
 
@@ -83,105 +82,56 @@ describe("UsuariosService", () => {
 		});
 	});
 
-	it("createUsuario runs repository updates inside a transaction and rebuilds prize distribution", async () => {
-		const usuariosRepo = createUsuariosRepositoryMock(3);
+	it("createUsuario delegates directly to usuariosRepo.create", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock();
 		const estaticoRepo = createEstaticoRepositoryMock();
-		const tx = {} as PoolClient;
-		const txManager = createTxManagerMock(async (fn) => {
-			await fn(tx);
-		});
+		const txManager = createTxManagerMock();
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
 		const args = { id: "user-1", username: "alice" };
-		const expectedCreateArgs = {
-			id: "user-1",
-			username: "alice",
-		};
-		const expectedEntries = generarPremiosPolla(3).listaPremios.flatMap(
-			(puesto) => {
-				const entries = [] as Array<{ premio: string; puesto: number }>;
-
-				for (let i = puesto.min; i < puesto.max + 1; i++) {
-					entries.push({
-						premio: puesto.premio.toString(),
-						puesto: i,
-					});
-				}
-
-				return entries;
-			},
-		);
 
 		await service.createUsuario(args);
 
-		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
-		expect(usuariosRepo.withTx).toHaveBeenCalledWith(tx);
-		expect(usuariosRepo.create).toHaveBeenCalledWith(expectedCreateArgs);
-		expect(usuariosRepo.count).toHaveBeenCalledTimes(1);
-		expect(estaticoRepo.withTx).toHaveBeenCalledWith(tx);
-		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
-		expect(estaticoRepo.agregarEntradaDistribucionPremio).toHaveBeenCalledWith(
-			expectedEntries,
-		);
+		expect(usuariosRepo.create).toHaveBeenCalledWith(args);
+		expect(txManager.runInTx).not.toHaveBeenCalled();
+		expect(estaticoRepo.limpiezaDistribucionPremios).not.toHaveBeenCalled();
 	});
 
-	it("createUsuario does not resolve before the transaction work finishes", async () => {
+	it("deleteUsuario delegates directly to usuariosRepo.delete", async () => {
 		const usuariosRepo = createUsuariosRepositoryMock();
 		const estaticoRepo = createEstaticoRepositoryMock();
-		let releaseTransaction!: () => void;
-		const transactionFinished = new Promise<void>((resolve) => {
-			releaseTransaction = resolve;
-		});
-		const txManager = createTxManagerMock(async (fn) => {
-			await fn({} as PoolClient);
-			await transactionFinished;
-		});
+		const txManager = createTxManagerMock();
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
+		const args = { id: "user-1" };
 
-		let resolved = false;
-		const pending = service
-			.createUsuario({ id: "user-2", username: "bob" })
-			.then(() => {
-				resolved = true;
-			});
+		await service.deleteUsuario(args);
 
-		await Promise.resolve();
-		expect(resolved).toBe(false);
-
-		releaseTransaction();
-		await pending;
-		expect(resolved).toBe(true);
+		expect(usuariosRepo.delete).toHaveBeenCalledWith(args);
+		expect(txManager.runInTx).not.toHaveBeenCalled();
+		expect(estaticoRepo.limpiezaDistribucionPremios).not.toHaveBeenCalled();
 	});
 
-	it("deleteUsuario runs repository updates inside a transaction and rebuilds prize distribution", async () => {
-		const usuariosRepo = createUsuariosRepositoryMock(2);
+	it("recalcularPremios runs inside a transaction and rebuilds prize distribution", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock();
 		const estaticoRepo = createEstaticoRepositoryMock();
 		const tx = {} as PoolClient;
 		const txManager = createTxManagerMock(async (fn) => {
 			await fn(tx);
 		});
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
-		const args = { id: "user-1" };
-		const expectedEntries = generarPremiosPolla(2).listaPremios.flatMap(
+		const polleroCount = 3;
+		const expectedEntries = generarPremiosPolla(polleroCount).listaPremios.flatMap(
 			(puesto) => {
 				const entries = [] as Array<{ premio: string; puesto: number }>;
-
-				for (let i = puesto.min; i < puesto.max + 1; i++) {
-					entries.push({
-						premio: puesto.premio.toString(),
-						puesto: i,
-					});
+				for (let i = puesto.min; i <= puesto.max; i++) {
+					entries.push({ premio: puesto.premio.toString(), puesto: i });
 				}
-
 				return entries;
 			},
 		);
 
-		await service.deleteUsuario(args);
+		await service.recalcularPremios(polleroCount);
 
 		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
-		expect(usuariosRepo.withTx).toHaveBeenCalledWith(tx);
-		expect(usuariosRepo.delete).toHaveBeenCalledWith(args);
-		expect(usuariosRepo.count).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.withTx).toHaveBeenCalledWith(tx);
 		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.agregarEntradaDistribucionPremio).toHaveBeenCalledWith(
@@ -189,29 +139,16 @@ describe("UsuariosService", () => {
 		);
 	});
 
-	it("deleteUsuario does not resolve before the transaction work finishes", async () => {
+	it("recalcularPremios with 0 polleros only clears the table", async () => {
 		const usuariosRepo = createUsuariosRepositoryMock();
 		const estaticoRepo = createEstaticoRepositoryMock();
-		let releaseTransaction!: () => void;
-		const transactionFinished = new Promise<void>((resolve) => {
-			releaseTransaction = resolve;
-		});
-		const txManager = createTxManagerMock(async (fn) => {
-			await fn({} as PoolClient);
-			await transactionFinished;
-		});
+		const txManager = createTxManagerMock();
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
 
-		let resolved = false;
-		const pending = service.deleteUsuario({ id: "user-2" }).then(() => {
-			resolved = true;
-		});
+		await service.recalcularPremios(0);
 
-		await Promise.resolve();
-		expect(resolved).toBe(false);
-
-		releaseTransaction();
-		await pending;
-		expect(resolved).toBe(true);
+		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
+		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
+		expect(estaticoRepo.agregarEntradaDistribucionPremio).not.toHaveBeenCalled();
 	});
 });
