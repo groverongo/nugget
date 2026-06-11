@@ -1,4 +1,6 @@
 import {
+	type ActualizarStatsUsuarioArgs,
+	actualizarStatsUsuario,
 	type CreateUsuarioArgs,
 	countUsuarios,
 	createUsuario,
@@ -32,6 +34,10 @@ export class UsuariosRepository implements IUsuariosRepository {
 
 	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void> {
 		return updateUsuarioParticipante(this.pool, args);
+	}
+
+	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void> {
+		return actualizarStatsUsuario(this.pool, args);
 	}
 
 	async count(): Promise<number> {

@@ -1,4 +1,5 @@
 import type {
+	ActualizarStatsUsuarioArgs,
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
@@ -17,6 +18,8 @@ export interface IUsuariosRepository {
 	updateUsername(args: UpdateUsuarioUsernameArgs): Promise<void>;
 
 	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void>;
+
+	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void>;
 
 	count(): Promise<number>;
 

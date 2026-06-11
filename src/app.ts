@@ -40,6 +40,7 @@ export function createAppContext(): AppContext {
 	const adminService = new AdminService(
 		partidosRepository,
 		prediccionesRepository,
+		usuariosRepository,
 		txManager,
 	);
 	const awardsService = new AwardsService(

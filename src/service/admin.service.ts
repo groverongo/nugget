@@ -1,6 +1,7 @@
 import type { TxManager } from "@support/db.provider";
 import type { IPartidosRepository } from "../interface/repository/partidos.repository";
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
+import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type {
 	IAdminService,
 	ResumenActualizacion,
@@ -10,6 +11,7 @@ export class AdminService implements IAdminService {
 	constructor(
 		private readonly partidosRepo: IPartidosRepository,
 		private readonly prediccionesRepo: IPrediccionesRepository,
+		private readonly usuariosRepo: IUsuariosRepository,
 		private readonly txManager: TxManager,
 	) {}
 
@@ -22,6 +24,7 @@ export class AdminService implements IAdminService {
 		return this.txManager.runInTx(async (tx) => {
 			const partidoRepo = this.partidosRepo.withTx(tx);
 			const predRepo = this.prediccionesRepo.withTx(tx);
+			const usuariosRepo = this.usuariosRepo.withTx(tx);
 
 			const info = await partidoRepo.verPartidoParaCalculo({
 				id: args.partidoId,
@@ -95,6 +98,7 @@ export class AdminService implements IAdminService {
 						if (r.resultado === "exacto") racha++;
 						else break;
 					}
+					const nuevaRacha = racha + 1;
 					const puntosEnRacha = Math.min(racha, info.puntosBase);
 
 					const puntosBase = info.puntosBase;
@@ -123,6 +127,14 @@ export class AdminService implements IAdminService {
 						puntosGranFinal,
 						puntosTotal,
 					});
+
+					await usuariosRepo.actualizarStats({
+						id: pred.usuarioId,
+						partidosGanados: 1,
+						partidosPerdidos: 0,
+						puntos: puntosTotal,
+						racha: nuevaRacha,
+					});
 				} else if (esBuenIntento) {
 					const puntosBase = info.puntosBuenIntento;
 					await predRepo.actualizarPuntajePrediccion({
@@ -138,6 +150,14 @@ export class AdminService implements IAdminService {
 						puntosGranFinal: 0,
 						puntosTotal: puntosBase,
 					});
+
+					await usuariosRepo.actualizarStats({
+						id: pred.usuarioId,
+						partidosGanados: 0,
+						partidosPerdidos: 1,
+						puntos: puntosBase,
+						racha: 0,
+					});
 				} else {
 					await predRepo.actualizarPuntajePrediccion({
 						usuarioId: pred.usuarioId,
@@ -151,6 +171,14 @@ export class AdminService implements IAdminService {
 						puntosElElegido: 0,
 						puntosGranFinal: 0,
 						puntosTotal: 0,
+					});
+
+					await usuariosRepo.actualizarStats({
+						id: pred.usuarioId,
+						partidosGanados: 0,
+						partidosPerdidos: 1,
+						puntos: 0,
+						racha: 0,
 					});
 				}
 			}
