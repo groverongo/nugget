@@ -15,6 +15,20 @@ import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 const POLLERO_ROLE_ID = "1513773724074250350";
 
+async function assertPollero(
+	interaction: import("discord.js").ChatInputCommandInteraction,
+): Promise<boolean> {
+	const member =
+		interaction.guild?.members.cache.get(interaction.user.id) ??
+		(await interaction.guild?.members.fetch(interaction.user.id));
+	if (member?.roles.cache.has(POLLERO_ROLE_ID)) return true;
+	await interaction.reply({
+		content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+		ephemeral: true,
+	});
+	return false;
+}
+
 const AWARDS_PLAYER_FIELDS = [
 	"goleador",
 	"mejor_jugador",
@@ -431,6 +445,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: partidosCommand,
 			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
 				await interaction.deferReply();
 
 				const fechas = await appContext.services.partidos.verFechasDePartidos();
@@ -459,6 +474,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: misPrediccionesCommand,
 			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
 				const fechaInput = interaction.options.getString("fecha");
 
 				if (fechaInput !== null) {
@@ -511,6 +527,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: misAwardsCommand,
 			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
 				await interaction.deferReply({ ephemeral: true });
 
 				const awards = await appContext.services.awards.verMisAwards(
