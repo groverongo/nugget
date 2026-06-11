@@ -6,7 +6,9 @@ import {
 	deleteUsuario,
 	type ListUsuariosRow,
 	listUsuarios,
+	type UpdateUsuarioParticipanteArgs,
 	type UpdateUsuarioUsernameArgs,
+	updateUsuarioParticipante,
 	updateUsuarioUsername,
 } from "@sqlc/usuarios_sql";
 import type { Pool, PoolClient } from "pg";
@@ -26,6 +28,10 @@ export class UsuariosRepository implements IUsuariosRepository {
 
 	updateUsername(args: UpdateUsuarioUsernameArgs): Promise<void> {
 		return updateUsuarioUsername(this.pool, args);
+	}
+
+	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void> {
+		return updateUsuarioParticipante(this.pool, args);
 	}
 
 	async count(): Promise<number> {

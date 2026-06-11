@@ -3,6 +3,7 @@ import type {
 	AgregarPuestoPremioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
+	UpdateUsuarioParticipanteArgs,
 } from "@sqlc/usuarios_sql";
 import type { TxManager } from "@support/db.provider";
 import { generarPremiosPolla } from "@support/pozo";
@@ -22,25 +23,28 @@ export class UsuariosService implements IUsuariosService {
 	) {}
 
 	async createUsuario(args: CreateUsuarioInput) {
-		return this.txManager.runInTx(async (tx) => {
-			await this.usuariosRepo.withTx(tx).create(args);
+		await this.usuariosRepo.create(args);
+	}
 
-			const conteo = await this.usuariosRepo.withTx(tx).count();
+	async deleteUsuario(args: DeleteUsuarioArgs) {
+		await this.usuariosRepo.delete(args);
+	}
 
-			const { comisionOrg: _, listaPremios } = generarPremiosPolla(conteo);
-
+	async recalcularPremios(polleroCount: number): Promise<void> {
+		await this.txManager.runInTx(async (tx) => {
 			await this.estaticoRepo.withTx(tx).limpiezaDistribucionPremios();
+
+			if (polleroCount === 0) return;
+
+			const { listaPremios } = generarPremiosPolla(polleroCount);
 
 			const entradas = listaPremios.flatMap(
 				(puesto): AgregarPuestoPremioArgs[] => {
-					const entradas: AgregarPuestoPremioArgs[] = [];
-					for (let i = puesto.min; i < puesto.max + 1; i++) {
-						entradas.push({
-							premio: puesto.premio.toString(),
-							puesto: i,
-						});
+					const result: AgregarPuestoPremioArgs[] = [];
+					for (let i = puesto.min; i <= puesto.max; i++) {
+						result.push({ premio: puesto.premio.toString(), puesto: i });
 					}
-					return entradas;
+					return result;
 				},
 			);
 
@@ -50,35 +54,8 @@ export class UsuariosService implements IUsuariosService {
 		});
 	}
 
-	async deleteUsuario(args: DeleteUsuarioArgs) {
-		return this.txManager.runInTx(async (tx) => {
-			await this.usuariosRepo.withTx(tx).delete(args);
-
-			const conteo = await this.usuariosRepo.withTx(tx).count();
-
-			await this.estaticoRepo.withTx(tx).limpiezaDistribucionPremios();
-
-			if (conteo === 0) return;
-
-			const { comisionOrg: _, listaPremios } = generarPremiosPolla(conteo);
-
-			const entradas = listaPremios.flatMap(
-				(puesto): AgregarPuestoPremioArgs[] => {
-					const entradas: AgregarPuestoPremioArgs[] = [];
-					for (let i = puesto.min; i < puesto.max + 1; i++) {
-						entradas.push({
-							premio: puesto.premio.toString(),
-							puesto: i,
-						});
-					}
-					return entradas;
-				},
-			);
-
-			await this.estaticoRepo
-				.withTx(tx)
-				.agregarEntradaDistribucionPremio(entradas);
-		});
+	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void> {
+		return this.usuariosRepo.actualizarParticipante(args);
 	}
 
 	listUsuarios(): Promise<ListUsuariosRow[]> {

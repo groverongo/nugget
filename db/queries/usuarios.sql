@@ -16,6 +16,11 @@ UPDATE usuarios SET
     username = sqlc.arg(username)
 WHERE id = sqlc.arg(id);
 
+-- name: UpdateUsuarioParticipante :exec
+UPDATE usuarios SET
+    participante = sqlc.arg(participante)
+WHERE id = sqlc.arg(id);
+
 -- name: DeleteUsuario :exec
 DELETE FROM usuarios
 WHERE id = $1;

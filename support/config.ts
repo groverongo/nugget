@@ -60,8 +60,6 @@ const DEFAULT_CONFIG: Config = {
 class ConfigService {
 	private static instance: ConfigService;
 
-	private readonly isProduction = process.env.NODE_ENV === "production";
-
 	private config!: Config;
 
 	private constructor() {

@@ -9,11 +9,10 @@ import {
 import { buildPartidosComponents } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import { sendAnnouncementChannel } from "../handlers/interactions";
-import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
-const POLLERO_ROLE_ID = "1513773724074250350";
+export const POLLERO_ROLE_ID = "1513773724074250350";
 
 async function assertPollero(
 	interaction: import("discord.js").ChatInputCommandInteraction,
@@ -138,15 +137,7 @@ const sayCommand = new SlashCommandBuilder()
 
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
-	.setDescription(
-		"Muestra todas tus predicciones, o solo las de una fecha específica",
-	)
-	.addStringOption((option) =>
-		option
-			.setName("fecha")
-			.setDescription("(Opcional) Fecha en formato YYYY-MM-DD para Peru")
-			.setRequired(false),
-	)
+	.setDescription("Muestra tus predicciones filtradas por fecha")
 	.setContexts(InteractionContextType.Guild);
 
 const misAwardsCommand = new SlashCommandBuilder()
@@ -504,18 +495,6 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			definition: misPrediccionesCommand,
 			handle: async (interaction, appContext) => {
 				if (!(await assertPollero(interaction))) return;
-				const fechaInput = interaction.options.getString("fecha");
-
-				if (fechaInput !== null) {
-					const dateParsed = fechaSchema.safeParse(fechaInput);
-					if (!dateParsed.success) {
-						await interaction.reply({
-							content: dateParsed.error.message,
-							ephemeral: true,
-						});
-						return;
-					}
-				}
 
 				await interaction.deferReply({ ephemeral: true });
 
@@ -531,18 +510,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					return;
 				}
 
-				const predicciones = fechaInput
-					? await appContext.services.predicciones.verMisPrediccionesPorFecha({
-							usuarioId: interaction.user.id,
-							date: fechaInput,
-						})
-					: await appContext.services.predicciones.verMisPredicciones(
-							interaction.user.id,
-						);
+				const fechaSeleccionada = fechas[0];
+				const predicciones =
+					await appContext.services.predicciones.verMisPrediccionesPorFecha({
+						usuarioId: interaction.user.id,
+						date: fechaSeleccionada,
+					});
 
 				await interaction.editReply({
 					components: buildMisPrediccionesComponents(
-						fechaInput,
+						fechaSeleccionada,
 						predicciones,
 						fechas,
 					),
@@ -638,27 +615,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				try {
 					const campeon = parseInt(
 						interaction.options.getString("campeon", true),
+						10,
 					);
 					const goleador = parseInt(
 						interaction.options.getString("goleador", true),
+						10,
 					);
 					const mejorJugador = parseInt(
 						interaction.options.getString("mejor_jugador", true),
+						10,
 					);
 					const mejorArquero = parseInt(
 						interaction.options.getString("mejor_arquero", true),
+						10,
 					);
 					const mejorJugadorJoven = parseInt(
 						interaction.options.getString("mejor_jugador_joven", true),
+						10,
 					);
 					const mejorGol = parseInt(
 						interaction.options.getString("mejor_gol", true),
+						10,
 					);
 					const seleccionDecepcion = parseInt(
 						interaction.options.getString("seleccion_decepcion", true),
+						10,
 					);
 					const seleccionSorpresa = parseInt(
 						interaction.options.getString("seleccion_sorpresa", true),
+						10,
 					);
 
 					if (
@@ -695,6 +680,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.guild?.members.cache.get(interaction.user.id) ??
 						(await interaction.guild?.members.fetch(interaction.user.id));
 					await member?.roles.add(POLLERO_ROLE_ID);
+					await appContext.services.usuarios.actualizarParticipante({
+						id: interaction.user.id,
+						participante: true,
+					});
+
+					const allMembers = await interaction.guild?.members.fetch();
+					const polleroCount =
+						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
+							.size ?? 0;
+					await appContext.services.usuarios.recalcularPremios(polleroCount);
 
 					await interaction.editReply({
 						content:
@@ -766,27 +761,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				try {
 					const campeon = parseInt(
 						interaction.options.getString("campeon", true),
+						10,
 					);
 					const goleador = parseInt(
 						interaction.options.getString("goleador", true),
+						10,
 					);
 					const mejorJugador = parseInt(
 						interaction.options.getString("mejor_jugador", true),
+						10,
 					);
 					const mejorArquero = parseInt(
 						interaction.options.getString("mejor_arquero", true),
+						10,
 					);
 					const mejorJugadorJoven = parseInt(
 						interaction.options.getString("mejor_jugador_joven", true),
+						10,
 					);
 					const mejorGol = parseInt(
 						interaction.options.getString("mejor_gol", true),
+						10,
 					);
 					const seleccionDecepcion = parseInt(
 						interaction.options.getString("seleccion_decepcion", true),
+						10,
 					);
 					const seleccionSorpresa = parseInt(
 						interaction.options.getString("seleccion_sorpresa", true),
+						10,
 					);
 					const mejorGolPosicion = interaction.options.getInteger(
 						"mejor_gol_posicion",

@@ -3,7 +3,7 @@ import { logger } from "@support/logger";
 import { Client, Events, GatewayIntentBits, REST, Routes } from "discord.js";
 import z from "zod";
 import type { AppContext } from "../../../app";
-import { discordCommandPayloads } from "../commands";
+import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
 import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
@@ -101,6 +101,50 @@ export function registerDiscordEventHandlers(
 			logger.error(
 				{ err: error, userId: member.id },
 				"Error creando usuario en DB",
+			);
+		}
+	});
+
+	client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
+		const hadPollero = oldMember.roles.cache.has(POLLERO_ROLE_ID);
+		const hasPollero = newMember.roles.cache.has(POLLERO_ROLE_ID);
+		if (hadPollero === hasPollero) return;
+
+		try {
+			await appContext.services.usuarios.actualizarParticipante({
+				id: newMember.id,
+				participante: hasPollero,
+			});
+
+			const allMembers = await newMember.guild.members.fetch();
+			const polleroCount = allMembers.filter((m) =>
+				m.roles.cache.has(POLLERO_ROLE_ID),
+			).size;
+			await appContext.services.usuarios.recalcularPremios(polleroCount);
+		} catch (error) {
+			logger.error(
+				{ err: error, userId: newMember.id },
+				"Error actualizando participante por cambio de rol",
+			);
+		}
+	});
+
+	client.on(Events.GuildMemberRemove, async (member) => {
+		logger.info({ userId: member.id }, "Miembro salió del servidor");
+		try {
+			await appContext.services.usuarios.deleteUsuario({ id: member.id });
+
+			if (member.roles.cache.has(POLLERO_ROLE_ID)) {
+				const allMembers = await member.guild.members.fetch();
+				const polleroCount = allMembers.filter((m) =>
+					m.roles.cache.has(POLLERO_ROLE_ID),
+				).size;
+				await appContext.services.usuarios.recalcularPremios(polleroCount);
+			}
+		} catch (error) {
+			logger.error(
+				{ err: error, userId: member.id },
+				"Error al salir miembro del servidor",
 			);
 		}
 	});

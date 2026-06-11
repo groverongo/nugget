@@ -5,7 +5,7 @@ interface Client {
 }
 
 export const listUsuariosQuery = `-- name: ListUsuarios :many
-SELECT id, username, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado FROM usuarios`;
+SELECT id, username, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado, participante FROM usuarios`;
 
 export interface ListUsuariosRow {
     id: string;
@@ -17,6 +17,7 @@ export interface ListUsuariosRow {
     racha: number;
     winRate: string;
     premioAsociado: string | null;
+    participante: boolean;
 }
 
 export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
@@ -35,7 +36,8 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
             puntos: row[5],
             racha: row[6],
             winRate: row[7],
-            premioAsociado: row[8]
+            premioAsociado: row[8],
+            participante: row[9]
         };
     });
 }
@@ -90,6 +92,24 @@ export async function updateUsuarioUsername(client: Client, args: UpdateUsuarioU
     await client.query({
         text: updateUsuarioUsernameQuery,
         values: [args.username, args.id],
+        rowMode: "array"
+    });
+}
+
+export const updateUsuarioParticipanteQuery = `-- name: UpdateUsuarioParticipante :exec
+UPDATE usuarios SET
+    participante = $1
+WHERE id = $2`;
+
+export interface UpdateUsuarioParticipanteArgs {
+    participante: boolean;
+    id: string;
+}
+
+export async function updateUsuarioParticipante(client: Client, args: UpdateUsuarioParticipanteArgs): Promise<void> {
+    await client.query({
+        text: updateUsuarioParticipanteQuery,
+        values: [args.participante, args.id],
         rowMode: "array"
     });
 }

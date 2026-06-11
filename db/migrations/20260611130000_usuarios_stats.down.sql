@@ -7,7 +7,8 @@ ALTER TABLE usuarios
     DROP COLUMN IF EXISTS puntos,
     DROP COLUMN IF EXISTS racha,
     DROP COLUMN IF EXISTS win_rate,
-    DROP COLUMN IF EXISTS premio_asociado;
+    DROP COLUMN IF EXISTS premio_asociado,
+    DROP COLUMN IF EXISTS participante;
 
 ALTER TABLE estatico_premios
     DROP CONSTRAINT IF EXISTS estatico_premios_pkey;
