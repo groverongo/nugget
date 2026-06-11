@@ -7,7 +7,9 @@ import {
 	sumarPuntosAward,
 	type VerAwardsDeUsuarioArgs,
 	type VerAwardsDeUsuarioRow,
+	type VerPrediccionesAwardsRow,
 	verAwardsDeUsuario,
+	verPrediccionesAwards,
 } from "@sqlc/awards_sql";
 import type { DBExecutor } from "@support/db.provider";
 import type { PoolClient } from "pg";
@@ -32,6 +34,10 @@ export class AwardsRepository implements IAwardsRepository {
 
 	sumarPuntosAward(args: SumarPuntosAwardArgs): Promise<void> {
 		return sumarPuntosAward(this.pool, args);
+	}
+
+	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {
+		return verPrediccionesAwards(this.pool);
 	}
 
 	withTx(tx: PoolClient) {

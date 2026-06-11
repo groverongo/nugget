@@ -1,3 +1,4 @@
+import type { VerPrediccionesAwardsRow } from "@sqlc/awards_sql";
 import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	BuscarJugadoresRow,
@@ -192,5 +193,9 @@ export class AwardsService implements IAwardsService {
 
 	verJugadoresPorEquipo(equipoId: number): Promise<VerJugadoresPorEquipoRow[]> {
 		return this.estaticoRepo.verJugadoresPorEquipo({ equipo_id: equipoId });
+	}
+
+	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {
+		return this.awardsRepo.verPrediccionesAwards();
 	}
 }

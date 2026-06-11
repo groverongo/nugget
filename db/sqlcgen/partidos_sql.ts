@@ -282,6 +282,21 @@ export async function actualizarPartidoMedioTiempo(client: Client, args: Actuali
     });
 }
 
+export const actualizarPartidoEnVivoQuery = `-- name: ActualizarPartidoEnVivo :exec
+UPDATE partidos SET estado = 'en_vivo' WHERE id = $1`;
+
+export interface ActualizarPartidoEnVivoArgs {
+    id: number;
+}
+
+export async function actualizarPartidoEnVivo(client: Client, args: ActualizarPartidoEnVivoArgs): Promise<void> {
+    await client.query({
+        text: actualizarPartidoEnVivoQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

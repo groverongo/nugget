@@ -18,4 +18,6 @@ export interface IPartidosService {
 	): Promise<VerInformacionPartidoRow | null>;
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
+
+	actualizarPartidoEnVivo(id: number): Promise<void>;
 }

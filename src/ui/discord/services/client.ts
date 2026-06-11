@@ -15,6 +15,7 @@ import {
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
+import { AwardsScheduler } from "./awards-scheduler";
 import { MatchScheduler } from "./match-scheduler";
 
 z.config(z.locales.es());
@@ -48,6 +49,7 @@ export function registerDiscordEventHandlers(
 			await registerApplicationCommands(readyClient);
 			const scheduler = new MatchScheduler(appContext.services, readyClient);
 			await scheduler.init();
+			new AwardsScheduler(appContext.services, readyClient).init();
 			logger.info({ user: readyClient.user.tag }, "Discord bot listo");
 		} catch (error) {
 			logger.error(
