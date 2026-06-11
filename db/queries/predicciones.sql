@@ -38,7 +38,24 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE prediccion.partido_id = $1;
+WHERE prediccion.partido_id = $1 AND usuarios.participante = TRUE
+ORDER BY (prediccion.goles_local + prediccion.goles_visitante) DESC, prediccion.goles_local DESC;
+
+-- name: VerPuntajesPartido :many
+SELECT
+    p.usuario_id,
+    u.username,
+    p.puntos_total AS puntos_ganados,
+    totales.total AS puntos_acumulados
+FROM prediccion p
+JOIN usuarios u ON u.id = p.usuario_id
+JOIN (
+    SELECT usuario_id, SUM(puntos_total)::INTEGER AS total
+    FROM prediccion
+    GROUP BY usuario_id
+) totales ON totales.usuario_id = p.usuario_id
+WHERE p.partido_id = $1 AND p.puntos_total > 0 AND u.participante = TRUE
+ORDER BY p.puntos_total DESC, u.username;
 
 -- name: VerPrediccionesPorFecha :many
 SELECT 

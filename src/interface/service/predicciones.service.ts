@@ -8,6 +8,8 @@ import type {
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
 	VerPrediccionesRow,
+	VerPuntajesPartidoArgs,
+	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
 
 export interface IPrediccionesService {
@@ -36,4 +38,8 @@ export interface IPrediccionesService {
 	verMisPrediccionesPorFecha(
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]>;
+
+	verPuntajesPartido(
+		args: VerPuntajesPartidoArgs,
+	): Promise<VerPuntajesPartidoRow[]>;
 }

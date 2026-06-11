@@ -15,6 +15,8 @@ import {
 	type VerPrediccionesRow,
 	type VerPrediccionPorUsuarioYPartidoArgs,
 	type VerPrediccionPorUsuarioYPartidoRow,
+	type VerPuntajesPartidoArgs,
+	type VerPuntajesPartidoRow,
 	type VerResultadosRecientesUsuarioArgs,
 	type VerResultadosRecientesUsuarioRow,
 	verFechasDePrediccionesPorUsuario,
@@ -24,6 +26,7 @@ import {
 	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
 	verPrediccionPorUsuarioYPartido,
+	verPuntajesPartido,
 	verResultadosRecientesUsuario,
 } from "@sqlc/predicciones_sql";
 import type { DBExecutor } from "@support/db.provider";
@@ -93,6 +96,12 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		args: VerResultadosRecientesUsuarioArgs,
 	): Promise<VerResultadosRecientesUsuarioRow[]> {
 		return verResultadosRecientesUsuario(this.pool, args);
+	}
+
+	verPuntajesPartido(
+		args: VerPuntajesPartidoArgs,
+	): Promise<VerPuntajesPartidoRow[]> {
+		return verPuntajesPartido(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {

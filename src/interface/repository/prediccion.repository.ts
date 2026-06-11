@@ -12,6 +12,8 @@ import type {
 	VerPrediccionesRow,
 	VerPrediccionPorUsuarioYPartidoArgs,
 	VerPrediccionPorUsuarioYPartidoRow,
+	VerPuntajesPartidoArgs,
+	VerPuntajesPartidoRow,
 	VerResultadosRecientesUsuarioArgs,
 	VerResultadosRecientesUsuarioRow,
 } from "@sqlc/predicciones_sql";
@@ -51,6 +53,10 @@ export interface IPrediccionesRepository {
 	verResultadosRecientesUsuario(
 		args: VerResultadosRecientesUsuarioArgs,
 	): Promise<VerResultadosRecientesUsuarioRow[]>;
+
+	verPuntajesPartido(
+		args: VerPuntajesPartidoArgs,
+	): Promise<VerPuntajesPartidoRow[]>;
 
 	withTx(tx: PoolClient): IPrediccionesRepository;
 }
