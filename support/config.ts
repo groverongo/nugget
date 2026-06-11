@@ -16,12 +16,14 @@ const ConfigSchema = z.object({
 				z.array(z.string()).min(1),
 			),
 		}),
+		announcements_channel_id: z.string().optional(),
 	}),
 	polla: z.object({
 		costo_entrada: z.number(),
 		fraccion_comision_org: z.number().min(0).max(1),
 		fraccion_extra_campeon: z.number().min(0).max(1),
 		factor_bloque_maximo: z.number(),
+		fecha_inicio_torneo: z.string().default("2026-06-11"),
 	}),
 });
 
@@ -42,6 +44,7 @@ const DEFAULT_CONFIG: Config = {
 		fraccion_comision_org: 0.1,
 		fraccion_extra_campeon: 0.25,
 		factor_bloque_maximo: 10,
+		fecha_inicio_torneo: "2026-06-11",
 	},
 };
 

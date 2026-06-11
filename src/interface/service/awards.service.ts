@@ -16,6 +16,17 @@ export interface GuardarAwardsInput {
 	seleccionSorpresa: number;
 }
 
+export interface MisAwardsResueltos {
+	campeon: string | null;
+	goleador: string | null;
+	mejorJugador: string | null;
+	mejorArquero: string | null;
+	mejorJugadorJoven: string | null;
+	mejorGol: string | null;
+	seleccionDecepcion: string | null;
+	seleccionSorpresa: string | null;
+}
+
 export interface ResultadosAwards {
 	campeon: number;
 	goleador: number;
@@ -39,10 +50,11 @@ export interface ResumenActualizacionAwards {
 }
 
 export interface IAwardsService {
-	guardarAwards(input: GuardarAwardsInput): Promise<void>;
+	guardarAwards(input: GuardarAwardsInput): Promise<"created" | "updated">;
 	actualizarAwards(
 		resultados: ResultadosAwards,
 	): Promise<ResumenActualizacionAwards>;
+	verMisAwards(usuarioId: string): Promise<MisAwardsResueltos | null>;
 	verEquiposWhiteHorse(): Promise<VerEquiposRow[]>;
 	verEquiposDarkHorse(): Promise<VerEquiposRow[]>;
 	verEquipos(): Promise<VerEquiposRow[]>;

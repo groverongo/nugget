@@ -104,6 +104,8 @@ SELECT
 	partidos.id AS partido_id,
 	el.nombre AS equipo_local_nombre,
 	ev.nombre AS equipo_visitante_nombre,
+	el.bandera AS equipo_local_bandera,
+	ev.bandera AS equipo_visitante_bandera,
 	el.grupo AS equipo_local_grupo,
 	ev.grupo AS equipo_visitante_grupo,
 	partidos.estado,
@@ -123,6 +125,8 @@ export interface VerInformacionPartidoRow {
     partidoId: number;
     equipoLocalNombre: string;
     equipoVisitanteNombre: string;
+    equipoLocalBandera: string;
+    equipoVisitanteBandera: string;
     equipoLocalGrupo: string;
     equipoVisitanteGrupo: string;
     estado: string;
@@ -145,12 +149,14 @@ export async function verInformacionPartido(client: Client, args: VerInformacion
         partidoId: row[0],
         equipoLocalNombre: row[1],
         equipoVisitanteNombre: row[2],
-        equipoLocalGrupo: row[3],
-        equipoVisitanteGrupo: row[4],
-        estado: row[5],
-        partidoGolesLocal: row[6],
-        partidoGolesVisitante: row[7],
-        fechaPartido: row[8]
+        equipoLocalBandera: row[3],
+        equipoVisitanteBandera: row[4],
+        equipoLocalGrupo: row[5],
+        equipoVisitanteGrupo: row[6],
+        estado: row[7],
+        partidoGolesLocal: row[8],
+        partidoGolesVisitante: row[9],
+        fechaPartido: row[10]
     };
 }
 

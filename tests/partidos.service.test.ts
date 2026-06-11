@@ -75,6 +75,8 @@ describe("PartidosService", () => {
 			partidoId: 1,
 			equipoLocalNombre: "Peru",
 			equipoVisitanteNombre: "Brasil",
+			equipoLocalBandera: "🇵🇪",
+			equipoVisitanteBandera: "🇧🇷",
 			equipoLocalGrupo: "A",
 			equipoVisitanteGrupo: "B",
 			estado: "pendiente",

@@ -68,3 +68,35 @@ export async function buscarJugadores(client: Client, args: BuscarJugadoresArgs)
         equipo_nombre: row[3],
     }));
 }
+
+export const verJugadoresPorIdsQuery = `-- name: VerJugadoresPorIds :many
+SELECT j.id, j.nombre, j.posicion, e.nombre AS equipo_nombre
+FROM estatico_jugadores j
+JOIN estatico_equipos e ON e.id = j.equipo_id
+WHERE j.id = ANY($1::int[])
+ORDER BY j.nombre ASC`;
+
+export interface VerJugadoresPorIdsArgs {
+    ids: number[];
+}
+
+export interface VerJugadoresPorIdsRow {
+    id: number;
+    nombre: string;
+    posicion: string;
+    equipo_nombre: string;
+}
+
+export async function verJugadoresPorIds(client: Client, args: VerJugadoresPorIdsArgs): Promise<VerJugadoresPorIdsRow[]> {
+    const result = await client.query({
+        text: verJugadoresPorIdsQuery,
+        values: [args.ids],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        nombre: row[1],
+        posicion: row[2],
+        equipo_nombre: row[3],
+    }));
+}

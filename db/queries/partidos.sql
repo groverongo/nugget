@@ -28,6 +28,8 @@ SELECT
 	partidos.id AS partido_id,
 	el.nombre AS equipo_local_nombre,
 	ev.nombre AS equipo_visitante_nombre,
+	el.bandera AS equipo_local_bandera,
+	ev.bandera AS equipo_visitante_bandera,
 	el.grupo AS equipo_local_grupo,
 	ev.grupo AS equipo_visitante_grupo,
 	partidos.estado,
