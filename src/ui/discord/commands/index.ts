@@ -638,27 +638,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				try {
 					const campeon = parseInt(
 						interaction.options.getString("campeon", true),
+						10,
 					);
 					const goleador = parseInt(
 						interaction.options.getString("goleador", true),
+						10,
 					);
 					const mejorJugador = parseInt(
 						interaction.options.getString("mejor_jugador", true),
+						10,
 					);
 					const mejorArquero = parseInt(
 						interaction.options.getString("mejor_arquero", true),
+						10,
 					);
 					const mejorJugadorJoven = parseInt(
 						interaction.options.getString("mejor_jugador_joven", true),
+						10,
 					);
 					const mejorGol = parseInt(
 						interaction.options.getString("mejor_gol", true),
+						10,
 					);
 					const seleccionDecepcion = parseInt(
 						interaction.options.getString("seleccion_decepcion", true),
+						10,
 					);
 					const seleccionSorpresa = parseInt(
 						interaction.options.getString("seleccion_sorpresa", true),
+						10,
 					);
 
 					if (
@@ -702,9 +710,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					const allMembers = await interaction.guild?.members.fetch();
 					const polleroCount =
-						allMembers?.filter((m) =>
-							m.roles.cache.has(POLLERO_ROLE_ID),
-						).size ?? 0;
+						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
+							.size ?? 0;
 					await appContext.services.usuarios.recalcularPremios(polleroCount);
 
 					await interaction.editReply({
@@ -777,27 +784,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				try {
 					const campeon = parseInt(
 						interaction.options.getString("campeon", true),
+						10,
 					);
 					const goleador = parseInt(
 						interaction.options.getString("goleador", true),
+						10,
 					);
 					const mejorJugador = parseInt(
 						interaction.options.getString("mejor_jugador", true),
+						10,
 					);
 					const mejorArquero = parseInt(
 						interaction.options.getString("mejor_arquero", true),
+						10,
 					);
 					const mejorJugadorJoven = parseInt(
 						interaction.options.getString("mejor_jugador_joven", true),
+						10,
 					);
 					const mejorGol = parseInt(
 						interaction.options.getString("mejor_gol", true),
+						10,
 					);
 					const seleccionDecepcion = parseInt(
 						interaction.options.getString("seleccion_decepcion", true),
+						10,
 					);
 					const seleccionSorpresa = parseInt(
 						interaction.options.getString("seleccion_sorpresa", true),
+						10,
 					);
 					const mejorGolPosicion = interaction.options.getInteger(
 						"mejor_gol_posicion",
