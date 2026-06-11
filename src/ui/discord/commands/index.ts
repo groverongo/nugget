@@ -819,11 +819,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						participante: true,
 					});
 
-					const allMembers = await interaction.guild?.members.fetch();
-					const polleroCount =
-						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
-							.size ?? 0;
-					await appContext.services.usuarios.recalcularPremios(polleroCount);
+					await appContext.services.usuarios.recalcularPremios();
 
 					await interaction.editReply({
 						content:
@@ -1018,11 +1014,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						participante: true,
 					});
 
-					const allMembers = await interaction.guild?.members.fetch();
-					const polleroCount =
-						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
-							.size ?? 0;
-					await appContext.services.usuarios.recalcularPremios(polleroCount);
+					await appContext.services.usuarios.recalcularPremios();
 
 					await interaction.editReply({
 						content:

@@ -41,6 +41,9 @@ WHERE id = $1;
 -- name: CountUsuarios :one
 SELECT COUNT(*) FROM usuarios;
 
+-- name: CountParticipantes :one
+SELECT COUNT(*) FROM usuarios WHERE participante = TRUE;
+
 -- name: LimpiezaDistribucionPremios :exec
 DELETE FROM estatico_premios;
 

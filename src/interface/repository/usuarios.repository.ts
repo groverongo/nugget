@@ -23,5 +23,7 @@ export interface IUsuariosRepository {
 
 	count(): Promise<number>;
 
+	countParticipantes(): Promise<number>;
+
 	withTx(tx: PoolClient): IUsuariosRepository;
 }

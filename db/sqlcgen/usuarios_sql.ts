@@ -181,6 +181,28 @@ export async function countUsuarios(client: Client): Promise<CountUsuariosRow | 
     };
 }
 
+export const countParticipantesQuery = `-- name: CountParticipantes :one
+SELECT COUNT(*) FROM usuarios WHERE participante = TRUE`;
+
+export interface CountParticipantesRow {
+    count: string;
+}
+
+export async function countParticipantes(client: Client): Promise<CountParticipantesRow | null> {
+    const result = await client.query({
+        text: countParticipantesQuery,
+        values: [],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
+}
+
 export const limpiezaDistribucionPremiosQuery = `-- name: LimpiezaDistribucionPremios :exec
 DELETE FROM estatico_premios`;
 

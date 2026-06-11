@@ -18,7 +18,7 @@ export interface IUsuariosService {
 
 	deleteUsuario(args: DeleteUsuarioArgs): Promise<void>;
 
-	recalcularPremios(polleroCount: number): Promise<void>;
+	recalcularPremios(): Promise<void>;
 
 	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void>;
 

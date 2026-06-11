@@ -130,11 +130,7 @@ export function registerDiscordEventHandlers(
 				participante: hasPollero,
 			});
 
-			const allMembers = await newMember.guild.members.fetch();
-			const polleroCount = allMembers.filter((m) =>
-				m.roles.cache.has(POLLERO_ROLE_ID),
-			).size;
-			await appContext.services.usuarios.recalcularPremios(polleroCount);
+			await appContext.services.usuarios.recalcularPremios();
 		} catch (error) {
 			logger.error(
 				{ err: error, userId: newMember.id },
@@ -149,11 +145,7 @@ export function registerDiscordEventHandlers(
 			await appContext.services.usuarios.deleteUsuario({ id: member.id });
 
 			if (member.roles.cache.has(POLLERO_ROLE_ID)) {
-				const allMembers = await member.guild.members.fetch();
-				const polleroCount = allMembers.filter((m) =>
-					m.roles.cache.has(POLLERO_ROLE_ID),
-				).size;
-				await appContext.services.usuarios.recalcularPremios(polleroCount);
+				await appContext.services.usuarios.recalcularPremios();
 			}
 		} catch (error) {
 			logger.error(
