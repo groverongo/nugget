@@ -1,3 +1,7 @@
+export function fechaADiscordTimestamp(yyyymmdd: string): number {
+	return Math.floor(new Date(`${yyyymmdd}T12:00:00Z`).getTime() / 1000);
+}
+
 export const obtenerYYYYMMDDPeru = () => {
 	const hoursToSubtract = 5;
 
