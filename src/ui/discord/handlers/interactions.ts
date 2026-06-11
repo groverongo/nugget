@@ -175,8 +175,8 @@ export async function handlePrediccionModalSubmitInteraction(
 		await sendAnnouncementChannel(
 			interaction.client,
 			resultado === "created"
-				? `🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!`
-				: `✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!`,
+				? `_🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
+				: `_✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
 		);
 	} catch (error) {
 		logger.error(
