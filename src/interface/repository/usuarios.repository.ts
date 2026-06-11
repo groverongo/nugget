@@ -2,6 +2,7 @@ import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
+	UpdateUsuarioParticipanteArgs,
 	UpdateUsuarioUsernameArgs,
 } from "@sqlc/usuarios_sql";
 import type { PoolClient } from "pg";
@@ -14,6 +15,8 @@ export interface IUsuariosRepository {
 	list(): Promise<ListUsuariosRow[]>;
 
 	updateUsername(args: UpdateUsuarioUsernameArgs): Promise<void>;
+
+	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void>;
 
 	count(): Promise<number>;
 

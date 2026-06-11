@@ -3,6 +3,7 @@ import type {
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
+	UpdateUsuarioParticipanteArgs,
 } from "@sqlc/usuarios_sql";
 
 export type CreateUsuarioInput = CreateUsuarioArgs;
@@ -18,6 +19,8 @@ export interface IUsuariosService {
 	deleteUsuario(args: DeleteUsuarioArgs): Promise<void>;
 
 	recalcularPremios(polleroCount: number): Promise<void>;
+
+	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void>;
 
 	listUsuarios(): Promise<ListUsuariosRow[]>;
 

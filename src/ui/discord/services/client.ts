@@ -105,6 +105,30 @@ export function registerDiscordEventHandlers(
 		}
 	});
 
+	client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
+		const hadPollero = oldMember.roles.cache.has(POLLERO_ROLE_ID);
+		const hasPollero = newMember.roles.cache.has(POLLERO_ROLE_ID);
+		if (hadPollero === hasPollero) return;
+
+		try {
+			await appContext.services.usuarios.actualizarParticipante({
+				id: newMember.id,
+				participante: hasPollero,
+			});
+
+			const allMembers = await newMember.guild.members.fetch();
+			const polleroCount = allMembers.filter((m) =>
+				m.roles.cache.has(POLLERO_ROLE_ID),
+			).size;
+			await appContext.services.usuarios.recalcularPremios(polleroCount);
+		} catch (error) {
+			logger.error(
+				{ err: error, userId: newMember.id },
+				"Error actualizando participante por cambio de rol",
+			);
+		}
+	});
+
 	client.on(Events.GuildMemberRemove, async (member) => {
 		logger.info({ userId: member.id }, "Miembro salió del servidor");
 		try {

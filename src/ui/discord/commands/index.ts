@@ -695,6 +695,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.guild?.members.cache.get(interaction.user.id) ??
 						(await interaction.guild?.members.fetch(interaction.user.id));
 					await member?.roles.add(POLLERO_ROLE_ID);
+					await appContext.services.usuarios.actualizarParticipante({
+						id: interaction.user.id,
+						participante: true,
+					});
 
 					const allMembers = await interaction.guild?.members.fetch();
 					const polleroCount =

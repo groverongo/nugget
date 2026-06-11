@@ -3,6 +3,7 @@ import type {
 	AgregarPuestoPremioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
+	UpdateUsuarioParticipanteArgs,
 } from "@sqlc/usuarios_sql";
 import type { TxManager } from "@support/db.provider";
 import { generarPremiosPolla } from "@support/pozo";
@@ -51,6 +52,10 @@ export class UsuariosService implements IUsuariosService {
 				.withTx(tx)
 				.agregarEntradaDistribucionPremio(entradas);
 		});
+	}
+
+	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void> {
+		return this.usuariosRepo.actualizarParticipante(args);
 	}
 
 	listUsuarios(): Promise<ListUsuariosRow[]> {
