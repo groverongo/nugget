@@ -127,6 +127,7 @@ jobs:
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               -e DISCORD_ANNOUNCEMENTS_CHANNEL_ID="${{secrets.DISCORD_ANNOUNCEMENTS_CHANNEL_ID}}" \
+              -e DISCORD_ALERTS_CHANNEL_ID="${{secrets.DISCORD_ALERTS_CHANNEL_ID}}" \
               ${{ env.IMAGE }}:${{ github.sha }} dist/cmd/migration.js up
               docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
@@ -136,4 +137,5 @@ jobs:
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
               -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               -e DISCORD_ANNOUNCEMENTS_CHANNEL_ID="${{secrets.DISCORD_ANNOUNCEMENTS_CHANNEL_ID}}" \
+              -e DISCORD_ALERTS_CHANNEL_ID="${{secrets.DISCORD_ALERTS_CHANNEL_ID}}" \
               ${{ env.IMAGE }}:${{ github.sha }}
