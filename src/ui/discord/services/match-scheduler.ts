@@ -1,6 +1,4 @@
-import type {
-	VerInformacionPartidoRow,
-} from "@sqlc/partidos_sql";
+import type { VerInformacionPartidoRow } from "@sqlc/partidos_sql";
 import type { VerPrediccionesPorPartidoRow } from "@sqlc/predicciones_sql";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
@@ -93,6 +91,9 @@ export class MatchScheduler {
 
 		if (!info) return;
 
-		await sendAnnouncementChannel(this.client, buildAlertaPartido(info, predicciones));
+		await sendAnnouncementChannel(
+			this.client,
+			buildAlertaPartido(info, predicciones),
+		);
 	}
 }
