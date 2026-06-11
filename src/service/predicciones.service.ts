@@ -45,6 +45,24 @@ export class PrediccionesService implements IPrediccionesService {
 		return "created";
 	}
 
+	async guardarPrediccionAdmin(
+		args: AgregarPrediccionArgs,
+	): Promise<"created" | "updated"> {
+		const prediccionExistente =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.usuarioId,
+				partidoId: args.partidoId,
+			});
+
+		if (prediccionExistente) {
+			await this.prediccionesRepo.actualizarPrediccion(args);
+			return "updated";
+		}
+
+		await this.prediccionesRepo.agregarPrediccion(args);
+		return "created";
+	}
+
 	verPrediccionesPorPartido(
 		args: VerPrediccionesPorPartidoArgs,
 	): Promise<VerPrediccionesPorPartidoRow[]> {

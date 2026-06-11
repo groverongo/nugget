@@ -6,7 +6,10 @@ import {
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
-import { buildPartidosComponents } from "../components/partidos";
+import {
+	buildPartidosAdminComponents,
+	buildPartidosComponents,
+} from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import { sendAnnouncementChannel } from "../handlers/interactions";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
@@ -201,6 +204,21 @@ const predecirAwardsCommand = new SlashCommandBuilder()
 		option
 			.setName("seleccion_sorpresa")
 			.setDescription("Selección sorpresa del torneo (Dark Horse)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const predecirAdminCommand = new SlashCommandBuilder()
+	.setName("predecir-admin")
+	.setDescription(
+		"[ADMIN] Registra la predicción de un partido para otro usuario",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("usuario")
+			.setDescription("Usuario al que registrar la predicción")
 			.setRequired(true)
 			.setAutocomplete(true),
 	)
@@ -778,6 +796,49 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
 					});
 				}
+			},
+		},
+	],
+	[
+		"predecir-admin",
+		{
+			definition: predecirAdminCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				if (focused.name !== "usuario") return;
+				const query = focused.value.toString();
+				const usuarios = await appContext.services.usuarios.listUsuarios();
+				const opciones = usuarios
+					.filter((u) => u.username.toLowerCase().includes(query.toLowerCase()))
+					.slice(0, 25)
+					.map((u) => ({ name: u.username, value: u.id }));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				const usuarioId = interaction.options.getString("usuario", true);
+				const fechas = await appContext.services.partidos.verFechasDePartidos();
+				const hoy = obtenerYYYYMMDDPeru();
+				const fechaSeleccionada = fechas.includes(hoy)
+					? hoy
+					: (fechas[0] ?? "2026-06-11");
+
+				const partidos = await appContext.services.partidos.verPartidosPorFecha(
+					{
+						date: fechaSeleccionada,
+					},
+				);
+
+				await interaction.editReply({
+					components: buildPartidosAdminComponents(
+						fechaSeleccionada,
+						partidos,
+						fechas,
+						usuarioId,
+					),
+					flags: MessageFlags.IsComponentsV2,
+				});
 			},
 		},
 	],

@@ -7,8 +7,11 @@ import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
 import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
+	handlePartidosAdminButtonInteraction,
+	handlePartidosAdminDateSelectInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
+	handlePrediccionAdminModalSubmitInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
@@ -67,17 +70,23 @@ export function registerDiscordEventHandlers(
 
 			if (interaction.isButton()) {
 				await handlePartidosButtonInteraction(interaction, appContext);
+				await handlePartidosAdminButtonInteraction(interaction, appContext);
 				return;
 			}
 
 			if (interaction.isModalSubmit()) {
 				await handlePrediccionModalSubmitInteraction(interaction, appContext);
+				await handlePrediccionAdminModalSubmitInteraction(
+					interaction,
+					appContext,
+				);
 				return;
 			}
 
 			if (interaction.isStringSelectMenu()) {
 				await handlePartidosDateSelectInteraction(interaction, appContext);
 				await handlePrediccionesDateSelectInteraction(interaction, appContext);
+				await handlePartidosAdminDateSelectInteraction(interaction, appContext);
 			}
 		} catch (error) {
 			logger.error(

@@ -20,6 +20,9 @@ type PartidoPorFecha = PartidosPorFecha[number];
 
 export const PARTIDOS_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick:";
 export const PARTIDOS_DATE_SELECT_CUSTOM_ID = "partidos:date-select";
+export const PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick-admin:";
+export const PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX =
+	"partidos:date-select-admin:";
 
 const PARTIDOS_MAX_BUTTONS = 25;
 
@@ -102,6 +105,72 @@ export function buildPartidosComponents(
 		actionRow.addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(PARTIDOS_DATE_SELECT_CUSTOM_ID)
+				.setPlaceholder("Selecciona otra fecha")
+				.addOptions(
+					fechas.map((optionDate) =>
+						new StringSelectMenuOptionBuilder()
+							.setLabel(optionDate)
+							.setValue(optionDate)
+							.setDefault(optionDate === date),
+					),
+				),
+		),
+	);
+
+	return [container.toJSON()];
+}
+
+export function buildPartidosAdminComponents(
+	date: string,
+	partidos: PartidosPorFecha,
+	fechas: string[],
+	usuarioId: string,
+): APIMessageTopLevelComponent[] {
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(
+			`## Partidos del <t:${fechaADiscordTimestamp(date)}:D>`,
+		),
+	);
+
+	if (partidos.length === 0) {
+		return [
+			new ContainerBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`# Partidos del <t:${fechaADiscordTimestamp(date)}:D>\nNo hay partidos para esta fecha.`,
+					),
+				)
+				.toJSON(),
+		];
+	}
+
+	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		container.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX}${usuarioId}:${partido.partidoId}`,
+						)
+						.setLabel("Predecir")
+						.setStyle(ButtonStyle.Primary),
+				),
+		);
+
+		container.addSeparatorComponents(
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+		);
+	}
+
+	container.addActionRowComponents((actionRow) =>
+		actionRow.addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(
+					`${PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX}${usuarioId}`,
+				)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
 					fechas.map((optionDate) =>

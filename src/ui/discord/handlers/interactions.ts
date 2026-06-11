@@ -16,7 +16,10 @@ import {
 import type { AppContext } from "../../../app";
 import { discordCommands } from "../commands";
 import {
+	buildPartidosAdminComponents,
 	buildPartidosComponents,
+	PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX,
+	PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX,
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
 } from "../components/partidos";
@@ -27,6 +30,7 @@ import {
 import { golesSchema } from "../types/shared";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
+const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
 
@@ -256,6 +260,208 @@ export async function handlePrediccionesDateSelectInteraction(
 			selectedDate,
 			predicciones,
 			fechas,
+		),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+function buildPrediccionAdminModal(
+	partidoId: number,
+	usuarioId: string,
+	nombreEquipoLocal: string,
+	nombreEquipoVisitante: string,
+): ModalBuilder {
+	return new ModalBuilder()
+		.setCustomId(
+			`${PREDICCION_ADMIN_MODAL_CUSTOM_ID}:${usuarioId}:${partidoId}`,
+		)
+		.setTitle("Registrar predicción (admin)")
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_GOLES_LOCAL_FIELD_ID)
+					.setLabel(`Goles de ${nombreEquipoLocal}`)
+					.setPlaceholder("Ej: 0, 1, 2...")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_GOLES_VISITANTE_FIELD_ID)
+					.setLabel(`Goles de ${nombreEquipoVisitante}`)
+					.setPlaceholder("Ej: 0, 1, 2...")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+		);
+}
+
+function parsePrediccionAdminModalCustomId(
+	customId: string,
+): { usuarioId: string; partidoId: number } | null {
+	if (!customId.startsWith(`${PREDICCION_ADMIN_MODAL_CUSTOM_ID}:`)) return null;
+	const rest = customId.slice(PREDICCION_ADMIN_MODAL_CUSTOM_ID.length + 1);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return null;
+	const usuarioId = rest.slice(0, lastColon);
+	const partidoId = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(partidoId) || !usuarioId) return null;
+	return { usuarioId, partidoId };
+}
+
+export async function handlePartidosAdminButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (
+		!interaction.customId.startsWith(PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX)
+	) {
+		return;
+	}
+
+	const rest = interaction.customId.slice(
+		PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX.length,
+	);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const usuarioId = rest.slice(0, lastColon);
+	const selectedPartidoId = Number(rest.slice(lastColon + 1));
+
+	if (Number.isNaN(selectedPartidoId) || !usuarioId) {
+		await interaction.reply({
+			content: "No se pudo identificar el partido.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: selectedPartidoId,
+	});
+
+	if (!partido) {
+		await interaction.reply({
+			content: `No se encontró el partido ${selectedPartidoId}.`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.showModal(
+		buildPrediccionAdminModal(
+			partido.partidoId,
+			usuarioId,
+			partido.equipoLocalNombre,
+			partido.equipoVisitanteNombre,
+		),
+	);
+}
+
+export async function handlePrediccionAdminModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const parsed = parsePrediccionAdminModalCustomId(interaction.customId);
+	if (parsed === null) return;
+
+	const { usuarioId, partidoId } = parsed;
+
+	const golesLocalParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(PREDICCION_GOLES_LOCAL_FIELD_ID),
+	);
+	const golesVisitanteParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(PREDICCION_GOLES_VISITANTE_FIELD_ID),
+	);
+
+	if (!golesLocalParsed.success || !golesVisitanteParsed.success) {
+		await interaction.reply({ content: "Goles inválidos.", ephemeral: true });
+		return;
+	}
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: partidoId,
+	});
+
+	if (!partido) {
+		await interaction.reply({
+			content: `No se encontró el partido ${partidoId}.`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferReply({ ephemeral: true });
+
+	try {
+		const resultado =
+			await appContext.services.predicciones.guardarPrediccionAdmin({
+				usuarioId,
+				partidoId,
+				golesLocal: golesLocalParsed.data,
+				golesVisitante: golesVisitanteParsed.data,
+			});
+
+		await interaction.editReply(
+			resultado === "created"
+				? `✅ Predicción registrada para <@${usuarioId}>: ${partido.equipoLocalNombre} ${golesLocalParsed.data}-${golesVisitanteParsed.data} ${partido.equipoVisitanteNombre}.`
+				: `✅ Predicción actualizada para <@${usuarioId}>: ${partido.equipoLocalNombre} ${golesLocalParsed.data}-${golesVisitanteParsed.data} ${partido.equipoVisitanteNombre}.`,
+		);
+
+		await sendAnnouncementChannel(
+			interaction.client,
+			resultado === "created"
+				? `_🎯 ¡<@${usuarioId}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
+				: `_✏️ ¡<@${usuarioId}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+		);
+	} catch (error) {
+		await interaction.editReply(
+			`❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+		);
+	}
+}
+
+export async function handlePartidosAdminDateSelectInteraction(
+	interaction: StringSelectMenuInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (
+		!interaction.customId.startsWith(
+			PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX,
+		)
+	) {
+		return;
+	}
+
+	const usuarioId = interaction.customId.slice(
+		PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX.length,
+	);
+	const selectedDate = interaction.values[0];
+	const fechas = await appContext.services.partidos.verFechasDePartidos();
+
+	if (!fechas.includes(selectedDate as (typeof fechas)[number])) {
+		await interaction.reply({
+			content: "La fecha seleccionada no es válida.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferUpdate();
+
+	const partidos = await appContext.services.partidos.verPartidosPorFecha({
+		date: selectedDate,
+	});
+
+	await interaction.editReply({
+		components: buildPartidosAdminComponents(
+			selectedDate,
+			partidos,
+			fechas,
+			usuarioId,
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});
