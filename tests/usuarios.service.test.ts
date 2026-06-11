@@ -18,14 +18,18 @@ function createTxManagerMock(
 	} as unknown as TxManager;
 }
 
-function createUsuariosRepositoryMock(): jest.Mocked<IUsuariosRepository> {
+function createUsuariosRepositoryMock(
+	participantes = 0,
+): jest.Mocked<IUsuariosRepository> {
 	const repo = {
 		create: jest.fn().mockResolvedValue(undefined),
 		delete: jest.fn().mockResolvedValue(undefined),
 		list: jest.fn().mockResolvedValue([]),
 		updateUsername: jest.fn().mockResolvedValue(undefined),
 		actualizarParticipante: jest.fn().mockResolvedValue(undefined),
+		actualizarStats: jest.fn().mockResolvedValue(undefined),
 		count: jest.fn().mockResolvedValue(0),
+		countParticipantes: jest.fn().mockResolvedValue(participantes),
 		withTx: jest.fn(),
 	} as unknown as jest.Mocked<IUsuariosRepository>;
 
@@ -111,16 +115,16 @@ describe("UsuariosService", () => {
 	});
 
 	it("recalcularPremios runs inside a transaction and rebuilds prize distribution", async () => {
-		const usuariosRepo = createUsuariosRepositoryMock();
+		const participantes = 10;
+		const usuariosRepo = createUsuariosRepositoryMock(participantes);
 		const estaticoRepo = createEstaticoRepositoryMock();
 		const tx = {} as PoolClient;
 		const txManager = createTxManagerMock(async (fn) => {
 			await fn(tx);
 		});
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
-		const polleroCount = 3;
 		const expectedEntries = generarPremiosPolla(
-			polleroCount,
+			participantes,
 		).listaPremios.flatMap((puesto) => {
 			const entries = [] as Array<{ premio: string; puesto: number }>;
 			for (let i = puesto.min; i <= puesto.max; i++) {
@@ -129,8 +133,9 @@ describe("UsuariosService", () => {
 			return entries;
 		});
 
-		await service.recalcularPremios(polleroCount);
+		await service.recalcularPremios();
 
+		expect(usuariosRepo.countParticipantes).toHaveBeenCalledTimes(1);
 		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.withTx).toHaveBeenCalledWith(tx);
 		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
@@ -139,14 +144,15 @@ describe("UsuariosService", () => {
 		);
 	});
 
-	it("recalcularPremios with 0 polleros only clears the table", async () => {
-		const usuariosRepo = createUsuariosRepositoryMock();
+	it("recalcularPremios with 0 participantes only clears the table", async () => {
+		const usuariosRepo = createUsuariosRepositoryMock(0);
 		const estaticoRepo = createEstaticoRepositoryMock();
 		const txManager = createTxManagerMock();
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
 
-		await service.recalcularPremios(0);
+		await service.recalcularPremios();
 
+		expect(usuariosRepo.countParticipantes).toHaveBeenCalledTimes(1);
 		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
 		expect(
