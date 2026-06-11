@@ -53,7 +53,7 @@ const DEFAULT_CONFIG: Config = {
 		fraccion_comision_org: 0.1,
 		fraccion_extra_campeon: 0.25,
 		factor_bloque_maximo: 10,
-		fecha_inicio_torneo: "2026-06-11",
+		fecha_inicio_torneo: "2026-06-11T19:00:00.000Z",
 	},
 };
 
