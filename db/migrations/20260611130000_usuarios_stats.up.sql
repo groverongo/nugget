@@ -1,0 +1,13 @@
+-- UP MIGRATION: 20260611130000_usuarios_stats
+
+ALTER TABLE estatico_premios
+    ADD PRIMARY KEY (puesto);
+
+ALTER TABLE usuarios
+    ADD COLUMN partidos_apostados INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN partidos_ganados INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN partidos_perdidos INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN puntos INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN racha INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN win_rate NUMERIC(5,2) NOT NULL DEFAULT 0,
+    ADD COLUMN premio_asociado INTEGER DEFAULT NULL REFERENCES estatico_premios(puesto);
