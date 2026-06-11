@@ -10,16 +10,13 @@ import {
 	StringSelectMenuOptionBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import type { PrediccionesService } from "../../../service/predicciones.service";
+import type { VerMisPrediccionesPorFechaRow } from "../../../../db/sqlcgen/predicciones_sql";
 import { fechaADiscordTimestamp } from "../utils/fecha";
 import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
 
-type MisPrediccionesPorFecha = Awaited<
-	ReturnType<PrediccionesService["verMisPredicciones"]>
->;
-type MiPrediccionPorFecha = MisPrediccionesPorFecha[number];
+type MiPrediccionPorFecha = VerMisPrediccionesPorFechaRow;
 
 function formatMarcadorReal(prediccion: MiPrediccionPorFecha): string {
 	if (
@@ -38,7 +35,7 @@ function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 		: "Hora pendiente";
 
 	return [
-		`### ${prediccion.equipoLocalNombre} vs ${prediccion.equipoVisitanteNombre}`,
+		`### ${prediccion.equipoLocalNombre} ${prediccion.equipoLocalBandera} vs. ${prediccion.equipoVisitanteNombre} ${prediccion.equipoVisitanteBandera}`,
 		`Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}`,
 		formatMarcadorReal(prediccion),
 		`Estado: ${prediccion.estado}`,
@@ -47,13 +44,11 @@ function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 }
 
 export function buildMisPrediccionesComponents(
-	date: string | null,
-	predicciones: MisPrediccionesPorFecha,
+	date: string,
+	predicciones: MiPrediccionPorFecha[],
 	fechas: string[],
 ): APIMessageTopLevelComponent[] {
-	const titulo = date
-		? `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D>`
-		: "## Todas mis predicciones";
+	const titulo = `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D>`;
 
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(titulo),
@@ -62,9 +57,7 @@ export function buildMisPrediccionesComponents(
 	if (predicciones.length === 0) {
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
-				date
-					? `No registraste predicciones para el <t:${fechaADiscordTimestamp(date)}:D>.`
-					: "No has realizado ninguna predicción.",
+				`No registraste predicciones para el <t:${fechaADiscordTimestamp(date)}:D>.`,
 			),
 		);
 	} else {

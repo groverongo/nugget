@@ -9,7 +9,6 @@ import {
 import { buildPartidosComponents } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import { sendAnnouncementChannel } from "../handlers/interactions";
-import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
@@ -138,15 +137,7 @@ const sayCommand = new SlashCommandBuilder()
 
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
-	.setDescription(
-		"Muestra todas tus predicciones, o solo las de una fecha específica",
-	)
-	.addStringOption((option) =>
-		option
-			.setName("fecha")
-			.setDescription("(Opcional) Fecha en formato YYYY-MM-DD para Peru")
-			.setRequired(false),
-	)
+	.setDescription("Muestra tus predicciones filtradas por fecha")
 	.setContexts(InteractionContextType.Guild);
 
 const misAwardsCommand = new SlashCommandBuilder()
@@ -504,18 +495,6 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			definition: misPrediccionesCommand,
 			handle: async (interaction, appContext) => {
 				if (!(await assertPollero(interaction))) return;
-				const fechaInput = interaction.options.getString("fecha");
-
-				if (fechaInput !== null) {
-					const dateParsed = fechaSchema.safeParse(fechaInput);
-					if (!dateParsed.success) {
-						await interaction.reply({
-							content: dateParsed.error.message,
-							ephemeral: true,
-						});
-						return;
-					}
-				}
 
 				await interaction.deferReply({ ephemeral: true });
 
@@ -531,18 +510,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					return;
 				}
 
-				const predicciones = fechaInput
-					? await appContext.services.predicciones.verMisPrediccionesPorFecha({
-							usuarioId: interaction.user.id,
-							date: fechaInput,
-						})
-					: await appContext.services.predicciones.verMisPredicciones(
-							interaction.user.id,
-						);
+				const fechaSeleccionada = fechas[0];
+				const predicciones =
+					await appContext.services.predicciones.verMisPrediccionesPorFecha({
+						usuarioId: interaction.user.id,
+						date: fechaSeleccionada,
+					});
 
 				await interaction.editReply({
 					components: buildMisPrediccionesComponents(
-						fechaInput,
+						fechaSeleccionada,
 						predicciones,
 						fechas,
 					),

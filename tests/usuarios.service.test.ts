@@ -119,15 +119,15 @@ describe("UsuariosService", () => {
 		});
 		const service = new UsuariosService(usuariosRepo, estaticoRepo, txManager);
 		const polleroCount = 3;
-		const expectedEntries = generarPremiosPolla(polleroCount).listaPremios.flatMap(
-			(puesto) => {
-				const entries = [] as Array<{ premio: string; puesto: number }>;
-				for (let i = puesto.min; i <= puesto.max; i++) {
-					entries.push({ premio: puesto.premio.toString(), puesto: i });
-				}
-				return entries;
-			},
-		);
+		const expectedEntries = generarPremiosPolla(
+			polleroCount,
+		).listaPremios.flatMap((puesto) => {
+			const entries = [] as Array<{ premio: string; puesto: number }>;
+			for (let i = puesto.min; i <= puesto.max; i++) {
+				entries.push({ premio: puesto.premio.toString(), puesto: i });
+			}
+			return entries;
+		});
 
 		await service.recalcularPremios(polleroCount);
 
@@ -149,6 +149,8 @@ describe("UsuariosService", () => {
 
 		expect(txManager.runInTx).toHaveBeenCalledTimes(1);
 		expect(estaticoRepo.limpiezaDistribucionPremios).toHaveBeenCalledTimes(1);
-		expect(estaticoRepo.agregarEntradaDistribucionPremio).not.toHaveBeenCalled();
+		expect(
+			estaticoRepo.agregarEntradaDistribucionPremio,
+		).not.toHaveBeenCalled();
 	});
 });
