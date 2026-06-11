@@ -33,7 +33,7 @@ const ConfigSchema = z.object({
 		fraccion_extra_campeon: z.number().min(0).max(1),
 		factor_bloque_maximo: z.number(),
 		fecha_inicio_torneo: z.string().default("2026-06-11T19:00:00.000Z"),
-		fecha_cierre_awards: z.string().default("2026-06-11T21:30:00.000Z"),
+		fecha_cierre_awards: z.string().default("2026-06-12T06:00:00.000Z"),
 	}),
 });
 
@@ -65,7 +65,7 @@ const DEFAULT_CONFIG: Config = {
 		fraccion_extra_campeon: 0.25,
 		factor_bloque_maximo: 10,
 		fecha_inicio_torneo: "2026-06-11T19:00:00.000Z",
-		fecha_cierre_awards: "2026-06-11T21:30:00.000Z",
+		fecha_cierre_awards: "2026-06-12T06:00:00.000Z",
 	},
 };
 
