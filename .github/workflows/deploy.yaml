@@ -125,11 +125,13 @@ jobs:
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
               -e NODE_ENV=production \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               ${{ env.IMAGE }}:${{ github.sha }} dist/cmd/migration.js up
-            docker run -d \
+              docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
               -e NODE_ENV=production \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+              -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               ${{ env.IMAGE }}:${{ github.sha }}

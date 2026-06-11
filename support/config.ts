@@ -10,7 +10,11 @@ const ConfigSchema = z.object({
 	discord: z.object({
 		token: z.string().min(1),
 		owner: z.object({
-			id: z.string().optional(),
+			id: z.preprocess(
+				(val) =>
+					typeof val === "string" ? val.split(":").filter(Boolean) : val,
+				z.array(z.string()).min(1),
+			),
 		}),
 	}),
 	polla: z.object({
@@ -30,7 +34,7 @@ const DEFAULT_CONFIG: Config = {
 	discord: {
 		token: "",
 		owner: {
-			id: "",
+			id: [],
 		},
 	},
 	polla: {

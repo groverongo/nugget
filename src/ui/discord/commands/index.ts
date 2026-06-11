@@ -391,9 +391,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			definition: anonCommand,
 			handle: async (interaction) => {
 				const mensaje = interaction.options.getString("mensaje", true);
-				const ownerId = config.discord.owner.id;
+				const ownerIds = config.discord.owner.id;
 
-				if (!ownerId) {
+				if (ownerIds.length === 0) {
 					await interaction.reply({
 						content: "El ID del administrador no está configurado.",
 						ephemeral: true,
@@ -402,9 +402,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				}
 
 				try {
-					const owner = await interaction.client.users.fetch(ownerId);
-					await owner.send(
-						`📨 Mensaje anónimo de <@${interaction.user.id}>:\n${mensaje}`,
+					await Promise.all(
+						ownerIds.map(async (ownerId) => {
+							const owner = await interaction.client.users.fetch(ownerId);
+							await owner.send(
+								`📨 Mensaje anónimo de <@${interaction.user.id}>:\n${mensaje}`,
+							);
+						}),
 					);
 					await interaction.reply({
 						content: "Tu mensaje anónimo ha sido enviado correctamente.",
