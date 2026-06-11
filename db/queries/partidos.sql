@@ -42,7 +42,7 @@ JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
 WHERE partidos.id = $1;
 
 -- name: VerFechasDePartidos :many
-SELECT DISTINCT DATE(fecha_partido)::TEXT AS fecha
+SELECT DISTINCT DATE(fecha_partido - INTERVAL '5 hours')::TEXT AS fecha
 FROM partidos
 ORDER BY fecha ASC;
 
