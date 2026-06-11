@@ -347,7 +347,7 @@ export async function sendAnnouncementChannel(
 	},
 	message: string,
 ): Promise<void> {
-	const channelId = config.discord.announcements_channel_id;
+	const channelId = config.discord.announcements.channel.id;
 	if (!channelId) return;
 
 	try {

@@ -16,7 +16,11 @@ const ConfigSchema = z.object({
 				z.array(z.string()).min(1),
 			),
 		}),
-		announcements_channel_id: z.string().optional(),
+		announcements: z.object({
+			channel: z.object({
+				id: z.string().min(1),
+			}),
+		}),
 	}),
 	polla: z.object({
 		costo_entrada: z.number(),
@@ -37,6 +41,11 @@ const DEFAULT_CONFIG: Config = {
 		token: "",
 		owner: {
 			id: [],
+		},
+		announcements: {
+			channel: {
+				id: "",
+			},
 		},
 	},
 	polla: {
