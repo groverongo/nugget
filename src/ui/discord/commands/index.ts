@@ -11,6 +11,11 @@ import { buildMisPrediccionesComponents } from "../components/predicciones";
 import { sendAnnouncementChannel } from "../handlers/interactions";
 import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
+import {
+	buildAlertaAuraPoints,
+	buildAlertaFinPartido,
+	buildAlertaMedioTiempo,
+} from "../utils/match-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 const POLLERO_ROLE_ID = "1513773724074250350";
@@ -348,6 +353,27 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								: "Sin extras activos.",
 						].join("\n"),
 					});
+
+					const [info, predicciones, puntajes] = await Promise.all([
+						appContext.services.partidos.verInformacionPartido({
+							id: partidoId,
+						}),
+						appContext.services.predicciones.verPrediccionesPorPartido({
+							partidoId,
+						}),
+						appContext.services.predicciones.verPuntajesPartido({ partidoId }),
+					]);
+
+					if (info) {
+						await sendAnnouncementChannel(
+							interaction.client,
+							buildAlertaFinPartido(info, predicciones),
+						);
+						const mensajeAura = buildAlertaAuraPoints(puntajes);
+						if (mensajeAura) {
+							await sendAnnouncementChannel(interaction.client, mensajeAura);
+						}
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -400,6 +426,22 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await interaction.editReply({
 						content: `⏸️ **Partido #${partidoId}** — Medio tiempo: **${golesLocal} - ${golesVisitante}**`,
 					});
+
+					const [info, predicciones] = await Promise.all([
+						appContext.services.partidos.verInformacionPartido({
+							id: partidoId,
+						}),
+						appContext.services.predicciones.verPrediccionesPorPartido({
+							partidoId,
+						}),
+					]);
+
+					if (info) {
+						await sendAnnouncementChannel(
+							interaction.client,
+							buildAlertaMedioTiempo(info, predicciones),
+						);
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,

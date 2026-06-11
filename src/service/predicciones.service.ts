@@ -8,6 +8,8 @@ import type {
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
 	VerPrediccionesRow,
+	VerPuntajesPartidoArgs,
+	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
 import type { TxManager } from "@support/db.provider";
 import type { ObtenerPartidoRow } from "db/sqlcgen/partidos_sql";
@@ -73,6 +75,12 @@ export class PrediccionesService implements IPrediccionesService {
 		args: VerMisPrediccionesPorFechaArgs,
 	): Promise<VerMisPrediccionesPorFechaRow[]> {
 		return this.prediccionesRepo.verMisPrediccionesPorFecha(args);
+	}
+
+	verPuntajesPartido(
+		args: VerPuntajesPartidoArgs,
+	): Promise<VerPuntajesPartidoRow[]> {
+		return this.prediccionesRepo.verPuntajesPartido(args);
 	}
 
 	private async assertPartidoNoIniciado(
