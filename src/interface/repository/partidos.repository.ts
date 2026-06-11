@@ -1,4 +1,5 @@
 import type {
+	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
 	ObtenerPartidoArgs,
@@ -27,6 +28,8 @@ export interface IPartidosRepository {
 	verPartidoParaCalculo(
 		args: VerPartidoParaCalculoArgs,
 	): Promise<VerPartidoParaCalculoRow | null>;
+
+	actualizarPartidoEnVivo(args: ActualizarPartidoEnVivoArgs): Promise<void>;
 
 	actualizarPartidoFinalizado(
 		args: ActualizarPartidoFinalizadoArgs,

@@ -79,6 +79,9 @@ UPDATE partidos SET
     estado = 'medio_tiempo'
 WHERE id = $3;
 
+-- name: ActualizarPartidoEnVivo :exec
+UPDATE partidos SET estado = 'en_vivo' WHERE id = $1;
+
 -- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

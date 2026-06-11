@@ -3,7 +3,7 @@ import type { VerPrediccionesPorPartidoRow } from "@sqlc/predicciones_sql";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
-import { sendAnnouncementChannel } from "../handlers/interactions";
+import { sendAlertsChannel } from "../handlers/interactions";
 
 type Services = AppContext["services"];
 
@@ -91,9 +91,9 @@ export class MatchScheduler {
 
 		if (!info) return;
 
-		await sendAnnouncementChannel(
-			this.client,
-			buildAlertaPartido(info, predicciones),
-		);
+		await Promise.all([
+			sendAlertsChannel(this.client, buildAlertaPartido(info, predicciones)),
+			this.services.partidos.actualizarPartidoEnVivo(partidoId),
+		]);
 	}
 }

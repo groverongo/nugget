@@ -30,4 +30,8 @@ export class PartidosService implements IPartidosService {
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]> {
 		return this.partidosRepo.verPartidosNoFinalizados();
 	}
+
+	actualizarPartidoEnVivo(id: number): Promise<void> {
+		return this.partidosRepo.actualizarPartidoEnVivo({ id });
+	}
 }
