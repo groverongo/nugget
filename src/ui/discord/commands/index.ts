@@ -13,7 +13,7 @@ import { fechaSchema } from "../types/shared";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
-const POLLERO_ROLE_ID = "1513773724074250350";
+export const POLLERO_ROLE_ID = "1513773724074250350";
 
 async function assertPollero(
 	interaction: import("discord.js").ChatInputCommandInteraction,
@@ -695,6 +695,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.guild?.members.cache.get(interaction.user.id) ??
 						(await interaction.guild?.members.fetch(interaction.user.id));
 					await member?.roles.add(POLLERO_ROLE_ID);
+
+					const allMembers = await interaction.guild?.members.fetch();
+					const polleroCount =
+						allMembers?.filter((m) =>
+							m.roles.cache.has(POLLERO_ROLE_ID),
+						).size ?? 0;
+					await appContext.services.usuarios.recalcularPremios(polleroCount);
 
 					await interaction.editReply({
 						content:

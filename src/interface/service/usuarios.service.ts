@@ -17,6 +17,8 @@ export interface IUsuariosService {
 
 	deleteUsuario(args: DeleteUsuarioArgs): Promise<void>;
 
+	recalcularPremios(polleroCount: number): Promise<void>;
+
 	listUsuarios(): Promise<ListUsuariosRow[]>;
 
 	verEquipos(args?: VerEquiposInput): Promise<VerEquiposRow[]>;
