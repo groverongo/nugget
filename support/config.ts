@@ -23,7 +23,7 @@ const ConfigSchema = z.object({
 		fraccion_comision_org: z.number().min(0).max(1),
 		fraccion_extra_campeon: z.number().min(0).max(1),
 		factor_bloque_maximo: z.number(),
-		fecha_inicio_torneo: z.string().default("2026-06-11"),
+		fecha_inicio_torneo: z.string().default("2026-06-11T19:00:00.000Z"),
 	}),
 });
 
