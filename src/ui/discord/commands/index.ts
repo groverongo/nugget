@@ -704,8 +704,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await sendAnnouncementChannel(
 						interaction.client,
 						resultado === "created"
-							? `🎯 ¡<@${interaction.user.id}> ha enviado sus predicciones de Awards del Mundial!`
-							: `✏️ ¡<@${interaction.user.id}> ha actualizado sus predicciones de Awards del Mundial!`,
+							? `_🎯 ¡<@${interaction.user.id}> ha enviado sus predicciones de **Awards del Mundial**!_`
+							: `_✏️ ¡<@${interaction.user.id}> ha actualizado sus predicciones de **Awards del Mundial**!_`,
 					);
 				} catch (error) {
 					await interaction.editReply({
