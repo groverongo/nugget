@@ -88,6 +88,12 @@ UPDATE partidos SET goles_local = COALESCE(goles_local, 0) + 1 WHERE id = $1;
 -- name: SumarGolVisitante :exec
 UPDATE partidos SET goles_visitante = COALESCE(goles_visitante, 0) + 1 WHERE id = $1;
 
+-- name: RestarGolLocal :exec
+UPDATE partidos SET goles_local = GREATEST(COALESCE(goles_local, 0) - 1, 0) WHERE id = $1;
+
+-- name: RestarGolVisitante :exec
+UPDATE partidos SET goles_visitante = GREATEST(COALESCE(goles_visitante, 0) - 1, 0) WHERE id = $1;
+
 -- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

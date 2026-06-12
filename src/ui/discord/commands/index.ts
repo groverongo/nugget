@@ -142,6 +142,29 @@ const golCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const varCommand = new SlashCommandBuilder()
+	.setName("var")
+	.setDescription("[ADMIN] Anula un gol en un partido en vivo (-1 al equipo)")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido en vivo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("equipo")
+			.setDescription("Equipo al que se anula el gol")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Local", value: "local" },
+				{ name: "Visitante", value: "visitante" },
+			),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const pingCommand = new SlashCommandBuilder()
 	.setName("ping")
 	.setDescription("Responde con pong")
@@ -1481,6 +1504,60 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						buildAlertaGol(info, equipo),
 					);
 					await interaction.editReply({ content: "✅ Gol registrado." });
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"var",
+		{
+			definition: varCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter((p) => p.estado === "en_vivo" || p.estado === "medio_tiempo")
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [${p.estado}]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				const equipo = interaction.options.getString("equipo", true) as
+					| "local"
+					| "visitante";
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.partidos.restarGol(partidoId, equipo);
+					const info = await appContext.services.partidos.verInformacionPartido(
+						{
+							id: partidoId,
+						},
+					);
+					const score = info
+						? `${info.equipoLocalNombre} ${info.partidoGolesLocal ?? 0}-${info.partidoGolesVisitante ?? 0} ${info.equipoVisitanteNombre}`
+						: `#${partidoId}`;
+					await interaction.editReply({
+						content: `✅ VAR aplicado. Score actual: **${score}**`,
+					});
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,

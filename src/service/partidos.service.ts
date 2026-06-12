@@ -40,4 +40,10 @@ export class PartidosService implements IPartidosService {
 			? this.partidosRepo.sumarGolLocal({ id: partidoId })
 			: this.partidosRepo.sumarGolVisitante({ id: partidoId });
 	}
+
+	restarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void> {
+		return equipo === "local"
+			? this.partidosRepo.restarGolLocal({ id: partidoId })
+			: this.partidosRepo.restarGolVisitante({ id: partidoId });
+	}
 }

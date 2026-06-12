@@ -327,6 +327,36 @@ export async function sumarGolVisitante(client: Client, args: SumarGolVisitanteA
     });
 }
 
+export const restarGolLocalQuery = `-- name: RestarGolLocal :exec
+UPDATE partidos SET goles_local = GREATEST(COALESCE(goles_local, 0) - 1, 0) WHERE id = $1`;
+
+export interface RestarGolLocalArgs {
+    id: number;
+}
+
+export async function restarGolLocal(client: Client, args: RestarGolLocalArgs): Promise<void> {
+    await client.query({
+        text: restarGolLocalQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
+export const restarGolVisitanteQuery = `-- name: RestarGolVisitante :exec
+UPDATE partidos SET goles_visitante = GREATEST(COALESCE(goles_visitante, 0) - 1, 0) WHERE id = $1`;
+
+export interface RestarGolVisitanteArgs {
+    id: number;
+}
+
+export async function restarGolVisitante(client: Client, args: RestarGolVisitanteArgs): Promise<void> {
+    await client.query({
+        text: restarGolVisitanteQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,
