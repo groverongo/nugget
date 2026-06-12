@@ -3,10 +3,14 @@ import type {
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
+	VerParticipantesSinPrediccionArgs,
+	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorFechaArgs,
 	VerPrediccionesPorFechaRow,
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
+	VerPrediccionesResumenPartidoArgs,
+	VerPrediccionesResumenPartidoRow,
 	VerPrediccionesRow,
 	VerPuntajesPartidoArgs,
 	VerPuntajesPartidoRow,
@@ -42,4 +46,12 @@ export interface IPrediccionesService {
 	verPuntajesPartido(
 		args: VerPuntajesPartidoArgs,
 	): Promise<VerPuntajesPartidoRow[]>;
+
+	verPrediccionesResumenPartido(
+		args: VerPrediccionesResumenPartidoArgs,
+	): Promise<VerPrediccionesResumenPartidoRow[]>;
+
+	verParticipantesSinPrediccion(
+		args: VerParticipantesSinPrediccionArgs,
+	): Promise<VerParticipantesSinPrediccionRow[]>;
 }

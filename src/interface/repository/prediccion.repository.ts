@@ -5,10 +5,14 @@ import type {
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
+	VerParticipantesSinPrediccionArgs,
+	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorFechaArgs,
 	VerPrediccionesPorFechaRow,
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
+	VerPrediccionesResumenPartidoArgs,
+	VerPrediccionesResumenPartidoRow,
 	VerPrediccionesRow,
 	VerPrediccionPorUsuarioYPartidoArgs,
 	VerPrediccionPorUsuarioYPartidoRow,
@@ -57,6 +61,14 @@ export interface IPrediccionesRepository {
 	verPuntajesPartido(
 		args: VerPuntajesPartidoArgs,
 	): Promise<VerPuntajesPartidoRow[]>;
+
+	verPrediccionesResumenPartido(
+		args: VerPrediccionesResumenPartidoArgs,
+	): Promise<VerPrediccionesResumenPartidoRow[]>;
+
+	verParticipantesSinPrediccion(
+		args: VerParticipantesSinPrediccionArgs,
+	): Promise<VerParticipantesSinPrediccionRow[]>;
 
 	withTx(tx: PoolClient): IPrediccionesRepository;
 }

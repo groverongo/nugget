@@ -152,6 +152,36 @@ JOIN partidos ON partidos.id = prediccion.partido_id
 WHERE prediccion.usuario_id = $1
 ORDER BY fecha ASC;
 
+-- name: VerParticipantesSinPrediccion :many
+SELECT u.id, u.username
+FROM usuarios u
+WHERE u.participante = TRUE
+  AND NOT EXISTS (
+    SELECT 1 FROM prediccion p
+    WHERE p.usuario_id = u.id AND p.partido_id = $1
+  )
+ORDER BY u.username;
+
+-- name: VerPrediccionesResumenPartido :many
+SELECT
+    pe.usuario_id,
+    u.username,
+    pe.goles_local AS prediccion_goles_local,
+    pe.goles_visitante AS prediccion_goles_visitante,
+    COALESCE(pe.puntos_base, 0)::INTEGER AS puntos_base,
+    COALESCE(pe.puntos_en_racha, 0)::INTEGER AS puntos_en_racha,
+    COALESCE(pe.puntos_total, 0)::INTEGER AS puntos_total,
+    COALESCE(totales.total_acumulado, 0)::INTEGER AS puntos_acumulados
+FROM prediccion pe
+JOIN usuarios u ON u.id = pe.usuario_id
+LEFT JOIN (
+    SELECT usuario_id, SUM(puntos_total)::INTEGER AS total_acumulado
+    FROM prediccion
+    GROUP BY usuario_id
+) totales ON totales.usuario_id = pe.usuario_id
+WHERE pe.partido_id = $1 AND u.participante = TRUE
+ORDER BY COALESCE(pe.puntos_total, 0) DESC, u.username;
+
 -- name: VerMisPrediccionesPorFecha :many
 SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_bandera, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_bandera, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (

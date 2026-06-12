@@ -3,10 +3,14 @@ import type {
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
+	VerParticipantesSinPrediccionArgs,
+	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorFechaArgs,
 	VerPrediccionesPorFechaRow,
 	VerPrediccionesPorPartidoArgs,
 	VerPrediccionesPorPartidoRow,
+	VerPrediccionesResumenPartidoArgs,
+	VerPrediccionesResumenPartidoRow,
 	VerPrediccionesRow,
 	VerPuntajesPartidoArgs,
 	VerPuntajesPartidoRow,
@@ -99,6 +103,18 @@ export class PrediccionesService implements IPrediccionesService {
 		args: VerPuntajesPartidoArgs,
 	): Promise<VerPuntajesPartidoRow[]> {
 		return this.prediccionesRepo.verPuntajesPartido(args);
+	}
+
+	verPrediccionesResumenPartido(
+		args: VerPrediccionesResumenPartidoArgs,
+	): Promise<VerPrediccionesResumenPartidoRow[]> {
+		return this.prediccionesRepo.verPrediccionesResumenPartido(args);
+	}
+
+	verParticipantesSinPrediccion(
+		args: VerParticipantesSinPrediccionArgs,
+	): Promise<VerParticipantesSinPrediccionRow[]> {
+		return this.prediccionesRepo.verParticipantesSinPrediccion(args);
 	}
 
 	private async assertPartidoNoIniciado(
