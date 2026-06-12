@@ -7,6 +7,21 @@ import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 
 type Services = AppContext["services"];
 
+export async function enviarAlertaDiaria(
+	date: string,
+	services: Services,
+	client: Client,
+): Promise<boolean> {
+	const partidos = await services.partidos.verPartidosPorFecha({ date });
+	const programados = partidos.filter((p) => p.estado === "programado");
+	if (programados.length === 0) return false;
+	await sendComponentsToAlertsChannel(
+		client,
+		buildAlertaDiariaPartidosComponents(programados),
+	);
+	return true;
+}
+
 function getNext9amPeru(): Date {
 	// Peru = UTC-5, so 9am Peru = 14:00 UTC
 	const next = new Date();
@@ -43,18 +58,11 @@ export class DailyAlertScheduler {
 
 	private async fire(): Promise<void> {
 		try {
-			const hoy = obtenerYYYYMMDDPeru();
-			const partidos = await this.services.partidos.verPartidosPorFecha({
-				date: hoy,
-			});
-			const programados = partidos.filter((p) => p.estado === "programado");
-
-			if (programados.length > 0) {
-				await sendComponentsToAlertsChannel(
-					this.client,
-					buildAlertaDiariaPartidosComponents(programados),
-				);
-			}
+			await enviarAlertaDiaria(
+				obtenerYYYYMMDDPeru(),
+				this.services,
+				this.client,
+			);
 		} finally {
 			this.scheduleNext();
 		}

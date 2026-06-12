@@ -15,6 +15,16 @@ import {
 	sendAlertsChannel,
 	sendAnnouncementChannel,
 } from "../handlers/interactions";
+import { enviarAlertaAwards } from "../services/awards-scheduler";
+import { enviarAlertaDiaria } from "../services/daily-alert-scheduler";
+import {
+	checkAndScheduleEndOfDay,
+	enviarResumenDia,
+} from "../services/end-of-day-scheduler";
+import {
+	enviarAlertaInicioPartidoSoloMensaje,
+	enviarEstadisticasPrePartido,
+} from "../services/match-scheduler";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
@@ -46,6 +56,53 @@ const AWARDS_PLAYER_FIELDS = [
 	"mejor_jugador_joven",
 	"mejor_gol",
 ] as const;
+
+const enviarAlertaCommand = new SlashCommandBuilder()
+	.setName("enviar-alerta")
+	.setDescription(
+		"[ADMIN] Envía manualmente una alerta de Nugget al canal de alertas",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("tipo")
+			.setDescription("Tipo de alerta a enviar")
+			.setRequired(true)
+			.addChoices(
+				{
+					name: "📣 Diaria — partidos programados de hoy",
+					value: "diaria",
+				},
+				{
+					name: "📊 Pre-partido — estadísticas antes del partido",
+					value: "pre-partido",
+				},
+				{ name: "🏆 Awards — cierre de predicciones", value: "awards" },
+				{ name: "📋 Resumen del día", value: "resumen-dia" },
+				{
+					name: "🕛 Inicio de partido (solo mensaje, sin cambiar estado)",
+					value: "inicio-partido",
+				},
+			),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido")
+			.setDescription(
+				"ID del partido (requerido para pre-partido e inicio-partido)",
+			)
+			.setRequired(false)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha")
+			.setDescription(
+				"Fecha YYYY-MM-DD (para resumen-dia y diaria; por defecto hoy)",
+			)
+			.setRequired(false),
+	)
+	.setContexts(InteractionContextType.Guild);
 
 const pingCommand = new SlashCommandBuilder()
 	.setName("ping")
@@ -455,6 +512,14 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						const mensajeAura = buildAlertaAuraPoints(puntajes);
 						if (mensajeAura) {
 							await sendAlertsChannel(interaction.client, mensajeAura);
+						}
+
+						if (info.fechaPartido) {
+							await checkAndScheduleEndOfDay(
+								info.fechaPartido,
+								appContext.services,
+								interaction.client,
+							);
 						}
 					}
 				} catch (error) {
@@ -1172,6 +1237,125 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								: "",
 						].join(""),
 					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"enviar-alerta",
+		{
+			definition: enviarAlertaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focusedOption = interaction.options.getFocused(true);
+				if (focusedOption.name !== "partido") return;
+				const tipo = interaction.options.getString("tipo");
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const q = focusedOption.value.toString().toLowerCase();
+				const opciones = partidos
+					.filter(
+						(p) =>
+							tipo !== "inicio-partido" ||
+							p.estado === "programado" ||
+							p.estado === "en_vivo",
+					)
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [${p.estado}]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const tipo = interaction.options.getString("tipo", true);
+				const partidoId = interaction.options.getInteger("partido");
+				const fechaRaw = interaction.options.getString("fecha");
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					switch (tipo) {
+						case "diaria": {
+							const fecha = fechaRaw ?? obtenerYYYYMMDDPeru();
+							const enviado = await enviarAlertaDiaria(
+								fecha,
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: enviado
+									? `✅ Alerta diaria enviada (${fecha}).`
+									: `⚠️ No hay partidos programados para ${fecha}.`,
+							});
+							break;
+						}
+						case "pre-partido": {
+							if (partidoId === null) {
+								await interaction.editReply({
+									content: "❌ Debes indicar un `partido` para esta alerta.",
+								});
+								return;
+							}
+							const enviadoPre = await enviarEstadisticasPrePartido(
+								partidoId,
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: enviadoPre
+									? "✅ Estadísticas pre-partido enviadas."
+									: `❌ No se encontró el partido #${partidoId}.`,
+							});
+							break;
+						}
+						case "awards": {
+							await enviarAlertaAwards(appContext.services, interaction.client);
+							await interaction.editReply({
+								content: "✅ Alerta de awards enviada.",
+							});
+							break;
+						}
+						case "resumen-dia": {
+							const fecha = fechaRaw ?? obtenerYYYYMMDDPeru();
+							await enviarResumenDia(
+								fecha,
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: `✅ Resumen del día (${fecha}) enviado.`,
+							});
+							break;
+						}
+						case "inicio-partido": {
+							if (partidoId === null) {
+								await interaction.editReply({
+									content: "❌ Debes indicar un `partido` para esta alerta.",
+								});
+								return;
+							}
+							const enviadoInicio = await enviarAlertaInicioPartidoSoloMensaje(
+								partidoId,
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: enviadoInicio
+									? "✅ Alerta de inicio de partido enviada (estado no modificado)."
+									: `❌ No se encontró el partido #${partidoId}.`,
+							});
+							break;
+						}
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,

@@ -83,6 +83,14 @@ function buildAlertaAwards(rows: VerPrediccionesAwardsRow[]): string {
 	);
 }
 
+export async function enviarAlertaAwards(
+	services: Services,
+	client: Client,
+): Promise<void> {
+	const rows = await services.awards.verPrediccionesAwards();
+	await sendAlertsChannel(client, buildAlertaAwards(rows));
+}
+
 export class AwardsScheduler {
 	constructor(
 		private readonly services: Services,
@@ -99,7 +107,7 @@ export class AwardsScheduler {
 		}
 
 		setTimeout(() => {
-			this.fireAlerta().catch((err) =>
+			enviarAlertaAwards(this.services, this.client).catch((err) =>
 				logger.error({ err }, "Error disparando alerta de awards"),
 			);
 		}, delay);
@@ -108,10 +116,5 @@ export class AwardsScheduler {
 			{ fechaCierre: fechaCierre.toISOString(), delayMs: delay },
 			"Alerta de awards programada",
 		);
-	}
-
-	private async fireAlerta(): Promise<void> {
-		const rows = await this.services.awards.verPrediccionesAwards();
-		await sendAlertsChannel(this.client, buildAlertaAwards(rows));
 	}
 }
