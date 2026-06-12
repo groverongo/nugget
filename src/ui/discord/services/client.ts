@@ -130,7 +130,9 @@ export function registerDiscordEventHandlers(
 				participante: hasPollero,
 			});
 
-			await appContext.services.usuarios.recalcularPremios();
+			if (!hasPollero) {
+				await appContext.services.usuarios.recalcularPremios();
+			}
 		} catch (error) {
 			logger.error(
 				{ err: error, userId: newMember.id },
