@@ -297,6 +297,23 @@ export async function actualizarPartidoEnVivo(client: Client, args: ActualizarPa
     });
 }
 
+export const actualizarGolesPartidoQuery = `-- name: ActualizarGolesPartido :exec
+UPDATE partidos SET goles_local = $1, goles_visitante = $2 WHERE id = $3`;
+
+export interface ActualizarGolesPartidoArgs {
+    golesLocal: number;
+    golesVisitante: number;
+    id: number;
+}
+
+export async function actualizarGolesPartido(client: Client, args: ActualizarGolesPartidoArgs): Promise<void> {
+    await client.query({
+        text: actualizarGolesPartidoQuery,
+        values: [args.golesLocal, args.golesVisitante, args.id],
+        rowMode: "array"
+    });
+}
+
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

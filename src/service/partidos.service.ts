@@ -34,4 +34,41 @@ export class PartidosService implements IPartidosService {
 	actualizarPartidoEnVivo(id: number): Promise<void> {
 		return this.partidosRepo.actualizarPartidoEnVivo({ id });
 	}
+
+	async sumarGol(
+		partidoId: number,
+		equipo: "local" | "visitante",
+	): Promise<void> {
+		const info = await this.partidosRepo.verInformacionPartido({
+			id: partidoId,
+		});
+		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		await this.partidosRepo.actualizarGolesPartido({
+			golesLocal: (info.partidoGolesLocal ?? 0) + (equipo === "local" ? 1 : 0),
+			golesVisitante:
+				(info.partidoGolesVisitante ?? 0) + (equipo === "visitante" ? 1 : 0),
+			id: partidoId,
+		});
+	}
+
+	async restarGol(
+		partidoId: number,
+		equipo: "local" | "visitante",
+	): Promise<void> {
+		const info = await this.partidosRepo.verInformacionPartido({
+			id: partidoId,
+		});
+		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		await this.partidosRepo.actualizarGolesPartido({
+			golesLocal: Math.max(
+				(info.partidoGolesLocal ?? 0) - (equipo === "local" ? 1 : 0),
+				0,
+			),
+			golesVisitante: Math.max(
+				(info.partidoGolesVisitante ?? 0) - (equipo === "visitante" ? 1 : 0),
+				0,
+			),
+			id: partidoId,
+		});
+	}
 }

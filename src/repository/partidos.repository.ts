@@ -1,7 +1,9 @@
 import {
+	type ActualizarGolesPartidoArgs,
 	type ActualizarPartidoEnVivoArgs,
 	type ActualizarPartidoFinalizadoArgs,
 	type ActualizarPartidoMedioTiempoArgs,
+	actualizarGolesPartido,
 	actualizarPartidoEnVivo,
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
@@ -69,6 +71,10 @@ export class PartidosRepository implements IPartidosRepository {
 		args: ActualizarPartidoMedioTiempoArgs,
 	): Promise<void> {
 		return actualizarPartidoMedioTiempo(this.pool, args);
+	}
+
+	actualizarGolesPartido(args: ActualizarGolesPartidoArgs): Promise<void> {
+		return actualizarGolesPartido(this.pool, args);
 	}
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]> {

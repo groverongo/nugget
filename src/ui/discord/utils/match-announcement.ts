@@ -118,6 +118,22 @@ export function buildAlertaFinPartido(
 	return lineas.join("\n");
 }
 
+export function buildAlertaGol(
+	info: VerInformacionPartidoRow,
+	equipo: "local" | "visitante",
+): string {
+	const gL = info.partidoGolesLocal ?? 0;
+	const gV = info.partidoGolesVisitante ?? 0;
+	const equipoGol =
+		equipo === "local"
+			? `${info.equipoLocalNombre} ${info.equipoLocalBandera}`
+			: `${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
+	return [
+		`⚽ **¡Gol de ${equipoGol}!**`,
+		`${info.equipoLocalBandera} **${info.equipoLocalNombre} ${gL}-${gV} ${info.equipoVisitanteNombre}** ${info.equipoVisitanteBandera}`,
+	].join("\n");
+}
+
 export function buildAlertaAuraPoints(
 	puntajes: VerPuntajesPartidoRow[],
 ): string | null {

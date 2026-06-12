@@ -7,6 +7,7 @@ import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
 import { sendAlertsChannel } from "../handlers/interactions";
+import { buildAlertaGol } from "../utils/match-announcement";
 
 type Services = AppContext["services"];
 
@@ -143,6 +144,18 @@ export async function enviarAlertaInicioPartidoSoloMensaje(
 	]);
 	if (!info) return false;
 	await sendAlertsChannel(client, buildAlertaPartido(info, predicciones));
+	return true;
+}
+
+export async function enviarAlertaGol(
+	partidoId: number,
+	equipo: "local" | "visitante",
+	services: Services,
+	client: Client,
+): Promise<boolean> {
+	const info = await services.partidos.verInformacionPartido({ id: partidoId });
+	if (!info) return false;
+	await sendAlertsChannel(client, buildAlertaGol(info, equipo));
 	return true;
 }
 

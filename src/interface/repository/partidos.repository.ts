@@ -1,4 +1,5 @@
 import type {
+	ActualizarGolesPartidoArgs,
 	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
@@ -38,6 +39,8 @@ export interface IPartidosRepository {
 	actualizarPartidoMedioTiempo(
 		args: ActualizarPartidoMedioTiempoArgs,
 	): Promise<void>;
+
+	actualizarGolesPartido(args: ActualizarGolesPartidoArgs): Promise<void>;
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
 
