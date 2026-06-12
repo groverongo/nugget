@@ -78,8 +78,8 @@ function buildAlertaAwards(rows: VerPrediccionesAwardsRow[]): string {
 		),
 	];
 
-	return ["🏆 **¡CIERRE DE PREDICCIONES DE AWARDS!**", "", ...categorias].join(
-		"\n",
+	return ["🏆 **¡CIERRE DE PREDICCIONES DE AWARDS!**", ...categorias].join(
+		"\n\n",
 	);
 }
 
