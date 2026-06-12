@@ -1,5 +1,8 @@
 import type { VerInformacionPartidoRow } from "@sqlc/partidos_sql";
-import type { VerPrediccionesPorPartidoRow } from "@sqlc/predicciones_sql";
+import type {
+	VerParticipantesSinPrediccionRow,
+	VerPrediccionesPorPartidoRow,
+} from "@sqlc/predicciones_sql";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
@@ -12,9 +15,9 @@ function buildAlertaPartido(
 	predicciones: VerPrediccionesPorPartidoRow[],
 ): string {
 	const lineas = [
-		`🕛 **¡EMPEZÓ EL PARTIDO!**`,
+		"🕛 **¡EMPEZÓ EL PARTIDO!**",
 		`**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`,
-		`*Ya no más apuestas* 🙅`,
+		"*Ya no más apuestas* 🙅",
 	];
 
 	if (predicciones.length === 0) {
@@ -30,7 +33,6 @@ function buildAlertaPartido(
 		grouped.set(key, group);
 	}
 
-	// Orden: total goles desc, goles local desc
 	const sorted = [...grouped.entries()].sort(([a], [b]) => {
 		const [aL, aV] = a.split("-").map(Number);
 		const [bL, bV] = b.split("-").map(Number);
@@ -45,8 +47,108 @@ function buildAlertaPartido(
 	return lineas.join("\n");
 }
 
+function buildAlertaPrePartido(
+	info: VerInformacionPartidoRow,
+	predicciones: VerPrediccionesPorPartidoRow[],
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
+): string {
+	const totalParticipantes = predicciones.length + sinPrediccion.length;
+	const count = predicciones.length;
+
+	const timestamp = info.fechaPartido
+		? Math.floor(info.fechaPartido.getTime() / 1000)
+		: null;
+	const horaStr = timestamp ? `<t:${timestamp}:t>` : "";
+
+	const lineas: string[] = [
+		"📊 ***Estadísticas pre-partido***",
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}** ${horaStr}*`,
+	];
+
+	let sinApostarStr = "";
+	if (sinPrediccion.length > 0) {
+		sinApostarStr =
+			sinPrediccion.length <= 7
+				? ` (*Sin apostar:* ${sinPrediccion.map((u) => `<@${u.id}>`).join(", ")})`
+				: ` (*Sin apostar:* ${sinPrediccion.length} personas)`;
+	}
+	lineas.push(
+		`- **Total de apuestas:** ${count}/${totalParticipantes}${sinApostarStr}`,
+	);
+
+	if (count === 0) return lineas.join("\n");
+
+	const meanL = (
+		predicciones.reduce((s, p) => s + p.prediccionGolesLocal, 0) / count
+	).toFixed(2);
+	const meanV = (
+		predicciones.reduce((s, p) => s + p.prediccionGolesVisitante, 0) / count
+	).toFixed(2);
+	lineas.push(`- **Media de score:** ${meanL}-${meanV}`);
+
+	const sortedL = predicciones
+		.map((p) => p.prediccionGolesLocal)
+		.sort((a, b) => a - b);
+	const sortedV = predicciones
+		.map((p) => p.prediccionGolesVisitante)
+		.sort((a, b) => a - b);
+	const mid = Math.floor(count / 2);
+	const medianL =
+		count % 2 === 0
+			? Math.round((sortedL[mid - 1] + sortedL[mid]) / 2)
+			: sortedL[mid];
+	const medianV =
+		count % 2 === 0
+			? Math.round((sortedV[mid - 1] + sortedV[mid]) / 2)
+			: sortedV[mid];
+	lineas.push(`- **Mediana de score:** ${medianL}-${medianV}`);
+
+	const distinctResults = new Set(
+		predicciones.map(
+			(p) => `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`,
+		),
+	).size;
+	const dispersion = ((distinctResults / count) * 100).toFixed(1);
+	lineas.push(`- **Dispersión:** ${dispersion}%`);
+
+	return lineas.join("\n");
+}
+
+export async function enviarEstadisticasPrePartido(
+	partidoId: number,
+	services: Services,
+	client: Client,
+): Promise<boolean> {
+	const [info, predicciones, sinPrediccion] = await Promise.all([
+		services.partidos.verInformacionPartido({ id: partidoId }),
+		services.predicciones.verPrediccionesPorPartido({ partidoId }),
+		services.predicciones.verParticipantesSinPrediccion({ partidoId }),
+	]);
+	if (!info) return false;
+	await sendAlertsChannel(
+		client,
+		buildAlertaPrePartido(info, predicciones, sinPrediccion),
+	);
+	return true;
+}
+
+export async function enviarAlertaInicioPartidoSoloMensaje(
+	partidoId: number,
+	services: Services,
+	client: Client,
+): Promise<boolean> {
+	const [info, predicciones] = await Promise.all([
+		services.partidos.verInformacionPartido({ id: partidoId }),
+		services.predicciones.verPrediccionesPorPartido({ partidoId }),
+	]);
+	if (!info) return false;
+	await sendAlertsChannel(client, buildAlertaPartido(info, predicciones));
+	return true;
+}
+
 export class MatchScheduler {
 	private readonly pending = new Map<number, NodeJS.Timeout>();
+	private readonly pendingPreMatch = new Map<number, NodeJS.Timeout>();
 
 	constructor(
 		private readonly services: Services,
@@ -69,9 +171,25 @@ export class MatchScheduler {
 	schedule(partidoId: number, fechaPartido: Date): void {
 		const existing = this.pending.get(partidoId);
 		if (existing !== undefined) clearTimeout(existing);
+		const existingPre = this.pendingPreMatch.get(partidoId);
+		if (existingPre !== undefined) clearTimeout(existingPre);
 
 		const delay = fechaPartido.getTime() - Date.now();
 		if (delay <= 0) return;
+
+		const preMatchDelay = delay - 30 * 60 * 1000;
+		if (preMatchDelay > 0) {
+			const preTimeout = setTimeout(() => {
+				this.pendingPreMatch.delete(partidoId);
+				this.fireAlertaPrePartido(partidoId).catch((err) =>
+					logger.error(
+						{ err, partidoId },
+						"Error disparando estadísticas pre-partido",
+					),
+				);
+			}, preMatchDelay);
+			this.pendingPreMatch.set(partidoId, preTimeout);
+		}
 
 		const timeout = setTimeout(() => {
 			this.pending.delete(partidoId);
@@ -81,6 +199,10 @@ export class MatchScheduler {
 		}, delay);
 
 		this.pending.set(partidoId, timeout);
+	}
+
+	private async fireAlertaPrePartido(partidoId: number): Promise<void> {
+		await enviarEstadisticasPrePartido(partidoId, this.services, this.client);
 	}
 
 	private async fireAlerta(partidoId: number): Promise<void> {

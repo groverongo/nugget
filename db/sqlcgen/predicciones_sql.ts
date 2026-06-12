@@ -585,3 +585,87 @@ export async function verPuntajesPartido(client: Client, args: VerPuntajesPartid
         };
     });
 }
+
+export const verParticipantesSinPrediccionQuery = `-- name: VerParticipantesSinPrediccion :many
+SELECT u.id, u.username
+FROM usuarios u
+WHERE u.participante = TRUE
+  AND NOT EXISTS (
+    SELECT 1 FROM prediccion p
+    WHERE p.usuario_id = u.id AND p.partido_id = $1
+  )
+ORDER BY u.username`;
+
+export interface VerParticipantesSinPrediccionArgs {
+    partidoId: number;
+}
+
+export interface VerParticipantesSinPrediccionRow {
+    id: string;
+    username: string;
+}
+
+export async function verParticipantesSinPrediccion(client: Client, args: VerParticipantesSinPrediccionArgs): Promise<VerParticipantesSinPrediccionRow[]> {
+    const result = await client.query({
+        text: verParticipantesSinPrediccionQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        username: row[1],
+    }));
+}
+
+export const verPrediccionesResumenPartidoQuery = `-- name: VerPrediccionesResumenPartido :many
+SELECT
+    pe.usuario_id,
+    u.username,
+    pe.goles_local AS prediccion_goles_local,
+    pe.goles_visitante AS prediccion_goles_visitante,
+    COALESCE(pe.puntos_base, 0)::INTEGER AS puntos_base,
+    COALESCE(pe.puntos_en_racha, 0)::INTEGER AS puntos_en_racha,
+    COALESCE(pe.puntos_total, 0)::INTEGER AS puntos_total,
+    COALESCE(totales.total_acumulado, 0)::INTEGER AS puntos_acumulados
+FROM prediccion pe
+JOIN usuarios u ON u.id = pe.usuario_id
+LEFT JOIN (
+    SELECT usuario_id, SUM(puntos_total)::INTEGER AS total_acumulado
+    FROM prediccion
+    GROUP BY usuario_id
+) totales ON totales.usuario_id = pe.usuario_id
+WHERE pe.partido_id = $1 AND u.participante = TRUE
+ORDER BY COALESCE(pe.puntos_total, 0) DESC, u.username`;
+
+export interface VerPrediccionesResumenPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerPrediccionesResumenPartidoRow {
+    usuarioId: string;
+    username: string;
+    prediccionGolesLocal: number;
+    prediccionGolesVisitante: number;
+    puntosBase: number;
+    puntosEnRacha: number;
+    puntosTotal: number;
+    puntosAcumulados: number;
+}
+
+export async function verPrediccionesResumenPartido(client: Client, args: VerPrediccionesResumenPartidoArgs): Promise<VerPrediccionesResumenPartidoRow[]> {
+    const result = await client.query({
+        text: verPrediccionesResumenPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        usuarioId: row[0],
+        username: row[1],
+        prediccionGolesLocal: row[2],
+        prediccionGolesVisitante: row[3],
+        puntosBase: row[4],
+        puntosEnRacha: row[5],
+        puntosTotal: row[6],
+        puntosAcumulados: row[7],
+    }));
+}

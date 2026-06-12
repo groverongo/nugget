@@ -16,6 +16,7 @@ import {
 	handlePrediccionModalSubmitInteraction,
 } from "../handlers/interactions";
 import { AwardsScheduler } from "./awards-scheduler";
+import { DailyAlertScheduler } from "./daily-alert-scheduler";
 import { MatchScheduler } from "./match-scheduler";
 
 z.config(z.locales.es());
@@ -50,6 +51,7 @@ export function registerDiscordEventHandlers(
 			const scheduler = new MatchScheduler(appContext.services, readyClient);
 			await scheduler.init();
 			new AwardsScheduler(appContext.services, readyClient).init();
+			new DailyAlertScheduler(appContext.services, readyClient).init();
 			logger.info({ user: readyClient.user.tag }, "Discord bot listo");
 		} catch (error) {
 			logger.error(
@@ -130,9 +132,7 @@ export function registerDiscordEventHandlers(
 				participante: hasPollero,
 			});
 
-			if (!hasPollero) {
-				await appContext.services.usuarios.recalcularPremios();
-			}
+			await appContext.services.usuarios.recalcularPremios();
 		} catch (error) {
 			logger.error(
 				{ err: error, userId: newMember.id },

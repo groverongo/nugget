@@ -8,10 +8,14 @@ import {
 	type VerMisPrediccionesPorFechaArgs,
 	type VerMisPrediccionesPorFechaRow,
 	type VerMisPrediccionesRow,
+	type VerParticipantesSinPrediccionArgs,
+	type VerParticipantesSinPrediccionRow,
 	type VerPrediccionesPorFechaArgs,
 	type VerPrediccionesPorFechaRow,
 	type VerPrediccionesPorPartidoArgs,
 	type VerPrediccionesPorPartidoRow,
+	type VerPrediccionesResumenPartidoArgs,
+	type VerPrediccionesResumenPartidoRow,
 	type VerPrediccionesRow,
 	type VerPrediccionPorUsuarioYPartidoArgs,
 	type VerPrediccionPorUsuarioYPartidoRow,
@@ -22,9 +26,11 @@ import {
 	verFechasDePrediccionesPorUsuario,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
+	verParticipantesSinPrediccion,
 	verPredicciones,
 	verPrediccionesPorFecha,
 	verPrediccionesPorPartido,
+	verPrediccionesResumenPartido,
 	verPrediccionPorUsuarioYPartido,
 	verPuntajesPartido,
 	verResultadosRecientesUsuario,
@@ -102,6 +108,18 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		args: VerPuntajesPartidoArgs,
 	): Promise<VerPuntajesPartidoRow[]> {
 		return verPuntajesPartido(this.pool, args);
+	}
+
+	verPrediccionesResumenPartido(
+		args: VerPrediccionesResumenPartidoArgs,
+	): Promise<VerPrediccionesResumenPartidoRow[]> {
+		return verPrediccionesResumenPartido(this.pool, args);
+	}
+
+	verParticipantesSinPrediccion(
+		args: VerParticipantesSinPrediccionArgs,
+	): Promise<VerParticipantesSinPrediccionRow[]> {
+		return verParticipantesSinPrediccion(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {
