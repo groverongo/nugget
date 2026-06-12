@@ -116,6 +116,39 @@ export function buildPartidosComponents(
 	return [container.toJSON()];
 }
 
+export function buildAlertaDiariaPartidosComponents(
+	partidos: PartidosPorFecha,
+): APIMessageTopLevelComponent[] {
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(
+			"📣 ***¡Buenos días!** Es hora de apostar a estos partidos:*",
+		),
+	);
+
+	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		container.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+						)
+						.setLabel("Predecir")
+						.setStyle(ButtonStyle.Primary),
+				),
+		);
+
+		container.addSeparatorComponents(
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+		);
+	}
+
+	return [container.toJSON()];
+}
+
 export function buildPartidosAdminComponents(
 	date: string,
 	partidos: PartidosPorFecha,

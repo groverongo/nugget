@@ -2,6 +2,7 @@ import { config } from "@support/config";
 import { logger } from "@support/logger";
 import {
 	ActionRowBuilder,
+	type APIMessageTopLevelComponent,
 	type AutocompleteInteraction,
 	type ButtonInteraction,
 	type ChatInputCommandInteraction,
@@ -588,4 +589,32 @@ export function sendAlertsChannel(
 	message: string,
 ): Promise<void> {
 	return sendToChannel(client, config.discord.alerts.channel.id, message);
+}
+
+export async function sendComponentsToAlertsChannel(
+	client: DiscordClient,
+	components: APIMessageTopLevelComponent[],
+): Promise<void> {
+	const channelId = config.discord.alerts.channel.id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "send" in channel) {
+			await channel.send({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch in discord.js
+				components: components as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		}
+	} catch (error) {
+		logger.error(
+			{ err: error, channelId },
+			"Error enviando componentes al canal de alertas",
+		);
+	}
 }
