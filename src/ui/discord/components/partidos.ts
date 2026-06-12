@@ -62,15 +62,11 @@ export function buildPartidosComponents(
 	const partidosMostrar = partidos.filter((p) => p.estado !== "finalizado");
 
 	if (partidosMostrar.length === 0) {
-		return [
-			new ContainerBuilder()
-				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(
-						`# Partidos del <t:${fechaADiscordTimestamp(date)}:D>\nNo hay partidos pendientes para esta fecha.`,
-					),
-				)
-				.toJSON(),
-		];
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				"No hay partidos pendientes para esta fecha.",
+			),
+		);
 	}
 
 	for (const partido of partidosMostrar.slice(0, PARTIDOS_MAX_BUTTONS)) {
