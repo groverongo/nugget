@@ -552,6 +552,23 @@ type DiscordClient = {
 	};
 };
 
+function splitMessage(text: string, maxLength = 2000): string[] {
+	if (text.length <= maxLength) return [text];
+	const chunks: string[] = [];
+	let current = "";
+	for (const line of text.split("\n")) {
+		const addition = current ? `\n${line}` : line;
+		if (current.length + addition.length > maxLength) {
+			if (current) chunks.push(current);
+			current = line.length > maxLength ? line.slice(0, maxLength) : line;
+		} else {
+			current += addition;
+		}
+	}
+	if (current) chunks.push(current);
+	return chunks;
+}
+
 async function sendToChannel(
 	client: DiscordClient,
 	channelId: string,
@@ -566,7 +583,9 @@ async function sendToChannel(
 			undefined;
 
 		if (channel && "send" in channel) {
-			await channel.send(message);
+			for (const chunk of splitMessage(message)) {
+				await channel.send(chunk);
+			}
 		}
 	} catch (error) {
 		logger.error({ err: error, channelId }, "Error enviando mensaje al canal");
