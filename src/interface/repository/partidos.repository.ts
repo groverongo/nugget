@@ -4,6 +4,8 @@ import type {
 	ActualizarPartidoMedioTiempoArgs,
 	ObtenerPartidoArgs,
 	ObtenerPartidoRow,
+	SumarGolLocalArgs,
+	SumarGolVisitanteArgs,
 	VerInformacionPartidoArgs,
 	VerInformacionPartidoRow,
 	VerPartidoParaCalculoArgs,
@@ -38,6 +40,10 @@ export interface IPartidosRepository {
 	actualizarPartidoMedioTiempo(
 		args: ActualizarPartidoMedioTiempoArgs,
 	): Promise<void>;
+
+	sumarGolLocal(args: SumarGolLocalArgs): Promise<void>;
+
+	sumarGolVisitante(args: SumarGolVisitanteArgs): Promise<void>;
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
 

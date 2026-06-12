@@ -8,6 +8,10 @@ import {
 	type ObtenerPartidoArgs,
 	type ObtenerPartidoRow,
 	obtenerPartido,
+	type SumarGolLocalArgs,
+	type SumarGolVisitanteArgs,
+	sumarGolLocal,
+	sumarGolVisitante,
 	type VerInformacionPartidoArgs,
 	type VerInformacionPartidoRow,
 	type VerPartidoParaCalculoArgs,
@@ -69,6 +73,14 @@ export class PartidosRepository implements IPartidosRepository {
 		args: ActualizarPartidoMedioTiempoArgs,
 	): Promise<void> {
 		return actualizarPartidoMedioTiempo(this.pool, args);
+	}
+
+	sumarGolLocal(args: SumarGolLocalArgs): Promise<void> {
+		return sumarGolLocal(this.pool, args);
+	}
+
+	sumarGolVisitante(args: SumarGolVisitanteArgs): Promise<void> {
+		return sumarGolVisitante(this.pool, args);
 	}
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]> {

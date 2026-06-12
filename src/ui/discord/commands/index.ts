@@ -22,6 +22,7 @@ import {
 	enviarResumenDia,
 } from "../services/end-of-day-scheduler";
 import {
+	enviarAlertaGol,
 	enviarAlertaInicioPartidoSoloMensaje,
 	enviarEstadisticasPrePartido,
 } from "../services/match-scheduler";
@@ -29,6 +30,7 @@ import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
 	buildAlertaFinPartido,
+	buildAlertaGol,
 	buildAlertaMedioTiempo,
 } from "../utils/match-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
@@ -83,16 +85,27 @@ const enviarAlertaCommand = new SlashCommandBuilder()
 					name: "🕛 Inicio de partido (solo mensaje, sin cambiar estado)",
 					value: "inicio-partido",
 				},
+				{ name: "⚽ Gol — alerta de gol sin modificar DB", value: "gol" },
 			),
 	)
 	.addIntegerOption((option) =>
 		option
 			.setName("partido")
 			.setDescription(
-				"ID del partido (requerido para pre-partido e inicio-partido)",
+				"ID del partido (requerido para pre-partido, inicio-partido y gol)",
 			)
 			.setRequired(false)
 			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("equipo")
+			.setDescription("Equipo que marcó (requerido para gol)")
+			.setRequired(false)
+			.addChoices(
+				{ name: "Local", value: "local" },
+				{ name: "Visitante", value: "visitante" },
+			),
 	)
 	.addStringOption((option) =>
 		option
@@ -101,6 +114,31 @@ const enviarAlertaCommand = new SlashCommandBuilder()
 				"Fecha YYYY-MM-DD (para resumen-dia y diaria; por defecto hoy)",
 			)
 			.setRequired(false),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const golCommand = new SlashCommandBuilder()
+	.setName("gol")
+	.setDescription(
+		"[ADMIN] Registra un gol en un partido en vivo (+1 al equipo)",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido en vivo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("equipo")
+			.setDescription("Equipo que marcó el gol")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Local", value: "local" },
+				{ name: "Visitante", value: "visitante" },
+			),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -1257,12 +1295,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await appContext.services.partidos.verPartidosNoFinalizados();
 				const q = focusedOption.value.toString().toLowerCase();
 				const opciones = partidos
-					.filter(
-						(p) =>
-							tipo !== "inicio-partido" ||
-							p.estado === "programado" ||
-							p.estado === "en_vivo",
-					)
+					.filter((p) => {
+						if (tipo === "inicio-partido")
+							return p.estado === "programado" || p.estado === "en_vivo";
+						if (tipo === "gol")
+							return p.estado === "en_vivo" || p.estado === "medio_tiempo";
+						return true;
+					})
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
@@ -1355,7 +1394,93 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							});
 							break;
 						}
+						case "gol": {
+							if (partidoId === null) {
+								await interaction.editReply({
+									content: "❌ Debes indicar un `partido` para esta alerta.",
+								});
+								return;
+							}
+							const equipoRaw = interaction.options.getString("equipo");
+							if (equipoRaw !== "local" && equipoRaw !== "visitante") {
+								await interaction.editReply({
+									content: "❌ Debes indicar el `equipo` (local o visitante).",
+								});
+								return;
+							}
+							const enviadoGol = await enviarAlertaGol(
+								partidoId,
+								equipoRaw,
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: enviadoGol
+									? "✅ Alerta de gol enviada (sin modificar DB)."
+									: `❌ No se encontró el partido #${partidoId}.`,
+							});
+							break;
+						}
 					}
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"gol",
+		{
+			definition: golCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter((p) => p.estado === "en_vivo" || p.estado === "medio_tiempo")
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [${p.estado}]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				const equipo = interaction.options.getString("equipo", true) as
+					| "local"
+					| "visitante";
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.partidos.sumarGol(partidoId, equipo);
+					const info = await appContext.services.partidos.verInformacionPartido(
+						{
+							id: partidoId,
+						},
+					);
+					if (!info) {
+						await interaction.editReply({
+							content: `❌ No se encontró el partido #${partidoId}.`,
+						});
+						return;
+					}
+					await sendAlertsChannel(
+						interaction.client,
+						buildAlertaGol(info, equipo),
+					);
+					await interaction.editReply({ content: "✅ Gol registrado." });
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,

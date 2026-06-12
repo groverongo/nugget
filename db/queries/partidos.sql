@@ -82,6 +82,12 @@ WHERE id = $3;
 -- name: ActualizarPartidoEnVivo :exec
 UPDATE partidos SET estado = 'en_vivo' WHERE id = $1;
 
+-- name: SumarGolLocal :exec
+UPDATE partidos SET goles_local = COALESCE(goles_local, 0) + 1 WHERE id = $1;
+
+-- name: SumarGolVisitante :exec
+UPDATE partidos SET goles_visitante = COALESCE(goles_visitante, 0) + 1 WHERE id = $1;
+
 -- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

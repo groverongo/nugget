@@ -20,4 +20,6 @@ export interface IPartidosService {
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
 
 	actualizarPartidoEnVivo(id: number): Promise<void>;
+
+	sumarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void>;
 }

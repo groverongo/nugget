@@ -297,6 +297,36 @@ export async function actualizarPartidoEnVivo(client: Client, args: ActualizarPa
     });
 }
 
+export const sumarGolLocalQuery = `-- name: SumarGolLocal :exec
+UPDATE partidos SET goles_local = COALESCE(goles_local, 0) + 1 WHERE id = $1`;
+
+export interface SumarGolLocalArgs {
+    id: number;
+}
+
+export async function sumarGolLocal(client: Client, args: SumarGolLocalArgs): Promise<void> {
+    await client.query({
+        text: sumarGolLocalQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
+export const sumarGolVisitanteQuery = `-- name: SumarGolVisitante :exec
+UPDATE partidos SET goles_visitante = COALESCE(goles_visitante, 0) + 1 WHERE id = $1`;
+
+export interface SumarGolVisitanteArgs {
+    id: number;
+}
+
+export async function sumarGolVisitante(client: Client, args: SumarGolVisitanteArgs): Promise<void> {
+    await client.query({
+        text: sumarGolVisitanteQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

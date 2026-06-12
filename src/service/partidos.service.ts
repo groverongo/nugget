@@ -34,4 +34,10 @@ export class PartidosService implements IPartidosService {
 	actualizarPartidoEnVivo(id: number): Promise<void> {
 		return this.partidosRepo.actualizarPartidoEnVivo({ id });
 	}
+
+	sumarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void> {
+		return equipo === "local"
+			? this.partidosRepo.sumarGolLocal({ id: partidoId })
+			: this.partidosRepo.sumarGolVisitante({ id: partidoId });
+	}
 }
