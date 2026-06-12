@@ -35,15 +35,40 @@ export class PartidosService implements IPartidosService {
 		return this.partidosRepo.actualizarPartidoEnVivo({ id });
 	}
 
-	sumarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void> {
-		return equipo === "local"
-			? this.partidosRepo.sumarGolLocal({ id: partidoId })
-			: this.partidosRepo.sumarGolVisitante({ id: partidoId });
+	async sumarGol(
+		partidoId: number,
+		equipo: "local" | "visitante",
+	): Promise<void> {
+		const info = await this.partidosRepo.verInformacionPartido({
+			id: partidoId,
+		});
+		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		await this.partidosRepo.actualizarGolesPartido({
+			golesLocal: (info.partidoGolesLocal ?? 0) + (equipo === "local" ? 1 : 0),
+			golesVisitante:
+				(info.partidoGolesVisitante ?? 0) + (equipo === "visitante" ? 1 : 0),
+			id: partidoId,
+		});
 	}
 
-	restarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void> {
-		return equipo === "local"
-			? this.partidosRepo.restarGolLocal({ id: partidoId })
-			: this.partidosRepo.restarGolVisitante({ id: partidoId });
+	async restarGol(
+		partidoId: number,
+		equipo: "local" | "visitante",
+	): Promise<void> {
+		const info = await this.partidosRepo.verInformacionPartido({
+			id: partidoId,
+		});
+		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		await this.partidosRepo.actualizarGolesPartido({
+			golesLocal: Math.max(
+				(info.partidoGolesLocal ?? 0) - (equipo === "local" ? 1 : 0),
+				0,
+			),
+			golesVisitante: Math.max(
+				(info.partidoGolesVisitante ?? 0) - (equipo === "visitante" ? 1 : 0),
+				0,
+			),
+			id: partidoId,
+		});
 	}
 }

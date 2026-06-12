@@ -1,13 +1,10 @@
 import type {
+	ActualizarGolesPartidoArgs,
 	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
 	ObtenerPartidoArgs,
 	ObtenerPartidoRow,
-	RestarGolLocalArgs,
-	RestarGolVisitanteArgs,
-	SumarGolLocalArgs,
-	SumarGolVisitanteArgs,
 	VerInformacionPartidoArgs,
 	VerInformacionPartidoRow,
 	VerPartidoParaCalculoArgs,
@@ -43,13 +40,7 @@ export interface IPartidosRepository {
 		args: ActualizarPartidoMedioTiempoArgs,
 	): Promise<void>;
 
-	sumarGolLocal(args: SumarGolLocalArgs): Promise<void>;
-
-	sumarGolVisitante(args: SumarGolVisitanteArgs): Promise<void>;
-
-	restarGolLocal(args: RestarGolLocalArgs): Promise<void>;
-
-	restarGolVisitante(args: RestarGolVisitanteArgs): Promise<void>;
+	actualizarGolesPartido(args: ActualizarGolesPartidoArgs): Promise<void>;
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
 

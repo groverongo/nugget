@@ -1,21 +1,15 @@
 import {
+	type ActualizarGolesPartidoArgs,
 	type ActualizarPartidoEnVivoArgs,
 	type ActualizarPartidoFinalizadoArgs,
 	type ActualizarPartidoMedioTiempoArgs,
+	actualizarGolesPartido,
 	actualizarPartidoEnVivo,
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
 	type ObtenerPartidoArgs,
 	type ObtenerPartidoRow,
 	obtenerPartido,
-	type RestarGolLocalArgs,
-	type RestarGolVisitanteArgs,
-	restarGolLocal,
-	restarGolVisitante,
-	type SumarGolLocalArgs,
-	type SumarGolVisitanteArgs,
-	sumarGolLocal,
-	sumarGolVisitante,
 	type VerInformacionPartidoArgs,
 	type VerInformacionPartidoRow,
 	type VerPartidoParaCalculoArgs,
@@ -79,20 +73,8 @@ export class PartidosRepository implements IPartidosRepository {
 		return actualizarPartidoMedioTiempo(this.pool, args);
 	}
 
-	sumarGolLocal(args: SumarGolLocalArgs): Promise<void> {
-		return sumarGolLocal(this.pool, args);
-	}
-
-	sumarGolVisitante(args: SumarGolVisitanteArgs): Promise<void> {
-		return sumarGolVisitante(this.pool, args);
-	}
-
-	restarGolLocal(args: RestarGolLocalArgs): Promise<void> {
-		return restarGolLocal(this.pool, args);
-	}
-
-	restarGolVisitante(args: RestarGolVisitanteArgs): Promise<void> {
-		return restarGolVisitante(this.pool, args);
+	actualizarGolesPartido(args: ActualizarGolesPartidoArgs): Promise<void> {
+		return actualizarGolesPartido(this.pool, args);
 	}
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]> {

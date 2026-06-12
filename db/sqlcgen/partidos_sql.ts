@@ -297,62 +297,19 @@ export async function actualizarPartidoEnVivo(client: Client, args: ActualizarPa
     });
 }
 
-export const sumarGolLocalQuery = `-- name: SumarGolLocal :exec
-UPDATE partidos SET goles_local = COALESCE(goles_local, 0) + 1 WHERE id = $1`;
+export const actualizarGolesPartidoQuery = `-- name: ActualizarGolesPartido :exec
+UPDATE partidos SET goles_local = $1, goles_visitante = $2 WHERE id = $3`;
 
-export interface SumarGolLocalArgs {
+export interface ActualizarGolesPartidoArgs {
+    golesLocal: number;
+    golesVisitante: number;
     id: number;
 }
 
-export async function sumarGolLocal(client: Client, args: SumarGolLocalArgs): Promise<void> {
+export async function actualizarGolesPartido(client: Client, args: ActualizarGolesPartidoArgs): Promise<void> {
     await client.query({
-        text: sumarGolLocalQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-}
-
-export const sumarGolVisitanteQuery = `-- name: SumarGolVisitante :exec
-UPDATE partidos SET goles_visitante = COALESCE(goles_visitante, 0) + 1 WHERE id = $1`;
-
-export interface SumarGolVisitanteArgs {
-    id: number;
-}
-
-export async function sumarGolVisitante(client: Client, args: SumarGolVisitanteArgs): Promise<void> {
-    await client.query({
-        text: sumarGolVisitanteQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-}
-
-export const restarGolLocalQuery = `-- name: RestarGolLocal :exec
-UPDATE partidos SET goles_local = GREATEST(COALESCE(goles_local, 0) - 1, 0) WHERE id = $1`;
-
-export interface RestarGolLocalArgs {
-    id: number;
-}
-
-export async function restarGolLocal(client: Client, args: RestarGolLocalArgs): Promise<void> {
-    await client.query({
-        text: restarGolLocalQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-}
-
-export const restarGolVisitanteQuery = `-- name: RestarGolVisitante :exec
-UPDATE partidos SET goles_visitante = GREATEST(COALESCE(goles_visitante, 0) - 1, 0) WHERE id = $1`;
-
-export interface RestarGolVisitanteArgs {
-    id: number;
-}
-
-export async function restarGolVisitante(client: Client, args: RestarGolVisitanteArgs): Promise<void> {
-    await client.query({
-        text: restarGolVisitanteQuery,
-        values: [args.id],
+        text: actualizarGolesPartidoQuery,
+        values: [args.golesLocal, args.golesVisitante, args.id],
         rowMode: "array"
     });
 }
