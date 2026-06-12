@@ -52,6 +52,7 @@ export interface ResumenActualizacionAwards {
 
 export interface IAwardsService {
 	guardarAwards(input: GuardarAwardsInput): Promise<"created" | "updated">;
+	guardarAwardsAdmin(input: GuardarAwardsInput): Promise<"created" | "updated">;
 	actualizarAwards(
 		resultados: ResultadosAwards,
 	): Promise<ResumenActualizacionAwards>;
