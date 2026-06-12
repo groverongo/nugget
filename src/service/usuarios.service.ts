@@ -30,7 +30,9 @@ export class UsuariosService implements IUsuariosService {
 		await this.usuariosRepo.delete(args);
 	}
 
-	async recalcularPremios(polleroCount: number): Promise<void> {
+	async recalcularPremios(): Promise<void> {
+		const polleroCount = await this.usuariosRepo.countParticipantes();
+
 		await this.txManager.runInTx(async (tx) => {
 			await this.estaticoRepo.withTx(tx).limpiezaDistribucionPremios();
 

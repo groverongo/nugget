@@ -1,5 +1,8 @@
 import {
+	type ActualizarStatsUsuarioArgs,
+	actualizarStatsUsuario,
 	type CreateUsuarioArgs,
+	countParticipantes,
 	countUsuarios,
 	createUsuario,
 	type DeleteUsuarioArgs,
@@ -34,8 +37,18 @@ export class UsuariosRepository implements IUsuariosRepository {
 		return updateUsuarioParticipante(this.pool, args);
 	}
 
+	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void> {
+		return actualizarStatsUsuario(this.pool, args);
+	}
+
 	async count(): Promise<number> {
 		const r = await countUsuarios(this.pool);
+		if (r === null) return 0;
+		return z.coerce.number().int().min(0).parse(r.count);
+	}
+
+	async countParticipantes(): Promise<number> {
+		const r = await countParticipantes(this.pool);
 		if (r === null) return 0;
 		return z.coerce.number().int().min(0).parse(r.count);
 	}

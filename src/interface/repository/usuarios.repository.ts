@@ -1,4 +1,5 @@
 import type {
+	ActualizarStatsUsuarioArgs,
 	CreateUsuarioArgs,
 	DeleteUsuarioArgs,
 	ListUsuariosRow,
@@ -18,7 +19,11 @@ export interface IUsuariosRepository {
 
 	actualizarParticipante(args: UpdateUsuarioParticipanteArgs): Promise<void>;
 
+	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void>;
+
 	count(): Promise<number>;
+
+	countParticipantes(): Promise<number>;
 
 	withTx(tx: PoolClient): IUsuariosRepository;
 }

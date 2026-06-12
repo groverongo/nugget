@@ -114,6 +114,35 @@ export async function updateUsuarioParticipante(client: Client, args: UpdateUsua
     });
 }
 
+export const actualizarStatsUsuarioQuery = `-- name: ActualizarStatsUsuario :exec
+UPDATE usuarios SET
+    partidos_apostados = partidos_apostados + 1,
+    partidos_ganados   = partidos_ganados + $2,
+    partidos_perdidos  = partidos_perdidos + $3,
+    puntos             = puntos + $4,
+    racha              = $5,
+    win_rate           = CASE
+        WHEN (partidos_apostados + 1) = 0 THEN 0
+        ELSE ROUND(((partidos_ganados + $2)::NUMERIC / (partidos_apostados + 1)) * 100, 2)
+    END
+WHERE id = $1`;
+
+export interface ActualizarStatsUsuarioArgs {
+    id: string;
+    partidosGanados: number;
+    partidosPerdidos: number;
+    puntos: number;
+    racha: number;
+}
+
+export async function actualizarStatsUsuario(client: Client, args: ActualizarStatsUsuarioArgs): Promise<void> {
+    await client.query({
+        text: actualizarStatsUsuarioQuery,
+        values: [args.id, args.partidosGanados, args.partidosPerdidos, args.puntos, args.racha],
+        rowMode: "array"
+    });
+}
+
 export const deleteUsuarioQuery = `-- name: DeleteUsuario :exec
 DELETE FROM usuarios
 WHERE id = $1`;
@@ -140,6 +169,28 @@ export interface CountUsuariosRow {
 export async function countUsuarios(client: Client): Promise<CountUsuariosRow | null> {
     const result = await client.query({
         text: countUsuariosQuery,
+        values: [],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
+}
+
+export const countParticipantesQuery = `-- name: CountParticipantes :one
+SELECT COUNT(*) FROM usuarios WHERE participante = TRUE`;
+
+export interface CountParticipantesRow {
+    count: string;
+}
+
+export async function countParticipantes(client: Client): Promise<CountParticipantesRow | null> {
+    const result = await client.query({
+        text: countParticipantesQuery,
         values: [],
         rowMode: "array"
     });

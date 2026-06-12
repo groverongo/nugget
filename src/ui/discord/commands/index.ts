@@ -819,11 +819,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						participante: true,
 					});
 
-					const allMembers = await interaction.guild?.members.fetch();
-					const polleroCount =
-						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
-							.size ?? 0;
-					await appContext.services.usuarios.recalcularPremios(polleroCount);
+					await appContext.services.usuarios.recalcularPremios();
 
 					await interaction.editReply({
 						content:
@@ -997,17 +993,19 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						return;
 					}
 
-					const resultado = await appContext.services.awards.guardarAwards({
-						usuarioId,
-						campeon,
-						goleador,
-						mejorJugador,
-						mejorArquero,
-						mejorJugadorJoven,
-						mejorGol,
-						seleccionDecepcion,
-						seleccionSorpresa,
-					});
+					const resultado = await appContext.services.awards.guardarAwardsAdmin(
+						{
+							usuarioId,
+							campeon,
+							goleador,
+							mejorJugador,
+							mejorArquero,
+							mejorJugadorJoven,
+							mejorGol,
+							seleccionDecepcion,
+							seleccionSorpresa,
+						},
+					);
 
 					const member =
 						interaction.guild?.members.cache.get(usuarioId) ??
@@ -1018,11 +1016,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						participante: true,
 					});
 
-					const allMembers = await interaction.guild?.members.fetch();
-					const polleroCount =
-						allMembers?.filter((m) => m.roles.cache.has(POLLERO_ROLE_ID))
-							.size ?? 0;
-					await appContext.services.usuarios.recalcularPremios(polleroCount);
+					await appContext.services.usuarios.recalcularPremios();
 
 					await interaction.editReply({
 						content:

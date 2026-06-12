@@ -52,6 +52,30 @@ export class AwardsService implements IAwardsService {
 		return eraVacio ? "created" : "updated";
 	}
 
+	async guardarAwardsAdmin(
+		input: GuardarAwardsInput,
+	): Promise<"created" | "updated"> {
+		const existing = await this.awardsRepo.verAwardsDeUsuario({
+			id: input.usuarioId,
+		});
+		const eraVacio =
+			!existing || Object.values(existing).every((v) => v === null);
+
+		await this.awardsRepo.guardarAwards({
+			id: input.usuarioId,
+			award_campeon: input.campeon,
+			award_goleador: input.goleador,
+			award_mejor_jugador: input.mejorJugador,
+			award_mejor_arquero: input.mejorArquero,
+			award_mejor_jugador_joven: input.mejorJugadorJoven,
+			award_mejor_gol: input.mejorGol,
+			award_seleccion_decepcion: input.seleccionDecepcion,
+			award_seleccion_sorpresa: input.seleccionSorpresa,
+		});
+
+		return eraVacio ? "created" : "updated";
+	}
+
 	async verMisAwards(usuarioId: string): Promise<MisAwardsResueltos | null> {
 		const raw = await this.awardsRepo.verAwardsDeUsuario({ id: usuarioId });
 		if (!raw || Object.values(raw).every((v) => v === null)) {
