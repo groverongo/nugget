@@ -499,7 +499,7 @@ const actualizarAwardsCommand = new SlashCommandBuilder()
 	.setContexts(InteractionContextType.Guild);
 
 const timbaCommand = new SlashCommandBuilder()
-	.setName("timba")
+	.setName("timba-time")
 	.setDescription("Lanza un reto de puntos a otro pollero (Timba Time 🎲)")
 	.addIntegerOption((option) =>
 		option
@@ -1641,7 +1641,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		},
 	],
 	[
-		"timba",
+		"timba-time",
 		{
 			definition: timbaCommand,
 			autocomplete: async (interaction, appContext) => {

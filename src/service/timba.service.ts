@@ -36,13 +36,13 @@ export class TimbaService implements ITimbaService {
 			throw new Error("Solo puedes crear timbas para partidos programados.");
 		}
 
-		const maxPuntos = Math.min(
-			partido.puntosBase,
-			Math.floor(jugadorPuntos * 0.1),
-		);
-		if (args.puntos > maxPuntos) {
+		if (args.puntos > partido.puntosBase) {
+			throw new Error(`Máximo ${partido.puntosBase} 💠 en esta fase.`);
+		}
+		const cap = Math.floor(jugadorPuntos * 0.1);
+		if (args.puntos > cap) {
 			throw new Error(
-				`Máximo ${maxPuntos} 💠 (mínimo entre ${partido.puntosBase}pts de la fase y 10% de tus ${jugadorPuntos}pts).`,
+				`No tienes suficientes puntos. Tu máximo es ${cap} 💠 (10% de tus ${jugadorPuntos}pts).`,
 			);
 		}
 
@@ -97,13 +97,10 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
-		const maxPuntos = Math.min(
-			timba.fasePuntosBase,
-			Math.floor(jugador2Puntos * 0.1),
-		);
-		if (timba.puntos > maxPuntos) {
+		const cap = Math.floor(jugador2Puntos * 0.1);
+		if (timba.puntos > cap) {
 			throw new Error(
-				`No tienes suficientes puntos. Máximo puedes apostar ${maxPuntos} 💠 (tienes ${jugador2Puntos}pts).`,
+				`No tienes suficientes puntos. Tu máximo es ${cap} 💠 (10% de tus ${jugador2Puntos}pts).`,
 			);
 		}
 
