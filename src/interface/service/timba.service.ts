@@ -78,4 +78,6 @@ export interface ITimbaService {
 	): Promise<VerTimbasCerradasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+
+	cancelarTimbasAbiertas(partidoId: number): Promise<void>;
 }

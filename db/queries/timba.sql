@@ -96,3 +96,8 @@ WHERE id = $1;
 
 -- name: AnularTimba :exec
 DELETE FROM timba_time WHERE id = $1;
+
+-- name: CancelarTimbasAbiertasPorPartido :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE partido_id = $1 AND estado = 'abierta';

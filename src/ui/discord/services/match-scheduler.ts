@@ -229,6 +229,7 @@ export class MatchScheduler {
 		await Promise.all([
 			sendAlertsChannel(this.client, buildAlertaPartido(info, predicciones)),
 			this.services.partidos.actualizarPartidoEnVivo(partidoId),
+			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
 	}
 }

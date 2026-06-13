@@ -194,4 +194,8 @@ export class TimbaService implements ITimbaService {
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {
 		return this.timbaRepo.verMisTimbas(jugador1Id);
 	}
+
+	cancelarTimbasAbiertas(partidoId: number): Promise<void> {
+		return this.timbaRepo.cancelarTimbasAbiertasPorPartido(partidoId);
+	}
 }

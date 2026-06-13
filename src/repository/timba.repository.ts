@@ -8,6 +8,7 @@ import {
 	type CrearTimbaArgs,
 	type CrearTimbaRow,
 	cancelarTimba,
+	cancelarTimbasAbiertasPorPartido,
 	checkEmparejamientoTimba,
 	crearTimba,
 	type ResolverTimbaArgs,
@@ -72,6 +73,10 @@ export class TimbaRepository implements ITimbaRepository {
 
 	anular(args: AnularTimbaArgs): Promise<void> {
 		return anularTimba(this.pool, args);
+	}
+
+	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
+		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
 	}
 
 	withTx(tx: PoolClient): TimbaRepository {
