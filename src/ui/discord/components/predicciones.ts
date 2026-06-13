@@ -29,14 +29,50 @@ function formatMarcadorReal(prediccion: MiPrediccionPorFecha): string {
 	return `Resultado: ${prediccion.partidoGolesLocal}-${prediccion.partidoGolesVisitante}`;
 }
 
+function getPrediccionEmoji(prediccion: MiPrediccionPorFecha): string {
+	if (prediccion.estado === "finalizado") {
+		return prediccion.partidoGolesLocal === prediccion.prediccionGolesLocal &&
+			prediccion.partidoGolesVisitante === prediccion.prediccionGolesVisitante
+			? "✅"
+			: "❌";
+	}
+
+	if (prediccion.estado === "en_vivo" || prediccion.estado === "medio_tiempo") {
+		if (
+			prediccion.partidoGolesLocal === null ||
+			prediccion.partidoGolesVisitante === null
+		) {
+			return "⏺️";
+		}
+		if (
+			prediccion.partidoGolesLocal === prediccion.prediccionGolesLocal &&
+			prediccion.partidoGolesVisitante === prediccion.prediccionGolesVisitante
+		) {
+			return "❇️";
+		}
+		if (
+			prediccion.partidoGolesLocal <= prediccion.prediccionGolesLocal &&
+			prediccion.partidoGolesVisitante <= prediccion.prediccionGolesVisitante
+		) {
+			return "⏺️";
+		}
+		return "❌";
+	}
+
+	return "";
+}
+
 function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 	const fechaPartido = prediccion.fechaPartido
 		? `<t:${prediccion.fechaPartido.getTime() / 1_000}:t>`
 		: "Hora pendiente";
 
+	const emoji = getPrediccionEmoji(prediccion);
+	const emojiSuffix = emoji ? ` ${emoji}` : "";
+
 	return [
 		`### ${prediccion.equipoLocalNombre} ${prediccion.equipoLocalBandera} vs. ${prediccion.equipoVisitanteNombre} ${prediccion.equipoVisitanteBandera}`,
-		`Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}`,
+		`**Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}**${emojiSuffix}`,
 		formatMarcadorReal(prediccion),
 		`Estado: ${prediccion.estado}`,
 		fechaPartido,
@@ -62,6 +98,27 @@ export function buildMisPrediccionesComponents(
 		);
 	} else {
 		for (const prediccion of predicciones) {
+			const { estado } = prediccion;
+			const button =
+				estado === "en_vivo" || estado === "medio_tiempo"
+					? new ButtonBuilder()
+							.setCustomId(`noop:${prediccion.partidoId}`)
+							.setLabel("🔴 ¡En vivo!")
+							.setStyle(ButtonStyle.Danger)
+							.setDisabled(true)
+					: estado === "finalizado"
+						? new ButtonBuilder()
+								.setCustomId(`noop:${prediccion.partidoId}`)
+								.setLabel("Finalizado")
+								.setStyle(ButtonStyle.Secondary)
+								.setDisabled(true)
+						: new ButtonBuilder()
+								.setCustomId(
+									`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${prediccion.partidoId}`,
+								)
+								.setLabel("Actualizar")
+								.setStyle(ButtonStyle.Primary);
+
 			container.addSectionComponents(
 				new SectionBuilder()
 					.addTextDisplayComponents(
@@ -69,14 +126,7 @@ export function buildMisPrediccionesComponents(
 							formatPrediccionLine(prediccion),
 						),
 					)
-					.setButtonAccessory(
-						new ButtonBuilder()
-							.setCustomId(
-								`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${prediccion.partidoId}`,
-							)
-							.setLabel("Actualizar")
-							.setStyle(ButtonStyle.Primary),
-					),
+					.setButtonAccessory(button),
 			);
 
 			container.addSeparatorComponents(

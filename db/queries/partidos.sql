@@ -28,6 +28,8 @@ SELECT
 	partidos.id AS partido_id,
 	el.nombre AS equipo_local_nombre,
 	ev.nombre AS equipo_visitante_nombre,
+	el.siglas AS equipo_local_siglas,
+	ev.siglas AS equipo_visitante_siglas,
 	el.bandera AS equipo_local_bandera,
 	ev.bandera AS equipo_visitante_bandera,
 	el.grupo AS equipo_local_grupo,
@@ -35,7 +37,11 @@ SELECT
 	partidos.estado,
 	partidos.goles_local AS partido_goles_local,
 	partidos.goles_visitante AS partido_goles_visitante,
-	partidos.fecha_partido
+	partidos.fecha_partido,
+	partidos.extra_partidazo,
+	partidos.extra_milagro,
+	partidos.extra_batacazo,
+	partidos.extra_el_elegido
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id

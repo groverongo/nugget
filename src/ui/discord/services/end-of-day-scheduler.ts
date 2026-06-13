@@ -135,7 +135,7 @@ async function buildResumenDia(
 			([, a], [, b]) => b.hoy - a.hoy,
 		);
 		for (const [userId, { hoy, total }] of sorted) {
-			lineas.push(`• <@${userId}> +${hoy} 💠 (total: ${total})`);
+			lineas.push(`• <@${userId}> **+${hoy}** 💠 (total: ${total})`);
 		}
 	}
 

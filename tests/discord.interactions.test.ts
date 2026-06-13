@@ -18,6 +18,16 @@ type DiscordAppContextMock = {
 	};
 };
 
+function createGuildWithPollero() {
+	const member = { roles: { cache: { has: jest.fn().mockReturnValue(true) } } };
+	return {
+		members: {
+			cache: { get: jest.fn().mockReturnValue(member) },
+			fetch: jest.fn(),
+		},
+	};
+}
+
 function createPartidoDetalle(partidoId = 42) {
 	return {
 		partidoId,
@@ -88,6 +98,7 @@ describe("Discord interaction handlers", () => {
 			deferReply: jest.fn(),
 			editReply: jest.fn(),
 			user: { id: "discord-user-1", displayName: "Juan" },
+			guild: createGuildWithPollero(),
 		} as const;
 		const appContext = {
 			services: {
@@ -131,6 +142,7 @@ describe("Discord interaction handlers", () => {
 			editReply,
 			reply: jest.fn(),
 			user: { id: "discord-user-1" },
+			guild: createGuildWithPollero(),
 		} as const;
 		const appContext = {
 			services: {

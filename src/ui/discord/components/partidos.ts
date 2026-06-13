@@ -59,37 +59,40 @@ export function buildPartidosComponents(
 		),
 	);
 
-	const partidosMostrar = partidos.filter((p) => p.estado !== "finalizado");
-
-	if (partidosMostrar.length === 0) {
+	if (partidos.length === 0) {
 		container.addTextDisplayComponents(
-			new TextDisplayBuilder().setContent(
-				"No hay partidos pendientes para esta fecha.",
-			),
+			new TextDisplayBuilder().setContent("No hay partidos para esta fecha."),
 		);
 	}
 
-	for (const partido of partidosMostrar.slice(0, PARTIDOS_MAX_BUTTONS)) {
-		const enVivo = partido.estado === "medio_tiempo";
+	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		const { estado } = partido;
+		const button =
+			estado === "en_vivo" || estado === "medio_tiempo"
+				? new ButtonBuilder()
+						.setCustomId(`noop:${partido.partidoId}`)
+						.setLabel("🔴 ¡En vivo!")
+						.setStyle(ButtonStyle.Danger)
+						.setDisabled(true)
+				: estado === "finalizado"
+					? new ButtonBuilder()
+							.setCustomId(`noop:${partido.partidoId}`)
+							.setLabel("Finalizado")
+							.setStyle(ButtonStyle.Secondary)
+							.setDisabled(true)
+					: new ButtonBuilder()
+							.setCustomId(
+								`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+							)
+							.setLabel("Predecir")
+							.setStyle(ButtonStyle.Primary);
+
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
 				)
-				.setButtonAccessory(
-					enVivo
-						? new ButtonBuilder()
-								.setCustomId(`noop:${partido.partidoId}`)
-								.setLabel("🔴 En vivo")
-								.setStyle(ButtonStyle.Secondary)
-								.setDisabled(true)
-						: new ButtonBuilder()
-								.setCustomId(
-									`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
-								)
-								.setLabel("Predecir")
-								.setStyle(ButtonStyle.Primary),
-				),
+				.setButtonAccessory(button),
 		);
 
 		container.addSeparatorComponents(
@@ -121,7 +124,7 @@ export function buildAlertaDiariaPartidosComponents(
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
-			"📣 ***¡Buenos días!** Es hora de apostar a estos partidos:*",
+			"📣 ***¡Buenos días!**\n*Es hora de apostar a estos partidos:*",
 		),
 	);
 

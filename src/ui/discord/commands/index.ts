@@ -770,7 +770,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					return;
 				}
 
-				const fechaSeleccionada = fechas[0];
+				const hoy = obtenerYYYYMMDDPeru();
+				const fechaSeleccionada = fechas.includes(hoy)
+					? hoy
+					: fechas[fechas.length - 1];
 				const predicciones =
 					await appContext.services.predicciones.verMisPrediccionesPorFecha({
 						usuarioId: interaction.user.id,
