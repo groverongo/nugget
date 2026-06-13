@@ -21,6 +21,10 @@ export interface IUsuariosRepository {
 
 	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void>;
 
+	obtenerPuntos(id: string): Promise<number>;
+
+	ajustarPuntos(id: string, delta: number): Promise<void>;
+
 	count(): Promise<number>;
 
 	countParticipantes(): Promise<number>;

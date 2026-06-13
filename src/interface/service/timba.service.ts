@@ -1,0 +1,81 @@
+import type {
+	VerMisTimbasRow,
+	VerTimbasCerradasPorPartidoRow,
+} from "@sqlc/timba_sql";
+
+export interface CrearTimbaInput {
+	jugador1Id: string;
+	partidoId: number;
+	descripcion: string;
+	puntos: number;
+}
+
+export interface CrearTimbaResult {
+	timbaId: number;
+	puntos: number;
+	descripcion: string;
+	jugador1Id: string;
+	equipoLocalNombre: string;
+	equipoLocalBandera: string;
+	equipoVisitanteNombre: string;
+	equipoVisitanteBandera: string;
+}
+
+export interface AceptarTimbaInput {
+	timbaId: number;
+	jugador2Id: string;
+}
+
+export interface AceptarTimbaResult {
+	timbaId: number;
+	puntos: number;
+	descripcion: string;
+	jugador1Id: string;
+	jugador2Id: string;
+	jugador1Nombre: string;
+	equipoLocalNombre: string;
+	equipoLocalBandera: string;
+	equipoVisitanteNombre: string;
+	equipoVisitanteBandera: string;
+}
+
+export interface CancelarTimbaInput {
+	timbaId: number;
+	jugador1Id: string;
+}
+
+export interface ResolverTimbaInput {
+	timbaId: number;
+	ganadorJugador: "j1" | "j2";
+}
+
+export interface ResolverTimbaResult {
+	ganadorId: string;
+	ganadorNombre: string;
+	perdedorId: string;
+	perdedorNombre: string;
+	puntos: number;
+	descripcion: string;
+	equipoLocalNombre: string;
+	equipoLocalBandera: string;
+	equipoVisitanteNombre: string;
+	equipoVisitanteBandera: string;
+}
+
+export interface ITimbaService {
+	crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult>;
+
+	aceptarTimba(args: AceptarTimbaInput): Promise<AceptarTimbaResult>;
+
+	cancelarTimba(args: CancelarTimbaInput): Promise<void>;
+
+	anularTimba(timbaId: number): Promise<void>;
+
+	resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult>;
+
+	verTimbasCerradasPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasCerradasPorPartidoRow[]>;
+
+	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+}

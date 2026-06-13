@@ -5,11 +5,13 @@ import { AwardsRepository } from "./repository/awards.repository";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
+import { TimbaRepository } from "./repository/timba.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { AdminService } from "./service/admin.service";
 import { AwardsService } from "./service/awards.service";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
+import { TimbaService } from "./service/timba.service";
 import { UsuariosService } from "./service/usuarios.service";
 import type { AppContext } from "./types/app-context";
 import {
@@ -26,6 +28,7 @@ export function createAppContext(): AppContext {
 	const partidosRepository = new PartidosRepository(db);
 	const prediccionesRepository = new PrediccionesRepository(db);
 	const awardsRepository = new AwardsRepository(db);
+	const timbaRepository = new TimbaRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
 		estaticoRepository,
@@ -48,6 +51,7 @@ export function createAppContext(): AppContext {
 		estaticoRepository,
 		txManager,
 	);
+	const timbaService = new TimbaService(timbaRepository, usuariosRepository);
 
 	return {
 		db,
@@ -57,6 +61,7 @@ export function createAppContext(): AppContext {
 			estatico: estaticoRepository,
 			partidos: partidosRepository,
 			predicciones: prediccionesRepository,
+			timba: timbaRepository,
 		},
 		services: {
 			usuarios: usuariosService,
@@ -64,6 +69,7 @@ export function createAppContext(): AppContext {
 			predicciones: prediccionesService,
 			admin: adminService,
 			awards: awardsService,
+			timba: timbaService,
 		},
 	};
 }

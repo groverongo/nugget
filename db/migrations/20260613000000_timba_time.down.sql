@@ -1,0 +1,4 @@
+-- DOWN MIGRATION: 20260613000000_timba_time
+
+DROP TABLE IF EXISTS timba_time;
+DROP TYPE IF EXISTS timba_estado;
