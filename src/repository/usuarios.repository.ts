@@ -1,6 +1,7 @@
 import {
 	type ActualizarStatsUsuarioArgs,
 	actualizarStatsUsuario,
+	ajustarPuntosTimba,
 	type CreateUsuarioArgs,
 	countParticipantes,
 	countUsuarios,
@@ -9,6 +10,7 @@ import {
 	deleteUsuario,
 	type ListUsuariosRow,
 	listUsuarios,
+	obtenerPuntosUsuario,
 	type UpdateUsuarioParticipanteArgs,
 	type UpdateUsuarioUsernameArgs,
 	updateUsuarioParticipante,
@@ -39,6 +41,15 @@ export class UsuariosRepository implements IUsuariosRepository {
 
 	actualizarStats(args: ActualizarStatsUsuarioArgs): Promise<void> {
 		return actualizarStatsUsuario(this.pool, args);
+	}
+
+	async obtenerPuntos(id: string): Promise<number> {
+		const row = await obtenerPuntosUsuario(this.pool, { id });
+		return row?.puntos ?? 0;
+	}
+
+	ajustarPuntos(id: string, delta: number): Promise<void> {
+		return ajustarPuntosTimba(this.pool, { id, delta });
 	}
 
 	async count(): Promise<number> {

@@ -203,6 +203,45 @@ export async function countParticipantes(client: Client): Promise<CountParticipa
     };
 }
 
+export const obtenerPuntosUsuarioQuery = `-- name: ObtenerPuntosUsuario :one
+SELECT id, puntos FROM usuarios WHERE id = $1`;
+
+export interface ObtenerPuntosUsuarioArgs {
+    id: string;
+}
+
+export interface ObtenerPuntosUsuarioRow {
+    id: string;
+    puntos: number;
+}
+
+export async function obtenerPuntosUsuario(client: Client, args: ObtenerPuntosUsuarioArgs): Promise<ObtenerPuntosUsuarioRow | null> {
+    const result = await client.query({
+        text: obtenerPuntosUsuarioQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) return null;
+    const row = result.rows[0];
+    return { id: row[0], puntos: row[1] };
+}
+
+export const ajustarPuntosTimbaQuery = `-- name: AjustarPuntosTimba :exec
+UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1`;
+
+export interface AjustarPuntosTimbaArgs {
+    id: string;
+    delta: number;
+}
+
+export async function ajustarPuntosTimba(client: Client, args: AjustarPuntosTimbaArgs): Promise<void> {
+    await client.query({
+        text: ajustarPuntosTimbaQuery,
+        values: [args.id, args.delta],
+        rowMode: "array"
+    });
+}
+
 export const limpiezaDistribucionPremiosQuery = `-- name: LimpiezaDistribucionPremios :exec
 DELETE FROM estatico_premios`;
 

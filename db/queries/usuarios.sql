@@ -50,3 +50,9 @@ DELETE FROM estatico_premios;
 -- name: AgregarPuestoPremio :exec
 INSERT INTO estatico_premios (puesto, premio)
 VALUES ($1, $2);
+
+-- name: ObtenerPuntosUsuario :one
+SELECT id, puntos FROM usuarios WHERE id = $1;
+
+-- name: AjustarPuntosTimba :exec
+UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1;

@@ -28,6 +28,13 @@ import {
 	buildMisPrediccionesComponents,
 	PREDICCIONES_DATE_SELECT_CUSTOM_ID,
 } from "../components/predicciones";
+import {
+	buildTimbaAceptadaComponent,
+	buildTimbaResolucionComponents,
+	TIMBA_ACEPTAR_PREFIX,
+	TIMBA_RESOLVER_J1_PREFIX,
+	TIMBA_RESOLVER_J2_PREFIX,
+} from "../components/timba";
 import { golesSchema } from "../types/shared";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
@@ -646,5 +653,137 @@ export async function sendComponentsToAlertsChannel(
 			{ err: error, channelId },
 			"Error enviando componentes al canal de alertas",
 		);
+	}
+}
+
+export async function sendComponentsToAnnouncementChannel(
+	client: DiscordClient,
+	components: APIMessageTopLevelComponent[],
+): Promise<void> {
+	const channelId = config.discord.announcements.channel.id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "send" in channel) {
+			await channel.send({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch in discord.js
+				components: components as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		}
+	} catch (error) {
+		logger.error(
+			{ err: error, channelId },
+			"Error enviando componentes al canal de anuncios",
+		);
+	}
+}
+
+export async function handleTimbaButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const { customId } = interaction;
+
+	if (customId.startsWith(TIMBA_ACEPTAR_PREFIX)) {
+		const timbaId = Number(customId.slice(TIMBA_ACEPTAR_PREFIX.length));
+		if (Number.isNaN(timbaId)) return;
+
+		const member =
+			interaction.guild?.members.cache.get(interaction.user.id) ??
+			(await interaction.guild?.members.fetch(interaction.user.id));
+		if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+			await interaction.reply({
+				content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+				ephemeral: true,
+			});
+			return;
+		}
+
+		await interaction.deferUpdate();
+
+		try {
+			const result = await appContext.services.timba.aceptarTimba({
+				timbaId,
+				jugador2Id: interaction.user.id,
+			});
+
+			await interaction.editReply({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				components: buildTimbaAceptadaComponent(result) as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🎲 ¡<@${result.jugador2Id}> aceptó el reto de <@${result.jugador1Id}>! **${result.puntos} 💠** en juego — _"${result.descripcion}"_`,
+			);
+		} catch (error) {
+			await interaction.followUp({
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la timba."}`,
+				ephemeral: true,
+			});
+		}
+		return;
+	}
+
+	const isJ1 = customId.startsWith(TIMBA_RESOLVER_J1_PREFIX);
+	const isJ2 = customId.startsWith(TIMBA_RESOLVER_J2_PREFIX);
+
+	if (!isJ1 && !isJ2) return;
+
+	const suffix = customId.slice(
+		isJ1 ? TIMBA_RESOLVER_J1_PREFIX.length : TIMBA_RESOLVER_J2_PREFIX.length,
+	);
+	const colonIdx = suffix.lastIndexOf(":");
+	if (colonIdx === -1) return;
+
+	const timbaId = Number(suffix.slice(0, colonIdx));
+	const partidoId = Number(suffix.slice(colonIdx + 1));
+	if (Number.isNaN(timbaId) || Number.isNaN(partidoId)) return;
+
+	await interaction.deferUpdate();
+
+	try {
+		const result = await appContext.services.timba.resolverTimba({
+			timbaId,
+			ganadorJugador: isJ1 ? "j1" : "j2",
+		});
+
+		await sendAnnouncementChannel(
+			interaction.client,
+			[
+				`🎲 **¡Timba resuelta!** *(${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera})*`,
+				`<@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}>`,
+				`_"${result.descripcion}"_`,
+			].join("\n"),
+		);
+
+		const remaining =
+			await appContext.services.timba.verTimbasCerradasPorPartido(partidoId);
+
+		if (remaining.length > 0) {
+			await interaction.editReply({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				components: buildTimbaResolucionComponents(remaining, partidoId) as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		} else {
+			await interaction.editReply({
+				content: "✅ Todas las timba times resueltas.",
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				components: [] as any,
+			});
+		}
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "No se pudo resolver la timba."}`,
+			ephemeral: true,
+		});
 	}
 }

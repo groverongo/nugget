@@ -12,8 +12,13 @@ import {
 } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import {
+	buildTimbaCreacionComponent,
+	buildTimbaResolucionComponents,
+} from "../components/timba";
+import {
 	sendAlertsChannel,
 	sendAnnouncementChannel,
+	sendComponentsToAnnouncementChannel,
 } from "../handlers/interactions";
 import { enviarAlertaAwards } from "../services/awards-scheduler";
 import { enviarAlertaDiaria } from "../services/daily-alert-scheduler";
@@ -493,6 +498,57 @@ const actualizarAwardsCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const timbaCommand = new SlashCommandBuilder()
+	.setName("timba")
+	.setDescription("Lanza un reto de puntos a otro pollero (Timba Time 🎲)")
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido sobre el que va la timba")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("descripcion")
+			.setDescription("Descripción del reto (ej: 'Brasil gana')")
+			.setRequired(true)
+			.setMinLength(1)
+			.setMaxLength(200),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("puntos")
+			.setDescription("Puntos a apostar")
+			.setRequired(true)
+			.setMinValue(1),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const cancelarTimbaCommand = new SlashCommandBuilder()
+	.setName("cancelar-timba")
+	.setDescription("Cancela una de tus timba times abiertas")
+	.addIntegerOption((option) =>
+		option
+			.setName("timba_id")
+			.setDescription("Timba a cancelar")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const anularTimbaCommand = new SlashCommandBuilder()
+	.setName("anular-timba")
+	.setDescription("[ADMIN] Elimina una timba time (haya sido aceptada o no)")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("timba_id")
+			.setDescription("ID de la timba a anular")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 export const discordCommands = new Collection<string, DiscordCommand>([
 	[
 		"actualizar-partido",
@@ -582,6 +638,21 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								interaction.client,
 							);
 						}
+					}
+
+					const timbas =
+						await appContext.services.timba.verTimbasCerradasPorPartido(
+							partidoId,
+						);
+					if (timbas.length > 0) {
+						await interaction.followUp({
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							components: buildTimbaResolucionComponents(
+								timbas,
+								partidoId,
+							) as any,
+							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+						});
 					}
 				} catch (error) {
 					await interaction.editReply({
@@ -1564,6 +1635,134 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"timba",
+		{
+			definition: timbaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter((p) => p.estado === "programado")
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				const descripcion = interaction.options.getString("descripcion", true);
+				const puntos = interaction.options.getInteger("puntos", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const result = await appContext.services.timba.crearTimba({
+						jugador1Id: interaction.user.id,
+						partidoId,
+						descripcion,
+						puntos,
+					});
+
+					await interaction.editReply({
+						content: `✅ Timba creada. **${puntos} 💠** en juego — _"${descripcion}"_`,
+					});
+
+					await sendComponentsToAnnouncementChannel(
+						interaction.client,
+						buildTimbaCreacionComponent(result),
+					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"cancelar-timba",
+		{
+			definition: cancelarTimbaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const misTimbas = await appContext.services.timba.verMisTimbas(
+					interaction.user.id,
+				);
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = misTimbas
+					.filter((t) =>
+						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((t) => ({
+						name: `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`,
+						value: t.id,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				const timbaId = interaction.options.getInteger("timba_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.timba.cancelarTimba({
+						timbaId,
+						jugador1Id: interaction.user.id,
+					});
+					await interaction.editReply({
+						content: `✅ Timba #${timbaId} cancelada.`,
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"anular-timba",
+		{
+			definition: anularTimbaCommand,
+			handle: async (interaction, appContext) => {
+				const timbaId = interaction.options.getInteger("timba_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.timba.anularTimba(timbaId);
+					await interaction.editReply({
+						content: `✅ Timba #${timbaId} anulada y eliminada.`,
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
 					});
 				}
 			},

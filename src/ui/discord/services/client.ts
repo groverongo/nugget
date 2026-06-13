@@ -14,6 +14,7 @@ import {
 	handlePrediccionAdminModalSubmitInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
+	handleTimbaButtonInteraction,
 } from "../handlers/interactions";
 import { AwardsScheduler } from "./awards-scheduler";
 import { DailyAlertScheduler } from "./daily-alert-scheduler";
@@ -78,6 +79,7 @@ export function registerDiscordEventHandlers(
 			if (interaction.isButton()) {
 				await handlePartidosButtonInteraction(interaction, appContext);
 				await handlePartidosAdminButtonInteraction(interaction, appContext);
+				await handleTimbaButtonInteraction(interaction, appContext);
 				return;
 			}
 
