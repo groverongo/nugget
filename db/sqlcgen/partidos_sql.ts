@@ -104,6 +104,8 @@ SELECT
 	partidos.id AS partido_id,
 	el.nombre AS equipo_local_nombre,
 	ev.nombre AS equipo_visitante_nombre,
+	el.siglas AS equipo_local_siglas,
+	ev.siglas AS equipo_visitante_siglas,
 	el.bandera AS equipo_local_bandera,
 	ev.bandera AS equipo_visitante_bandera,
 	el.grupo AS equipo_local_grupo,
@@ -111,7 +113,11 @@ SELECT
 	partidos.estado,
 	partidos.goles_local AS partido_goles_local,
 	partidos.goles_visitante AS partido_goles_visitante,
-	partidos.fecha_partido
+	partidos.fecha_partido,
+	partidos.extra_partidazo,
+	partidos.extra_milagro,
+	partidos.extra_batacazo,
+	partidos.extra_el_elegido
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
@@ -125,6 +131,8 @@ export interface VerInformacionPartidoRow {
     partidoId: number;
     equipoLocalNombre: string;
     equipoVisitanteNombre: string;
+    equipoLocalSiglas: string;
+    equipoVisitanteSiglas: string;
     equipoLocalBandera: string;
     equipoVisitanteBandera: string;
     equipoLocalGrupo: string;
@@ -133,6 +141,10 @@ export interface VerInformacionPartidoRow {
     partidoGolesLocal: number | null;
     partidoGolesVisitante: number | null;
     fechaPartido: Date | null;
+    extraPartidazo: boolean;
+    extraMilagro: boolean;
+    extraBatacazo: boolean;
+    extraElElegido: boolean;
 }
 
 export async function verInformacionPartido(client: Client, args: VerInformacionPartidoArgs): Promise<VerInformacionPartidoRow | null> {
@@ -149,14 +161,20 @@ export async function verInformacionPartido(client: Client, args: VerInformacion
         partidoId: row[0],
         equipoLocalNombre: row[1],
         equipoVisitanteNombre: row[2],
-        equipoLocalBandera: row[3],
-        equipoVisitanteBandera: row[4],
-        equipoLocalGrupo: row[5],
-        equipoVisitanteGrupo: row[6],
-        estado: row[7],
-        partidoGolesLocal: row[8],
-        partidoGolesVisitante: row[9],
-        fechaPartido: row[10]
+        equipoLocalSiglas: row[3],
+        equipoVisitanteSiglas: row[4],
+        equipoLocalBandera: row[5],
+        equipoVisitanteBandera: row[6],
+        equipoLocalGrupo: row[7],
+        equipoVisitanteGrupo: row[8],
+        estado: row[9],
+        partidoGolesLocal: row[10],
+        partidoGolesVisitante: row[11],
+        fechaPartido: row[12],
+        extraPartidazo: row[13],
+        extraMilagro: row[14],
+        extraBatacazo: row[15],
+        extraElElegido: row[16]
     };
 }
 

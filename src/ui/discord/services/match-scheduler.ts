@@ -17,7 +17,7 @@ function buildAlertaPartido(
 ): string {
 	const lineas = [
 		"🕛 **¡EMPEZÓ EL PARTIDO!**",
-		`**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`,
+		`*${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}*`,
 		"*Ya no más apuestas* 🙅",
 	];
 

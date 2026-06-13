@@ -75,6 +75,8 @@ describe("PartidosService", () => {
 			partidoId: 1,
 			equipoLocalNombre: "Peru",
 			equipoVisitanteNombre: "Brasil",
+			equipoLocalSiglas: "PER",
+			equipoVisitanteSiglas: "BRA",
 			equipoLocalBandera: "🇵🇪",
 			equipoVisitanteBandera: "🇧🇷",
 			equipoLocalGrupo: "A",
@@ -83,6 +85,10 @@ describe("PartidosService", () => {
 			partidoGolesLocal: null,
 			partidoGolesVisitante: null,
 			fechaPartido: new Date("2026-06-06T10:00:00.000Z"),
+			extraPartidazo: false,
+			extraMilagro: false,
+			extraBatacazo: false,
+			extraElElegido: false,
 		};
 		const args: VerInformacionPartidoArgs = { id: 1 };
 		const partidosRepo = createPartidosRepositoryMock();

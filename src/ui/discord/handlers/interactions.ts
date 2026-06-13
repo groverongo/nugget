@@ -15,7 +15,7 @@ import {
 	TextInputStyle,
 } from "discord.js";
 import type { AppContext } from "../../../app";
-import { discordCommands } from "../commands";
+import { discordCommands, POLLERO_ROLE_ID } from "../commands";
 import {
 	buildPartidosAdminComponents,
 	buildPartidosComponents,
@@ -131,6 +131,17 @@ export async function handlePrediccionModalSubmitInteraction(
 	const partidoId = parsePrediccionModalCustomId(interaction.customId);
 
 	if (partidoId === null) {
+		return;
+	}
+
+	const member =
+		interaction.guild?.members.cache.get(interaction.user.id) ??
+		(await interaction.guild?.members.fetch(interaction.user.id));
+	if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+		await interaction.reply({
+			content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+			ephemeral: true,
+		});
 		return;
 	}
 
