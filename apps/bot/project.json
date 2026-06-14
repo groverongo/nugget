@@ -1,0 +1,137 @@
+{
+	"name": "bot",
+	"sourceRoot": "apps/bot",
+	"projectType": "application",
+	"targets": {
+		"install": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm install",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"install-images": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm run install:images",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"clean": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm clean",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
+			"options": {
+				"command": "pnpm build",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "docker compose up -d && pnpm dev"
+			}
+		},
+		"start": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["build"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "pnpm start"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/coverage"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "pnpm test"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "lint"
+			}
+		},
+		"lint-fix": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "lint:fix"
+			}
+		},
+		"migrate-up-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:up:dev"
+			}
+		},
+		"migrate-down-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:down:dev"
+			}
+		},
+		"migrate-status-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:status:dev"
+			}
+		},
+		"migrate-create-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:create:dev"
+			}
+		},
+		"seed-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "seed:dev"
+			}
+		},
+		"migrate-up": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:up"
+			}
+		},
+		"migrate-down": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:down"
+			}
+		},
+		"migrate-status": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:status"
+			}
+		},
+		"migrate-create": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:create"
+			}
+		},
+		"seed": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "seed"
+			}
+		},
+		"generate": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "generate"
+			}
+		}
+	}
+}

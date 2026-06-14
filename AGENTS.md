@@ -1,48 +1,24 @@
-# AGENTS.md
+<!-- nx configuration start-->
+<!-- Leave the start & end comments to automatically receive updates. -->
 
-## Repo reality check
-- `src/app.ts` is the composition root and runtime entrypoint. It wires DB, transaction manager, repositories, and services, then boots a Discord.js client via `src/ui/discord/services/client.ts`.
-- The bot uses Discord slash commands (not message-based `!` commands). Commands are registered in `src/ui/discord/commands/index.ts`; interaction handlers live in `src/ui/discord/handlers/interactions.ts`.
-- The UI layer follows a strict call chain: slash command handler → service → repository → sqlcgen query. Never call sqlcgen or `db` directly from a command handler.
-- `src/interface/` holds TypeScript contracts (interfaces and input types) for services and repositories. Each has a matching implementation under `src/service/` or `src/repository/`.
-- Extend domain behavior under `src/service`, `src/repository`, `src/interface`, and `support`. SQL bindings in `db/sqlcgen` are generated and imported directly by repositories.
+# General Guidelines for working with Nx
 
-## Setup and command order
-- Use Node `v24.13.1` from `.nvmrc` and `pnpm@10.30.1` via Corepack.
-- `pnpm install:images` runs `docker pull sqlc/sqlc:latest` as a hook, so Docker must already be available even for dependency install.
-- Local Postgres comes from `docker-compose.yaml` and binds `localhost:5433` with database/user/password all set to `nugget`.
-- Run repo commands from the repo root. Both `cmd/migration.ts`, `cmd/seeding.ts`, and `support/config.ts` resolve paths from `process.cwd()`.
-- Normal local boot order is: `corepack enable` -> `pnpm install` -> `docker compose up -d` -> `pnpm migrate:up` -> `pnpm dev`.
-- `pnpm dev` logs into Discord immediately via `config.discord.token`; it is not a pure local composition test.
+- For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
+- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
+- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
+- You have access to the Nx MCP server and its tools, use them to help the user
+- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
+- NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
 
-## Verification commands
-- `pnpm lint` runs `biome check .`.
-- `pnpm build` is the real typecheck/build step: `pnpm clean && tsc && tsc-alias`.
-- `pnpm test` exists now and runs `jest --runInBand --coverage`; Jest is configured to look only under `tests/`.
-- Lefthook pre-commit runs `pnpm lint`, `pnpm build`, and `pnpm test` in that order.
-- CI runs `biome ci .`, then `pnpm run build`, then `DISCORD_TOKEN="GENERICO" pnpm run test`; a separate job applies migrations against Postgres on port `5432`.
+## Scaffolding & Generators
 
-## Database, seeds, and codegen
-- Migration commands all go through `ts-node ./cmd/migration.ts` (`migrate:up`, `migrate:down`, `migrate:status`, `migrate:create`).
-- `migrate:down` only rolls back the latest applied migration; there is no rollback-to-version flow.
-- Use `pnpm migrate:create <name>` instead of hand-creating filenames; the CLI normalizes the name and timestamps it.
-- `pnpm seed` runs `cmd/seeding.ts` and expects JSON seed files under `db/seed` from the repo root.
-- Seed files are loaded alphabetically from `db/seed`; each JSON file must declare one table, rows with identical columns, and optional refs metadata.
-- SQL codegen is configured in `db/sqlc.yaml`; run `pnpm generate:db` from the repo root. It uses Dockerized `sqlc` and writes output to `db/sqlcgen`.
-- After changing migrations or SQL queries, regenerate `db/sqlcgen` before trusting TypeScript errors.
-- `db/sqlcgen` is excluded from Biome, so do not infer source formatting conventions from generated files.
+- For scaffolding tasks (creating apps, libs, project structure, setup), ALWAYS invoke the `nx-generate` skill FIRST before exploring or calling MCP tools
 
-## Config and style gotchas
-- `support/config.ts` loads config in this order: built-in defaults -> optional `config.yaml` -> environment variables. In non-production, it auto-loads `.env` first.
-- Environment variables are expanded by splitting keys on underscores, so `DATABASE_URL=...` maps to `config.database.url`.
-- Config validation requires both `discord.token` and numeric `polla.*` settings. Env overrides arrive as strings, so new numeric env-driven config needs explicit parsing somewhere other than the current env loader.
-- Biome enforces tabs, double quotes, and `noConsole`; use the shared Pino logger instead of `console.*`.
-- `tsconfig.json` path aliases only define `@sqlc/*` and `@support/*`; everything else is imported relatively.
-- `pnpm start` runs `node dist/src/app.js` (not `dist/app.js`).
-- `config.yaml` currently contains a real Discord token. Treat it as a secret leak and never copy it into docs, logs, commits, or test output.
+## When to use nx_docs
 
-## Where to look first
-- For DB workflow changes: read `cmd/migration.ts`, `cmd/seeding.ts`, `support/config.ts`, `db/sqlc.yaml`, and the relevant files under `db/migrations` together.
-- For application logic: start with `src/app.ts`, `src/service/`, `src/repository/`, `support/db.provider.ts`, and `support/pozo.ts`.
-- For Discord UI: start with `src/ui/discord/commands/index.ts`, `src/ui/discord/handlers/interactions.ts`, and `src/ui/discord/services/client.ts`.
-- For tests: `tests/` contains service-unit tests and a Discord interaction test; all use repository/transaction mocks rather than a DB integration test.
+- USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
+- DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
+- The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
+
+
+<!-- nx configuration end-->
