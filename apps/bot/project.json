@@ -67,6 +67,36 @@
 				"script": "lint:fix"
 			}
 		},
+		"migrate-up-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:up:dev"
+			}
+		},
+		"migrate-down-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:down:dev"
+			}
+		},
+		"migrate-status-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:status:dev"
+			}
+		},
+		"migrate-create-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:create:dev"
+			}
+		},
+		"seed-dev": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "seed:dev"
+			}
+		},
 		"migrate-up": {
 			"executor": "nx:run-script",
 			"options": {
