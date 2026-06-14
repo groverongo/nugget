@@ -1,115 +1,107 @@
 {
-  "name": "bot",
-  "sourceRoot": "apps/bot",
-  "projectType": "application",
-  "targets": {
-    "install": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": ["docker compose up -d", "make install"],
-        "cwd": "{projectRoot}"
-      }
-    },
-    "install-images": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "docker pull sqlc/sqlc:latest",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "clean": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "rimraf dist",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "build": {
-      "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
-      "options": {
-        "command": "pnpm clean && tsc && tsc-alias",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "serve": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "nodemon --exec \"ts-node -r tsconfig-paths/register\" src/app.ts | pino-pretty",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "start": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
-      "options": {
-        "command": "node dist/src/app.js",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "test": {
-      "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/coverage"],
-      "options": {
-        "command": "jest --runInBand --coverage",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "biome check .",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "lint-fix": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "biome check . --write",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "migrate-up": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "ts-node -r tsconfig-paths/register ./cmd/migration.ts up | pino-pretty",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "migrate-down": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "ts-node -r tsconfig-paths/register ./cmd/migration.ts down | pino-pretty",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "migrate-status": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "ts-node -r tsconfig-paths/register ./cmd/migration.ts status | pino-pretty",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "migrate-create": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "ts-node -r tsconfig-paths/register ./cmd/migration.ts create",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "seed": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "ts-node -r tsconfig-paths/register ./cmd/seeding.ts | pino-pretty",
-        "cwd": "{projectRoot}"
-      }
-    },
-    "generate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "cd db && docker run --rm -u \"$(id -u):$(id -g)\" -e HOME=/src -v \"$(pwd):/src\" -w /src sqlc/sqlc generate",
-        "cwd": "{projectRoot}"
-      }
-    }
-  }
+	"name": "bot",
+	"sourceRoot": "apps/bot",
+	"projectType": "application",
+	"targets": {
+		"install": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm install",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"install-images": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm run install:images",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"clean": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "pnpm clean",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
+			"options": {
+				"command": "pnpm build",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "docker compose up -d && pnpm dev"
+			}
+		},
+		"start": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["build"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "pnpm start"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/coverage"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"command": "pnpm test"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "lint"
+			}
+		},
+		"lint-fix": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "lint:fix"
+			}
+		},
+		"migrate-up": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:up"
+			}
+		},
+		"migrate-down": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:down"
+			}
+		},
+		"migrate-status": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:status"
+			}
+		},
+		"migrate-create": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "migrate:create"
+			}
+		},
+		"seed": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "seed"
+			}
+		},
+		"generate": {
+			"executor": "nx:run-script",
+			"options": {
+				"script": "generate"
+			}
+		}
+	}
 }
