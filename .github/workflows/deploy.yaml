@@ -96,6 +96,9 @@ jobs:
       - name: Apply migrations
         env:
           DISCORD_TOKEN: GENERICO
+          DISCORD_OWNER_ID: GENERICO
+          DISCORD_ANNOUNCEMENTS_CHANNEL_ID: GENERICO
+          DISCORD_ALERTS_CHANNEL_ID: GENERICO
           DATABASE_URL: postgres://nugget:nugget@localhost:5432/nugget?sslmode=disable
         run: ./nx run bot:migrate-up
 
