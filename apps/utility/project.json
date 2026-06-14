@@ -1,0 +1,28 @@
+{
+	"name": "graphic",
+	"sourceRoot": "apps/graphic",
+	"projectType": "application",
+	"targets": {
+		"install": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "uv sync",
+				"cwd": "{projectRoot}"
+			}
+		},
+        "dev": {
+            "executor": "nx:run-commands",
+			"options": {
+				"command": "uv run fastapi dev main.py",
+                "cwd": "{projectRoot}"
+			}
+        },
+        "start": {
+            "executor": "nx:run-commands",
+			"options": {
+				"command": "uv run fastapi run main.py",
+                "cwd": "{projectRoot}"
+			}
+        }
+	}
+}

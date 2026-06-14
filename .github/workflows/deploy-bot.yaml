@@ -1,10 +1,16 @@
-name: Code validation, Image building and Deployment
+name: Code validation, Image building and Deployment for Discord Bot
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/bot/**'
+      - '.github/workflows/deploy-bot.yaml'
   pull_request:
     branches: [main]
+    paths:
+      - 'apps/bot/**'
+      - '.github/workflows/deploy-bot.yaml'
   workflow_dispatch:
 
 env:

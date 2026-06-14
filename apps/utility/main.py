@@ -34,7 +34,3 @@ async def generate_heatmap(request: HeatmapRequest):
         headers={"Content-Disposition": "attachment; filename=heatmap.png"}
     )
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
