@@ -147,3 +147,11 @@ vite.config.ts.timestamp-*
 .omc
 .agents
 config.yaml
+.nx/installation
+.nx/cache
+.nx/workspace-data
+.nx/self-healing
+.nx/polygraph
+.claude/worktrees
+.claude/settings.local.json
+.opencode
