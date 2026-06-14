@@ -17,7 +17,7 @@ function buildAlertaPartido(
 ): string {
 	const lineas = [
 		"🕛 **¡EMPEZÓ EL PARTIDO!**",
-		`*${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}*`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
 		"*Ya no más apuestas* 🙅",
 	];
 
@@ -229,6 +229,7 @@ export class MatchScheduler {
 		await Promise.all([
 			sendAlertsChannel(this.client, buildAlertaPartido(info, predicciones)),
 			this.services.partidos.actualizarPartidoEnVivo(partidoId),
+			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
 	}
 }

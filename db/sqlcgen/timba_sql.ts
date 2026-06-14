@@ -330,3 +330,20 @@ export async function anularTimba(client: Client, args: AnularTimbaArgs): Promis
         rowMode: "array"
     });
 }
+
+export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE partido_id = $1 AND estado = 'abierta'`;
+
+export interface CancelarTimbasAbiertasPorPartidoArgs {
+    partidoId: number;
+}
+
+export async function cancelarTimbasAbiertasPorPartido(client: Client, args: CancelarTimbasAbiertasPorPartidoArgs): Promise<void> {
+    await client.query({
+        text: cancelarTimbasAbiertasPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+}

@@ -38,5 +38,7 @@ export interface ITimbaRepository {
 
 	anular(args: AnularTimbaArgs): Promise<void>;
 
+	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
+
 	withTx(tx: PoolClient): ITimbaRepository;
 }
