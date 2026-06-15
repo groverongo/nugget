@@ -160,4 +160,5 @@ jobs:
               -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               -e DISCORD_ANNOUNCEMENTS_CHANNEL_ID="${{secrets.DISCORD_ANNOUNCEMENTS_CHANNEL_ID}}" \
               -e DISCORD_ALERTS_CHANNEL_ID="${{secrets.DISCORD_ALERTS_CHANNEL_ID}}" \
+              -e UTILITY_BASE_URL="${{secrets.UTILITY_BASE_URL}}"\
               ${{ env.IMAGE }}:${{ github.sha }}
