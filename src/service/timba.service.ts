@@ -26,9 +26,10 @@ export class TimbaService implements ITimbaService {
 			throw new Error("Los puntos deben ser mayores a 0.");
 		}
 
-		const [partido, jugadorPuntos] = await Promise.all([
+		const [partido, jugadorPuntos, apuestasActivas] = await Promise.all([
 			this.timbaRepo.verPartidoParaTimba(args.partidoId),
 			this.usuariosRepo.obtenerPuntos(args.jugador1Id),
+			this.timbaRepo.sumarApuestasActivas(args.jugador1Id),
 		]);
 
 		if (!partido) throw new Error("Partido no encontrado.");
@@ -40,9 +41,13 @@ export class TimbaService implements ITimbaService {
 			throw new Error(`Máximo ${partido.puntosBase} 💠 en esta fase.`);
 		}
 		const cap = Math.floor(jugadorPuntos * 0.1);
-		if (args.puntos > cap) {
+		if (cap === 0) {
+			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
+		}
+		const disponible = cap - apuestasActivas;
+		if (args.puntos > disponible) {
 			throw new Error(
-				`No tienes suficientes puntos. Tu máximo es ${cap} 💠 (10% de tus ${jugadorPuntos}pts).`,
+				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
 			);
 		}
 
@@ -64,8 +69,10 @@ export class TimbaService implements ITimbaService {
 			jugador1Id: timba.jugador1Id,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoLocalSiglas: timba.equipoLocalSiglas,
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
 		};
 	}
 
@@ -82,14 +89,17 @@ export class TimbaService implements ITimbaService {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
 
-		const [emparejamiento, jugador2Puntos] = await Promise.all([
-			this.timbaRepo.checkEmparejamiento({
-				partidoId: timba.partidoId,
-				jugador1Id: timba.jugador1Id,
-				jugador2Id: args.jugador2Id,
-			}),
-			this.usuariosRepo.obtenerPuntos(args.jugador2Id),
-		]);
+		const [emparejamiento, jugador2Puntos, apuestasActivas] = await Promise.all(
+			[
+				this.timbaRepo.checkEmparejamiento({
+					partidoId: timba.partidoId,
+					jugador1Id: timba.jugador1Id,
+					jugador2Id: args.jugador2Id,
+				}),
+				this.usuariosRepo.obtenerPuntos(args.jugador2Id),
+				this.timbaRepo.sumarApuestasActivas(args.jugador2Id),
+			],
+		);
 
 		if (emparejamiento > 0) {
 			throw new Error(
@@ -98,9 +108,13 @@ export class TimbaService implements ITimbaService {
 		}
 
 		const cap = Math.floor(jugador2Puntos * 0.1);
-		if (timba.puntos > cap) {
+		if (cap === 0) {
+			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
+		}
+		const disponible = cap - apuestasActivas;
+		if (timba.puntos > disponible) {
 			throw new Error(
-				`No tienes suficientes puntos. Tu máximo es ${cap} 💠 (10% de tus ${jugador2Puntos}pts).`,
+				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugador2Puntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
 			);
 		}
 
@@ -118,8 +132,10 @@ export class TimbaService implements ITimbaService {
 			jugador1Nombre: timba.jugador1Nombre,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoLocalSiglas: timba.equipoLocalSiglas,
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
 		};
 	}
 

@@ -124,7 +124,7 @@ export function buildAlertaDiariaPartidosComponents(
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
-			"📣 ***¡Buenos días!**\n*Es hora de apostar a estos partidos:*",
+			"📣 ***¡Buenos días!***\n**Es hora de apostar a estos partidos:**",
 		),
 	);
 

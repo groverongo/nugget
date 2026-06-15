@@ -13,6 +13,7 @@ import {
 	crearTimba,
 	type ResolverTimbaArgs,
 	resolverTimba,
+	sumarApuestasActivas,
 	type VerMisTimbasRow,
 	type VerPartidoParaTimbaRow,
 	type VerTimbaRow,
@@ -73,6 +74,11 @@ export class TimbaRepository implements ITimbaRepository {
 
 	anular(args: AnularTimbaArgs): Promise<void> {
 		return anularTimba(this.pool, args);
+	}
+
+	async sumarApuestasActivas(userId: string): Promise<number> {
+		const row = await sumarApuestasActivas(this.pool, { userId });
+		return row?.total ?? 0;
 	}
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {

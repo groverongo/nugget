@@ -19,8 +19,10 @@ SELECT
     f.puntos_base AS fase_puntos_base,
     el.nombre AS equipo_local_nombre,
     el.bandera AS equipo_local_bandera,
+    el.siglas AS equipo_local_siglas,
     ev.nombre AS equipo_visitante_nombre,
-    ev.bandera AS equipo_visitante_bandera
+    ev.bandera AS equipo_visitante_bandera,
+    ev.siglas AS equipo_visitante_siglas
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
@@ -101,3 +103,9 @@ DELETE FROM timba_time WHERE id = $1;
 UPDATE timba_time
 SET estado = 'cancelada'
 WHERE partido_id = $1 AND estado = 'abierta';
+
+-- name: SumarApuestasActivas :one
+SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
+FROM timba_time
+WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
+AND estado IN ('abierta', 'cerrada');

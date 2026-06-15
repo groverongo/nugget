@@ -18,6 +18,10 @@ export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
 export const TIMBA_RESOLVER_J1_PREFIX = "timba:resolver:j1:";
 export const TIMBA_RESOLVER_J2_PREFIX = "timba:resolver:j2:";
 
+function puntosStr(puntos: number): string {
+	return `${puntos} ${puntos === 1 ? "punto" : "puntos"}`;
+}
+
 export function buildTimbaCreacionComponent(
 	result: CrearTimbaResult,
 ): APIMessageTopLevelComponent[] {
@@ -26,10 +30,9 @@ export function buildTimbaCreacionComponent(
 			.addTextDisplayComponents(
 				new TextDisplayBuilder().setContent(
 					[
-						`🎲 **Timba Time** — <@${result.jugador1Id}>`,
-						`*${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}*`,
-						`💠 **${result.puntos} puntos** en juego`,
-						`_"${result.descripcion}"_`,
+						`🎰 **Timba Time** — <@${result.jugador1Id}>`,
+						`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
+						`💠 **${puntosStr(result.puntos)}** en juego a: _"${result.descripcion}"_`,
 					].join("\n"),
 				),
 			)
@@ -50,9 +53,9 @@ export function buildTimbaAceptadaComponent(
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
 			[
-				`🎲 **Timba Time** — <@${result.jugador1Id}> vs <@${result.jugador2Id}>`,
-				`*${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}*`,
-				`💠 **${result.puntos} puntos** en juego · _"${result.descripcion}"_`,
+				`🎰 **Timba Time** — <@${result.jugador1Id}> vs <@${result.jugador2Id}>`,
+				`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
+				`💠 **${puntosStr(result.puntos)}** en juego a: _"${result.descripcion}"_`,
 				`✅ ¡Aceptada! Pendiente de resolución.`,
 			].join("\n"),
 		),

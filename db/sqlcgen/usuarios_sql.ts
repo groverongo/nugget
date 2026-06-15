@@ -121,6 +121,7 @@ UPDATE usuarios SET
     partidos_perdidos  = partidos_perdidos + $3,
     puntos             = puntos + $4,
     racha              = $5,
+    racha_maxima       = GREATEST(racha_maxima, $5),
     win_rate           = CASE
         WHEN (partidos_apostados + 1) = 0 THEN 0
         ELSE ROUND(((partidos_ganados + $2)::NUMERIC / (partidos_apostados + 1)) * 100, 2)
