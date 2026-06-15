@@ -5,6 +5,8 @@ import type {
 	ListUsuariosRow,
 	UpdateUsuarioParticipanteArgs,
 	UpdateUsuarioUsernameArgs,
+	VerGanadoresMayorWinRateRow,
+	VerGanadoresRachaMaximaRow,
 } from "@sqlc/usuarios_sql";
 import type { PoolClient } from "pg";
 
@@ -28,6 +30,10 @@ export interface IUsuariosRepository {
 	count(): Promise<number>;
 
 	countParticipantes(): Promise<number>;
+
+	verGanadoresMayorWinRate(): Promise<VerGanadoresMayorWinRateRow[]>;
+
+	verGanadoresRachaMaxima(): Promise<VerGanadoresRachaMaximaRow[]>;
 
 	withTx(tx: PoolClient): IUsuariosRepository;
 }

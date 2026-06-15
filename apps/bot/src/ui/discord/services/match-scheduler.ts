@@ -5,13 +5,15 @@ import type {
 } from "@sqlc/predicciones_sql";
 import type { VerTimbasCerradasPorPartidoRow } from "@sqlc/timba_sql";
 import { logger } from "@support/logger";
-import type { Client } from "discord.js";
+import { AttachmentBuilder, type Client } from "discord.js";
 import type { AppContext } from "../../../app";
 import {
 	sendAlertsChannel,
+	sendAlertsChannelWithFiles,
 	sendAnnouncementChannel,
 } from "../handlers/interactions";
 import { buildAlertaGol } from "../utils/match-announcement";
+import { generarHeatmapPredicciones } from "./utility-client";
 
 type Services = AppContext["services"];
 
@@ -141,10 +143,24 @@ export async function enviarEstadisticasPrePartido(
 		services.timba.verTimbasCerradasPorPartido(partidoId),
 	]);
 	if (!info) return false;
-	await sendAlertsChannel(
-		client,
-		buildAlertaPrePartido(info, predicciones, sinPrediccion, timbas),
+
+	const mensaje = buildAlertaPrePartido(
+		info,
+		predicciones,
+		sinPrediccion,
+		timbas,
 	);
+	const heatmap = await generarHeatmapPredicciones(info, predicciones);
+
+	if (heatmap) {
+		await sendAlertsChannelWithFiles(client, mensaje, [
+			new AttachmentBuilder(heatmap, {
+				name: `predicciones-${info.partidoId}.png`,
+			}),
+		]);
+	} else {
+		await sendAlertsChannel(client, mensaje);
+	}
 	return true;
 }
 

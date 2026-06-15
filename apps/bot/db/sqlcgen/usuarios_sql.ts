@@ -271,3 +271,53 @@ export async function agregarPuestoPremio(client: Client, args: AgregarPuestoPre
     });
 }
 
+export const verGanadoresMayorWinRateQuery = `-- name: VerGanadoresMayorWinRate :many
+SELECT id, username, win_rate::NUMERIC AS win_rate
+FROM usuarios
+WHERE participante = TRUE
+  AND win_rate = (SELECT MAX(win_rate) FROM usuarios WHERE participante = TRUE AND win_rate > 0)`;
+
+export interface VerGanadoresMayorWinRateRow {
+    id: string;
+    username: string;
+    winRate: string;
+}
+
+export async function verGanadoresMayorWinRate(client: Client): Promise<VerGanadoresMayorWinRateRow[]> {
+    const result = await client.query({
+        text: verGanadoresMayorWinRateQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        username: row[1],
+        winRate: row[2],
+    }));
+}
+
+export const verGanadoresRachaMaximaQuery = `-- name: VerGanadoresRachaMaxima :many
+SELECT id, username, racha_maxima
+FROM usuarios
+WHERE participante = TRUE
+  AND racha_maxima = (SELECT MAX(racha_maxima) FROM usuarios WHERE participante = TRUE AND racha_maxima > 0)`;
+
+export interface VerGanadoresRachaMaximaRow {
+    id: string;
+    username: string;
+    rachaMaxima: number;
+}
+
+export async function verGanadoresRachaMaxima(client: Client): Promise<VerGanadoresRachaMaximaRow[]> {
+    const result = await client.query({
+        text: verGanadoresRachaMaximaQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        username: row[1],
+        rachaMaxima: row[2],
+    }));
+}
+

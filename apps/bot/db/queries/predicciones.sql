@@ -202,3 +202,26 @@ INNER JOIN (
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
 ORDER BY fecha_partido ASC;
+
+-- name: VerGanadoresHitMasGoles :many
+SELECT DISTINCT pe.usuario_id, u.username,
+       (p.goles_local + p.goles_visitante)::INTEGER AS total_goles,
+       el.siglas AS equipo_local_siglas,
+       ev.siglas AS equipo_visitante_siglas,
+       el.bandera AS equipo_local_bandera,
+       ev.bandera AS equipo_visitante_bandera,
+       p.goles_local::INTEGER AS goles_local,
+       p.goles_visitante::INTEGER AS goles_visitante
+FROM prediccion pe
+JOIN partidos p ON p.id = pe.partido_id
+JOIN usuarios u ON u.id = pe.usuario_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE pe.resultado = 'exacto'
+  AND u.participante = TRUE
+  AND (p.goles_local + p.goles_visitante) = (
+    SELECT MAX(p2.goles_local + p2.goles_visitante)
+    FROM prediccion pe2
+    JOIN partidos p2 ON p2.id = pe2.partido_id
+    WHERE pe2.resultado = 'exacto'
+  );

@@ -3,6 +3,7 @@ import { logger } from "@support/logger";
 import {
 	ActionRowBuilder,
 	type APIMessageTopLevelComponent,
+	type AttachmentBuilder,
 	type AutocompleteInteraction,
 	type ButtonInteraction,
 	type ChatInputCommandInteraction,
@@ -626,6 +627,34 @@ export function sendAlertsChannel(
 	message: string,
 ): Promise<void> {
 	return sendToChannel(client, config.discord.alerts.channel.id, message);
+}
+
+export async function sendAlertsChannelWithFiles(
+	client: DiscordClient,
+	message: string,
+	files: AttachmentBuilder[],
+): Promise<void> {
+	const channelId = config.discord.alerts.channel.id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "send" in channel) {
+			await channel.send({
+				content: message,
+				files,
+			});
+		}
+	} catch (error) {
+		logger.error(
+			{ err: error, channelId },
+			"Error enviando alerta con archivos al canal de alertas",
+		);
+	}
 }
 
 export async function sendComponentsToAlertsChannel(

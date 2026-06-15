@@ -3,6 +3,10 @@ import {
 	handlePrediccionModalSubmitInteraction,
 } from "../src/ui/discord/handlers/interactions";
 
+jest.mock("../src/ui/discord/services/utility-client", () => ({
+	generarHeatmapPredicciones: jest.fn(),
+}));
+
 type PartidosServiceMock = {
 	verInformacionPartido: jest.Mock;
 };

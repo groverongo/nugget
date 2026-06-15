@@ -57,3 +57,15 @@ SELECT id, puntos FROM usuarios WHERE id = $1;
 
 -- name: AjustarPuntosTimba :exec
 UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1;
+
+-- name: VerGanadoresMayorWinRate :many
+SELECT id, username, win_rate::NUMERIC AS win_rate
+FROM usuarios
+WHERE participante = TRUE
+  AND win_rate = (SELECT MAX(win_rate) FROM usuarios WHERE participante = TRUE AND win_rate > 0);
+
+-- name: VerGanadoresRachaMaxima :many
+SELECT id, username, racha_maxima
+FROM usuarios
+WHERE participante = TRUE
+  AND racha_maxima = (SELECT MAX(racha_maxima) FROM usuarios WHERE participante = TRUE AND racha_maxima > 0);
