@@ -46,6 +46,9 @@ describe("match scheduler pre-partido", () => {
 				]),
 				verParticipantesSinPrediccion: jest.fn().mockResolvedValue([]),
 			},
+			timba: {
+				verTimbasCerradasPorPartido: jest.fn().mockResolvedValue([]),
+			},
 		};
 		const client = {};
 
@@ -94,6 +97,9 @@ describe("match scheduler pre-partido", () => {
 			predicciones: {
 				verPrediccionesPorPartido: jest.fn().mockResolvedValue([]),
 				verParticipantesSinPrediccion: jest.fn().mockResolvedValue([]),
+			},
+			timba: {
+				verTimbasCerradasPorPartido: jest.fn().mockResolvedValue([]),
 			},
 		};
 		const client = {};

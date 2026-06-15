@@ -7,7 +7,11 @@ import type { VerTimbasCerradasPorPartidoRow } from "@sqlc/timba_sql";
 import { logger } from "@support/logger";
 import { AttachmentBuilder, type Client } from "discord.js";
 import type { AppContext } from "../../../app";
-import { sendAlertsChannel, sendAlertsChannelWithFiles, sendAnnouncementChannel } from "../handlers/interactions";
+import {
+	sendAlertsChannel,
+	sendAlertsChannelWithFiles,
+	sendAnnouncementChannel,
+} from "../handlers/interactions";
 import { buildAlertaGol } from "../utils/match-announcement";
 import { generarHeatmapPredicciones } from "./utility-client";
 
@@ -140,7 +144,12 @@ export async function enviarEstadisticasPrePartido(
 	]);
 	if (!info) return false;
 
-	const mensaje = buildAlertaPrePartido(info, predicciones, sinPrediccion, timbas);
+	const mensaje = buildAlertaPrePartido(
+		info,
+		predicciones,
+		sinPrediccion,
+		timbas,
+	);
 	const heatmap = await generarHeatmapPredicciones(info, predicciones);
 
 	if (heatmap) {
