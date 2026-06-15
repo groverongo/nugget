@@ -126,8 +126,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./apps/bot
-          file: ./apps/bot/Dockerfile 
-          push: true
+          file: ./apps/bot/Dockerfile
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
