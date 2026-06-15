@@ -5,6 +5,7 @@ import {
 	actualizarPrediccion,
 	actualizarPuntajePrediccion,
 	agregarPrediccion,
+	type VerGanadoresHitMasGolesRow,
 	type VerMisPrediccionesPorFechaArgs,
 	type VerMisPrediccionesPorFechaRow,
 	type VerMisPrediccionesRow,
@@ -24,6 +25,7 @@ import {
 	type VerResultadosRecientesUsuarioArgs,
 	type VerResultadosRecientesUsuarioRow,
 	verFechasDePrediccionesPorUsuario,
+	verGanadoresHitMasGoles,
 	verMisPredicciones,
 	verMisPrediccionesPorFecha,
 	verParticipantesSinPrediccion,
@@ -120,6 +122,10 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		args: VerParticipantesSinPrediccionArgs,
 	): Promise<VerParticipantesSinPrediccionRow[]> {
 		return verParticipantesSinPrediccion(this.pool, args);
+	}
+
+	verGanadoresHitMasGoles(): Promise<VerGanadoresHitMasGolesRow[]> {
+		return verGanadoresHitMasGoles(this.pool);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {

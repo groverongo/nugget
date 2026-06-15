@@ -6,6 +6,30 @@ export interface ResumenActualizacion {
 	puntosElegido: number;
 }
 
+export interface BonusGanador {
+	id: string;
+	username: string;
+}
+
+export interface BonusResult {
+	winRate: {
+		ganadores: BonusGanador[];
+		valor: number;
+		puntos: number;
+	};
+	rachaMaxima: {
+		ganadores: BonusGanador[];
+		valor: number;
+		puntos: number;
+	};
+	hitMasGoles: {
+		ganadores: BonusGanador[];
+		totalGoles: number;
+		partido: string;
+		puntos: number;
+	};
+}
+
 export interface IAdminService {
 	actualizarPartido(args: {
 		partidoId: number;
@@ -19,4 +43,6 @@ export interface IAdminService {
 		golesLocal: number;
 		golesVisitante: number;
 	}): Promise<void>;
+
+	asignarBonuses(): Promise<BonusResult>;
 }
