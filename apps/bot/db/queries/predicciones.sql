@@ -81,7 +81,8 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1);
+WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)
+ORDER BY partidos.fecha_partido ASC;
 
 -- name: VerPredicciones :many
 SELECT 
@@ -120,7 +121,8 @@ INNER JOIN (
     FROM partidos pa
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
-) pa_ex ON pe.partido_id = pa_ex.partido_id;
+) pa_ex ON pe.partido_id = pa_ex.partido_id
+ORDER BY fecha_partido ASC;
 
 -- name: ActualizarPuntajePrediccion :exec
 UPDATE prediccion SET
@@ -198,4 +200,5 @@ INNER JOIN (
     ) pa
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
-) pa_ex ON pe.partido_id = pa_ex.partido_id;
+) pa_ex ON pe.partido_id = pa_ex.partido_id
+ORDER BY fecha_partido ASC;
