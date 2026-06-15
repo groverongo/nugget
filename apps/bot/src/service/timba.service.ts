@@ -1,6 +1,7 @@
 import type {
 	VerMisTimbasRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
@@ -205,6 +206,10 @@ export class TimbaService implements ITimbaService {
 		partidoId: number,
 	): Promise<VerTimbasCerradasPorPartidoRow[]> {
 		return this.timbaRepo.verTimbasCerradasPorPartido(partidoId);
+	}
+
+	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]> {
+		return this.timbaRepo.verTimbasPorPartido(partidoId);
 	}
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {

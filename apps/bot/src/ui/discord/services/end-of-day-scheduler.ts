@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
@@ -8,9 +10,42 @@ type Services = AppContext["services"];
 
 const scheduledDates = new Set<string>();
 
+const SENT_DATES_FILE = join(process.cwd(), ".resumen-sent-dates.json");
+
+function loadSentDates(): Set<string> {
+	try {
+		if (!existsSync(SENT_DATES_FILE)) return new Set();
+		const arr = JSON.parse(readFileSync(SENT_DATES_FILE, "utf-8")) as string[];
+		return new Set(arr);
+	} catch {
+		return new Set();
+	}
+}
+
+function markDateSent(date: string): void {
+	const dates = loadSentDates();
+	dates.add(date);
+	const sorted = [...dates].sort().slice(-60);
+	try {
+		writeFileSync(SENT_DATES_FILE, JSON.stringify(sorted));
+	} catch (err) {
+		logger.warn({ err }, "No se pudo guardar resumen-sent-dates");
+	}
+}
+
 function toDatePeru(date: Date): string {
 	const peru = new Date(date.getTime() - 5 * 60 * 60 * 1000);
 	return peru.toISOString().split("T")[0];
+}
+
+async function sendResumen(
+	date: string,
+	services: Services,
+	client: Client,
+): Promise<void> {
+	const mensaje = await buildResumenDia(date, services);
+	await sendAlertsChannel(client, mensaje);
+	markDateSent(date);
 }
 
 export async function enviarResumenDia(
@@ -18,8 +53,7 @@ export async function enviarResumenDia(
 	services: Services,
 	client: Client,
 ): Promise<void> {
-	const mensaje = await buildResumenDia(date, services);
-	await sendAlertsChannel(client, mensaje);
+	await sendResumen(date, services, client);
 }
 
 export async function checkAndScheduleEndOfDay(
@@ -29,6 +63,7 @@ export async function checkAndScheduleEndOfDay(
 ): Promise<void> {
 	const date = toDatePeru(fechaPartido);
 	if (scheduledDates.has(date)) return;
+	if (loadSentDates().has(date)) return;
 
 	const partidos = await services.partidos.verPartidosPorFecha({ date });
 	if (partidos.length === 0) return;
@@ -42,8 +77,7 @@ export async function checkAndScheduleEndOfDay(
 	setTimeout(
 		async () => {
 			try {
-				const mensaje = await buildResumenDia(date, services);
-				await sendAlertsChannel(client, mensaje);
+				await sendResumen(date, services, client);
 			} catch (err) {
 				logger.error({ err, date }, "Error enviando resumen del día");
 			} finally {
@@ -52,6 +86,58 @@ export async function checkAndScheduleEndOfDay(
 		},
 		60 * 60 * 1000,
 	);
+}
+
+export async function initEndOfDayScheduler(
+	services: Services,
+	client: Client,
+): Promise<void> {
+	const now = new Date();
+	const sent = loadSentDates();
+
+	for (const offsetDays of [1, 0]) {
+		const checkDate = new Date(
+			now.getTime() - offsetDays * 24 * 60 * 60 * 1000,
+		);
+		const date = toDatePeru(checkDate);
+		if (sent.has(date)) continue;
+		if (scheduledDates.has(date)) continue;
+
+		const partidos = await services.partidos.verPartidosPorFecha({ date });
+		if (partidos.length === 0) continue;
+		const todosFinalizados = partidos.every((p) => p.estado === "finalizado");
+		if (!todosFinalizados) continue;
+
+		// Find latest fecha_partido to estimate when summary should have fired
+		const maxFechaMs = Math.max(
+			...partidos
+				.map((p) => p.fechaPartido?.getTime() ?? 0)
+				.filter((t) => t > 0),
+		);
+		if (maxFechaMs === 0) continue;
+
+		// Summary should fire 1h after admin finalizes last match.
+		// Estimate: match ends ~2h after start, admin finalizes ~30min later,
+		// so summary expected at fechaPartido + 3.5h. We catch up if within 12h.
+		const expectedResumenMs = maxFechaMs + 3.5 * 60 * 60 * 1000;
+		const nowMs = now.getTime();
+
+		if (nowMs < maxFechaMs + 60 * 60 * 1000) continue; // too early, normal flow handles it
+		if (nowMs > expectedResumenMs + 12 * 60 * 60 * 1000) continue; // too late, assume sent
+
+		scheduledDates.add(date);
+		logger.info({ date }, "Startup: recuperando resumen del día perdido");
+
+		setTimeout(async () => {
+			try {
+				await sendResumen(date, services, client);
+			} catch (err) {
+				logger.error({ err, date }, "Error recuperando resumen del día");
+			} finally {
+				scheduledDates.delete(date);
+			}
+		}, 15_000);
+	}
 }
 
 async function buildResumenDia(
@@ -96,8 +182,8 @@ async function buildResumenDia(
 				p.prediccionGolesLocal === gL && p.prediccionGolesVisitante === gV;
 
 			if (esExacto) {
-				const bonusStr = p.puntosEnRacha > 0 ? ` +${p.puntosEnRacha} 🔥` : "";
-				exactos.push(`<@${p.usuarioId}> (+${p.puntosBase} 💠${bonusStr})`);
+				const bonusStr = p.puntosEnRacha > 0 ? " 🔥" : "";
+				exactos.push(`<@${p.usuarioId}> (+${p.puntosTotal} 💠${bonusStr})`);
 			} else if (p.puntosTotal > 0) {
 				bienIntentos.push(`<@${p.usuarioId}>`);
 				puntosBI = p.puntosTotal;

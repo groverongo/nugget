@@ -149,6 +149,70 @@ export async function verPartidoParaTimba(client: Client, args: VerPartidoParaTi
     };
 }
 
+export const verTimbasPorPartidoQuery = `-- name: VerTimbasPorPartido :many
+SELECT
+    t.id,
+    t.estado,
+    t.descripcion,
+    t.puntos,
+    t.jugador_1_id,
+    COALESCE(u2.id, '') AS jugador_2_id,
+    u1.username AS jugador_1_nombre,
+    COALESCE(u2.username, '') AS jugador_2_nombre,
+    el.siglas AS equipo_local_siglas,
+    el.bandera AS equipo_local_bandera,
+    ev.siglas AS equipo_visitante_siglas,
+    ev.bandera AS equipo_visitante_bandera
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN partidos p ON p.id = t.partido_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+ORDER BY t.created_at ASC`;
+
+export interface VerTimbasPorPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerTimbasPorPartidoRow {
+    id: number;
+    estado: string;
+    descripcion: string;
+    puntos: number;
+    jugador1Id: string;
+    jugador2Id: string;
+    jugador1Nombre: string;
+    jugador2Nombre: string;
+    equipoLocalSiglas: string;
+    equipoLocalBandera: string;
+    equipoVisitanteSiglas: string;
+    equipoVisitanteBandera: string;
+}
+
+export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPartidoArgs): Promise<VerTimbasPorPartidoRow[]> {
+    const result = await client.query({
+        text: verTimbasPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        estado: row[1],
+        descripcion: row[2],
+        puntos: row[3],
+        jugador1Id: row[4],
+        jugador2Id: row[5],
+        jugador1Nombre: row[6],
+        jugador2Nombre: row[7],
+        equipoLocalSiglas: row[8],
+        equipoLocalBandera: row[9],
+        equipoVisitanteSiglas: row[10],
+        equipoVisitanteBandera: row[11]
+    }));
+}
+
 export const verTimbasCerradasPorPartidoQuery = `-- name: VerTimbasCerradasPorPartido :many
 SELECT
     t.id,

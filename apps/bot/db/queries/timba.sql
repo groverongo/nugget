@@ -41,6 +41,29 @@ FROM partidos p
 JOIN estatico_fases f ON f.id = p.fase_id
 WHERE p.id = $1;
 
+-- name: VerTimbasPorPartido :many
+SELECT
+    t.id,
+    t.estado,
+    t.descripcion,
+    t.puntos,
+    t.jugador_1_id,
+    COALESCE(u2.id, '') AS jugador_2_id,
+    u1.username AS jugador_1_nombre,
+    COALESCE(u2.username, '') AS jugador_2_nombre,
+    el.siglas AS equipo_local_siglas,
+    el.bandera AS equipo_local_bandera,
+    ev.siglas AS equipo_visitante_siglas,
+    ev.bandera AS equipo_visitante_bandera
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN partidos p ON p.id = t.partido_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+ORDER BY t.created_at ASC;
+
 -- name: VerTimbasCerradasPorPartido :many
 SELECT
     t.id,
