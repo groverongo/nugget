@@ -17,8 +17,10 @@ export interface CrearTimbaResult {
 	jugador1Id: string;
 	equipoLocalNombre: string;
 	equipoLocalBandera: string;
+	equipoLocalSiglas: string;
 	equipoVisitanteNombre: string;
 	equipoVisitanteBandera: string;
+	equipoVisitanteSiglas: string;
 }
 
 export interface AceptarTimbaInput {
@@ -35,8 +37,10 @@ export interface AceptarTimbaResult {
 	jugador1Nombre: string;
 	equipoLocalNombre: string;
 	equipoLocalBandera: string;
+	equipoLocalSiglas: string;
 	equipoVisitanteNombre: string;
 	equipoVisitanteBandera: string;
+	equipoVisitanteSiglas: string;
 }
 
 export interface CancelarTimbaInput {

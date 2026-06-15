@@ -47,8 +47,10 @@ SELECT
     f.puntos_base AS fase_puntos_base,
     el.nombre AS equipo_local_nombre,
     el.bandera AS equipo_local_bandera,
+    el.siglas AS equipo_local_siglas,
     ev.nombre AS equipo_visitante_nombre,
-    ev.bandera AS equipo_visitante_bandera
+    ev.bandera AS equipo_visitante_bandera,
+    ev.siglas AS equipo_visitante_siglas
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
@@ -77,8 +79,10 @@ export interface VerTimbaRow {
     fasePuntosBase: number;
     equipoLocalNombre: string;
     equipoLocalBandera: string;
+    equipoLocalSiglas: string;
     equipoVisitanteNombre: string;
     equipoVisitanteBandera: string;
+    equipoVisitanteSiglas: string;
 }
 
 export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerTimbaRow | null> {
@@ -104,8 +108,10 @@ export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerT
         fasePuntosBase: row[11],
         equipoLocalNombre: row[12],
         equipoLocalBandera: row[13],
-        equipoVisitanteNombre: row[14],
-        equipoVisitanteBandera: row[15]
+        equipoLocalSiglas: row[14],
+        equipoVisitanteNombre: row[15],
+        equipoVisitanteBandera: row[16],
+        equipoVisitanteSiglas: row[17]
     };
 }
 
@@ -329,6 +335,30 @@ export async function anularTimba(client: Client, args: AnularTimbaArgs): Promis
         values: [args.id],
         rowMode: "array"
     });
+}
+
+export const sumarApuestasActivasQuery = `-- name: SumarApuestasActivas :one
+SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
+FROM timba_time
+WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
+AND estado IN ('abierta', 'cerrada')`;
+
+export interface SumarApuestasActivasArgs {
+    userId: string;
+}
+
+export interface SumarApuestasActivasRow {
+    total: number;
+}
+
+export async function sumarApuestasActivas(client: Client, args: SumarApuestasActivasArgs): Promise<SumarApuestasActivasRow | null> {
+    const result = await client.query({
+        text: sumarApuestasActivasQuery,
+        values: [args.userId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) return null;
+    return { total: result.rows[0][0] };
 }
 
 export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec

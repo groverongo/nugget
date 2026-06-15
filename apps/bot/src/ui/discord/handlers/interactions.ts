@@ -721,7 +721,11 @@ export async function handleTimbaButtonInteraction(
 
 			await sendAnnouncementChannel(
 				interaction.client,
-				`🎲 ¡<@${result.jugador2Id}> aceptó el reto de <@${result.jugador1Id}>! **${result.puntos} 💠** en juego — _"${result.descripcion}"_`,
+				[
+					`🤝 ***¡Timba Time cerrada para ${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}***`,
+					`<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntos} 💠** en juego`,
+					`_"${result.descripcion}"_`,
+				].join("\n"),
 			);
 		} catch (error) {
 			await interaction.followUp({
@@ -758,9 +762,8 @@ export async function handleTimbaButtonInteraction(
 		await sendAnnouncementChannel(
 			interaction.client,
 			[
-				`🎲 **¡Timba resuelta!** *(${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera})*`,
-				`<@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}>`,
-				`_"${result.descripcion}"_`,
+				`**Resolución de Timba Times** *(${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera})*`,
+				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — _"${result.descripcion}"_`,
 			].join("\n"),
 		);
 

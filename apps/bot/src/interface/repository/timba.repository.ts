@@ -38,6 +38,8 @@ export interface ITimbaRepository {
 
 	anular(args: AnularTimbaArgs): Promise<void>;
 
+	sumarApuestasActivas(userId: string): Promise<number>;
+
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
 
 	withTx(tx: PoolClient): ITimbaRepository;

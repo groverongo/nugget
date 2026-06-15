@@ -3,10 +3,14 @@ import type {
 	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorPartidoRow,
 } from "@sqlc/predicciones_sql";
+import type { VerTimbasCerradasPorPartidoRow } from "@sqlc/timba_sql";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
-import { sendAlertsChannel } from "../handlers/interactions";
+import {
+	sendAlertsChannel,
+	sendAnnouncementChannel,
+} from "../handlers/interactions";
 import { buildAlertaGol } from "../utils/match-announcement";
 
 type Services = AppContext["services"];
@@ -52,6 +56,7 @@ function buildAlertaPrePartido(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
+	timbas: VerTimbasCerradasPorPartidoRow[],
 ): string {
 	const totalParticipantes = predicciones.length + sinPrediccion.length;
 	const count = predicciones.length;
@@ -112,6 +117,15 @@ function buildAlertaPrePartido(
 	const dispersion = ((distinctResults / count) * 100).toFixed(1);
 	lineas.push(`- **Dispersión:** ${dispersion}%`);
 
+	if (timbas.length > 0) {
+		lineas.push("**⚔️ Timba Times cerradas:**");
+		for (const t of timbas) {
+			lineas.push(
+				`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
+			);
+		}
+	}
+
 	return lineas.join("\n");
 }
 
@@ -120,15 +134,16 @@ export async function enviarEstadisticasPrePartido(
 	services: Services,
 	client: Client,
 ): Promise<boolean> {
-	const [info, predicciones, sinPrediccion] = await Promise.all([
+	const [info, predicciones, sinPrediccion, timbas] = await Promise.all([
 		services.partidos.verInformacionPartido({ id: partidoId }),
 		services.predicciones.verPrediccionesPorPartido({ partidoId }),
 		services.predicciones.verParticipantesSinPrediccion({ partidoId }),
+		services.timba.verTimbasCerradasPorPartido(partidoId),
 	]);
 	if (!info) return false;
 	await sendAlertsChannel(
 		client,
-		buildAlertaPrePartido(info, predicciones, sinPrediccion),
+		buildAlertaPrePartido(info, predicciones, sinPrediccion, timbas),
 	);
 	return true;
 }
@@ -231,5 +246,18 @@ export class MatchScheduler {
 			this.services.partidos.actualizarPartidoEnVivo(partidoId),
 			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
+
+		const timbas =
+			await this.services.timba.verTimbasCerradasPorPartido(partidoId);
+		if (timbas.length === 0) return;
+
+		const lineas = [
+			`⚔️ **Timba Times en juego** *(${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera})*`,
+			...timbas.map(
+				(t) =>
+					`• <@${t.jugador1Id}> vs. <@${t.jugador2Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
+			),
+		];
+		await sendAnnouncementChannel(this.client, lineas.join("\n"));
 	}
 }

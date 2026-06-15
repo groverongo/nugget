@@ -1,0 +1,2 @@
+ALTER TABLE usuarios
+    ADD COLUMN racha_maxima INTEGER NOT NULL DEFAULT 0;
