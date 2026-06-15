@@ -18,6 +18,7 @@ import {
 } from "../handlers/interactions";
 import { AwardsScheduler } from "./awards-scheduler";
 import { DailyAlertScheduler } from "./daily-alert-scheduler";
+import { initEndOfDayScheduler } from "./end-of-day-scheduler";
 import { MatchScheduler } from "./match-scheduler";
 
 z.config(z.locales.es());
@@ -53,6 +54,7 @@ export function registerDiscordEventHandlers(
 			await scheduler.init();
 			new AwardsScheduler(appContext.services, readyClient).init();
 			new DailyAlertScheduler(appContext.services, readyClient).init();
+			await initEndOfDayScheduler(appContext.services, readyClient);
 			logger.info({ user: readyClient.user.tag }, "Discord bot listo");
 		} catch (error) {
 			logger.error(
