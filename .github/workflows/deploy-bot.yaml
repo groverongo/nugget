@@ -1,10 +1,16 @@
-name: Code validation, Image building and Deployment
+name: Code validation, Image building and Deployment for Discord Bot
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/bot/**'
+      - '.github/workflows/deploy-bot.yaml'
   pull_request:
     branches: [main]
+    paths:
+      - 'apps/bot/**'
+      - '.github/workflows/deploy-bot.yaml'
   workflow_dispatch:
 
 env:
@@ -120,8 +126,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./apps/bot
-          file: ./apps/bot/Dockerfile 
-          push: true
+          file: ./apps/bot/Dockerfile
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
