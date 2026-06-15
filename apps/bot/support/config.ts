@@ -130,12 +130,38 @@ class ConfigService {
 				continue;
 			}
 
-			const pathParts = key.toLowerCase().split("_");
+			const rawSegments = key.toLowerCase().split("_");
+			const pathParts = this.resolveEnvPath(rawSegments, DEFAULT_CONFIG);
 
 			this.setDeep(result, pathParts, value);
 		}
 
 		return result;
+	}
+
+	private resolveEnvPath(segments: string[], schema: unknown): string[] {
+		if (segments.length === 0 || !this.isObject(schema)) {
+			return segments;
+		}
+
+		if (segments[0] in schema) {
+			return [
+				segments[0],
+				...this.resolveEnvPath(segments.slice(1), schema[segments[0]]),
+			];
+		}
+
+		for (let n = 2; n <= segments.length; n++) {
+			const combined = segments.slice(0, n).join("_");
+			if (combined in schema) {
+				return [
+					combined,
+					...this.resolveEnvPath(segments.slice(n), schema[combined]),
+				];
+			}
+		}
+
+		return segments;
 	}
 
 	private setDeep(
