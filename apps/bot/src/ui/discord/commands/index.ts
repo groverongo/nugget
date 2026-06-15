@@ -608,12 +608,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					});
 
 					const extras: string[] = [];
-					if (resumen.extraPartidazo) extras.push("Partidazo ⚡");
-					if (milagro) extras.push("Milagro 🙏");
+					if (resumen.extraPartidazo) extras.push("Partidazo 💥");
+					if (milagro) extras.push("Milagro ✝️");
 					if (resumen.puntosBatacazo > 0)
 						extras.push(`Batacazo +${resumen.puntosBatacazo}pts 🐴`);
 					if (resumen.puntosElegido > 0)
-						extras.push(`El Elegido +${resumen.puntosElegido}pts 🎯`);
+						extras.push(`El Elegido +${resumen.puntosElegido}pts 👑`);
 
 					await interaction.editReply({
 						content: [
