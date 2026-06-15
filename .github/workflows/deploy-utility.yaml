@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: ${{vars.DOCKER_REGISTRY}}/${{vars.DOCKER_REPOSITORY}}-utilities
+  IMAGE: ${{vars.DOCKER_REGISTRY}}/${{vars.DOCKER_REPOSITORY}}-utility
   SERVICE_ID: ${{vars.RENDER_SERVICE_ID_UTILITY}}
   RENDER_API_SERVICES_URL: https://api.render.com/v1/services
 
