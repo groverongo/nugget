@@ -1,6 +1,6 @@
 {
-	"name": "graphic",
-	"sourceRoot": "apps/graphic",
+	"name": "utility",
+	"sourceRoot": "apps/utility",
 	"projectType": "application",
 	"targets": {
 		"install": {
