@@ -669,3 +669,57 @@ export async function verPrediccionesResumenPartido(client: Client, args: VerPre
         puntosAcumulados: row[7],
     }));
 }
+
+export const verGanadoresHitMasGolesQuery = `-- name: VerGanadoresHitMasGoles :many
+SELECT DISTINCT pe.usuario_id, u.username,
+       (p.goles_local + p.goles_visitante)::INTEGER AS total_goles,
+       el.siglas AS equipo_local_siglas,
+       ev.siglas AS equipo_visitante_siglas,
+       el.bandera AS equipo_local_bandera,
+       ev.bandera AS equipo_visitante_bandera,
+       p.goles_local::INTEGER AS goles_local,
+       p.goles_visitante::INTEGER AS goles_visitante
+FROM prediccion pe
+JOIN partidos p ON p.id = pe.partido_id
+JOIN usuarios u ON u.id = pe.usuario_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE pe.resultado = 'exacto'
+  AND u.participante = TRUE
+  AND (p.goles_local + p.goles_visitante) = (
+    SELECT MAX(p2.goles_local + p2.goles_visitante)
+    FROM prediccion pe2
+    JOIN partidos p2 ON p2.id = pe2.partido_id
+    WHERE pe2.resultado = 'exacto'
+  )`;
+
+export interface VerGanadoresHitMasGolesRow {
+    usuarioId: string;
+    username: string;
+    totalGoles: number;
+    equipoLocalSiglas: string;
+    equipoVisitanteSiglas: string;
+    equipoLocalBandera: string;
+    equipoVisitanteBandera: string;
+    golesLocal: number;
+    golesVisitante: number;
+}
+
+export async function verGanadoresHitMasGoles(client: Client): Promise<VerGanadoresHitMasGolesRow[]> {
+    const result = await client.query({
+        text: verGanadoresHitMasGolesQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        usuarioId: row[0],
+        username: row[1],
+        totalGoles: row[2],
+        equipoLocalSiglas: row[3],
+        equipoVisitanteSiglas: row[4],
+        equipoLocalBandera: row[5],
+        equipoVisitanteBandera: row[6],
+        golesLocal: row[7],
+        golesVisitante: row[8],
+    }));
+}

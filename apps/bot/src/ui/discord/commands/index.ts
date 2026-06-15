@@ -537,6 +537,20 @@ const cancelarTimbaCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const asignarBonusesCommand = new SlashCommandBuilder()
+	.setName("asignar-bonuses")
+	.setDescription(
+		"[ADMIN] Asigna bonuses finales de la polla (win rate, racha máxima, hit de más goles)",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addBooleanOption((option) =>
+		option
+			.setName("confirmar")
+			.setDescription("Confirmar la ejecución (acción no reversible)")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const anularTimbaCommand = new SlashCommandBuilder()
 	.setName("anular-timba")
 	.setDescription("[ADMIN] Elimina una timba time (haya sido aceptada o no)")
@@ -1765,6 +1779,57 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
 					});
 				}
+			},
+		},
+	],
+	[
+		"asignar-bonuses",
+		{
+			definition: asignarBonusesCommand,
+			handle: async (interaction, appContext) => {
+				const confirmar = interaction.options.getBoolean("confirmar", true);
+				if (!confirmar) {
+					await interaction.reply({
+						content: "❌ Debes confirmar con `confirmar: Sí` para ejecutar.",
+						ephemeral: true,
+					});
+					return;
+				}
+
+				await interaction.deferReply({ ephemeral: true });
+
+				const resultado = await appContext.services.admin.asignarBonuses();
+
+				const lineas = ["⭐ **Bonus Récords — Fin de la Polla**", ""];
+
+				const wrMenciones = resultado.winRate.ganadores
+					.map((u) => `<@${u.id}>`)
+					.join(", ");
+				lineas.push(
+					`🥇 **Mayor Win Rate** (${resultado.winRate.valor.toFixed(1)}%) **+${resultado.winRate.puntos} 💠**: ${wrMenciones}`,
+				);
+
+				const rmMenciones = resultado.rachaMaxima.ganadores
+					.map((u) => `<@${u.id}>`)
+					.join(", ");
+				lineas.push(
+					`🔥 **Racha Máxima** (${resultado.rachaMaxima.valor} seguidas) **+${resultado.rachaMaxima.puntos} 💠**: ${rmMenciones}`,
+				);
+
+				if (resultado.hitMasGoles.ganadores.length > 0) {
+					const hmgMenciones = resultado.hitMasGoles.ganadores
+						.map((u) => `<@${u.id}>`)
+						.join(", ");
+					lineas.push(
+						`⚽ **Hit de más goles** (${resultado.hitMasGoles.partido} — ${resultado.hitMasGoles.totalGoles} goles) **+${resultado.hitMasGoles.puntos} 💠**: ${hmgMenciones}`,
+					);
+				}
+
+				await sendAnnouncementChannel(interaction.client, lineas.join("\n"));
+
+				await interaction.editReply({
+					content: "✅ Bonuses asignados y alerta enviada.",
+				});
 			},
 		},
 	],

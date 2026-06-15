@@ -3,6 +3,7 @@ import type { IPartidosRepository } from "../interface/repository/partidos.repos
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type {
+	BonusResult,
 	IAdminService,
 	ResumenActualizacion,
 } from "../interface/service/admin.service";
@@ -203,5 +204,48 @@ export class AdminService implements IAdminService {
 			golesLocal: args.golesLocal,
 			golesVisitante: args.golesVisitante,
 		});
+	}
+
+	async asignarBonuses(): Promise<BonusResult> {
+		const [wrGanadores, rmGanadores, hmgGanadores] = await Promise.all([
+			this.usuariosRepo.verGanadoresMayorWinRate(),
+			this.usuariosRepo.verGanadoresRachaMaxima(),
+			this.prediccionesRepo.verGanadoresHitMasGoles(),
+		]);
+
+		await Promise.all([
+			...wrGanadores.map((u) => this.usuariosRepo.ajustarPuntos(u.id, 5)),
+			...rmGanadores.map((u) => this.usuariosRepo.ajustarPuntos(u.id, 3)),
+			...hmgGanadores.map((u) =>
+				this.usuariosRepo.ajustarPuntos(u.usuarioId, 2),
+			),
+		]);
+
+		const first = hmgGanadores[0];
+		const partido = first
+			? `${first.equipoLocalSiglas} ${first.equipoLocalBandera} ${first.golesLocal}-${first.golesVisitante} ${first.equipoVisitanteSiglas} ${first.equipoVisitanteBandera}`
+			: "";
+
+		return {
+			winRate: {
+				ganadores: wrGanadores.map((u) => ({ id: u.id, username: u.username })),
+				valor: Number(wrGanadores[0]?.winRate ?? 0),
+				puntos: 5,
+			},
+			rachaMaxima: {
+				ganadores: rmGanadores.map((u) => ({ id: u.id, username: u.username })),
+				valor: rmGanadores[0]?.rachaMaxima ?? 0,
+				puntos: 3,
+			},
+			hitMasGoles: {
+				ganadores: hmgGanadores.map((u) => ({
+					id: u.usuarioId,
+					username: u.username,
+				})),
+				totalGoles: hmgGanadores[0]?.totalGoles ?? 0,
+				partido,
+				puntos: 2,
+			},
+		};
 	}
 }

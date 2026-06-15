@@ -15,6 +15,10 @@ import {
 	type UpdateUsuarioUsernameArgs,
 	updateUsuarioParticipante,
 	updateUsuarioUsername,
+	type VerGanadoresMayorWinRateRow,
+	type VerGanadoresRachaMaximaRow,
+	verGanadoresMayorWinRate,
+	verGanadoresRachaMaxima,
 } from "@sqlc/usuarios_sql";
 import type { Pool, PoolClient } from "pg";
 import z from "zod";
@@ -66,6 +70,14 @@ export class UsuariosRepository implements IUsuariosRepository {
 
 	delete(args: DeleteUsuarioArgs) {
 		return deleteUsuario(this.pool, args);
+	}
+
+	verGanadoresMayorWinRate(): Promise<VerGanadoresMayorWinRateRow[]> {
+		return verGanadoresMayorWinRate(this.pool);
+	}
+
+	verGanadoresRachaMaxima(): Promise<VerGanadoresRachaMaximaRow[]> {
+		return verGanadoresRachaMaxima(this.pool);
 	}
 
 	withTx(tx: PoolClient): UsuariosRepository {
