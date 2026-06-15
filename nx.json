@@ -1,0 +1,24 @@
+{
+  "installation": {
+    "version": "22.7.5",
+    "plugins": {
+      "@nx/jest": "22.7.4",
+      "@nx/docker": "22.7.4"
+    }
+  },
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "analytics": false,
+  "plugins": [
+    {
+      "plugin": "@nx/docker",
+      "options": {
+        "buildTarget": {
+          "name": "docker:build"
+        },
+        "runTarget": {
+          "name": "docker:run"
+        }
+      }
+    }
+  ]
+}

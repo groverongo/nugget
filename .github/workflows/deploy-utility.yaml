@@ -1,0 +1,89 @@
+name: Code validation, Image building and Deployment for Bot Utilities
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/utility/**'
+      - '.github/workflows/deploy-utility.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/utility/**'
+      - '.github/workflows/deploy-utility.yaml'
+  workflow_dispatch:
+
+env:
+  IMAGE: ${{vars.DOCKER_REGISTRY}}/${{vars.DOCKER_REPOSITORY}}-utility
+  SERVICE_ID: ${{vars.RENDER_SERVICE_ID_UTILITY}}
+  RENDER_API_SERVICES_URL: https://api.render.com/v1/services
+
+jobs:
+
+  python-validation:
+    name: Python validation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "apps/utility/.python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        working-directory: apps/utility
+        run: uv sync
+
+      - name: Verify syntax
+        working-directory: apps/utility
+        run: python -m py_compile main.py
+
+  build-image:
+    name: Build Docker image
+    needs: python-validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/utility
+          file: ./apps/utility/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+
+  deploy:
+    name: Deploy to Render
+    needs: build-image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Deploy
+        id: deploy-step
+        run: |
+          DATA="{\"imageUrl\": \"docker.io/${{ env.IMAGE }}:${{ github.sha }}\"}"
+
+          curl -X POST ${{ env.RENDER_API_SERVICES_URL }}/${{ env.SERVICE_ID }}/deploys \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -d "$DATA"

@@ -1,8 +1,8 @@
 pre-commit:
   commands:
     lint:
-      run: pnpm lint
+      run: nx run-many -t lint 
     build:
-      run: pnpm build
+      run: nx run-many -t build
     test:
-      run: pnpm test
+      run: nx run-many -t test
