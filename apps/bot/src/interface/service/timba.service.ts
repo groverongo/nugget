@@ -1,6 +1,7 @@
 import type {
 	VerMisTimbasRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
 
 export interface CrearTimbaInput {
@@ -82,6 +83,8 @@ export interface ITimbaService {
 	): Promise<VerTimbasCerradasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+
+	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void>;
 }

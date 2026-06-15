@@ -14,6 +14,7 @@ import { buildMisPrediccionesComponents } from "../components/predicciones";
 import {
 	buildTimbaCreacionComponent,
 	buildTimbaResolucionComponents,
+	buildVerTimbasComponent,
 } from "../components/timba";
 import {
 	sendAlertsChannel,
@@ -546,6 +547,19 @@ const anularTimbaCommand = new SlashCommandBuilder()
 			.setName("timba_id")
 			.setDescription("ID de la timba a anular")
 			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const verTimbasCommand = new SlashCommandBuilder()
+	.setName("ver-timbas")
+	.setDescription("[ADMIN] Ver todas las timba times activas de un partido")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido a consultar")
+			.setRequired(true)
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -1765,6 +1779,52 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
 					});
 				}
+			},
+		},
+	],
+	[
+		"ver-timbas",
+		{
+			definition: verTimbasCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options.getFocused().toLowerCase();
+				const filtered = partidos
+					.filter(
+						(p) =>
+							p.equipoLocalNombre.toLowerCase().includes(focusedValue) ||
+							p.equipoVisitanteNombre.toLowerCase().includes(focusedValue) ||
+							String(p.partidoId).includes(focusedValue),
+					)
+					.slice(0, 25);
+				await interaction.respond(
+					filtered.map((p) => ({
+						name: `${p.equipoLocalNombre} vs. ${p.equipoVisitanteNombre}`,
+						value: p.partidoId,
+					})),
+				);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				const timbas =
+					await appContext.services.timba.verTimbasPorPartido(partidoId);
+
+				if (timbas.length === 0) {
+					await interaction.editReply({
+						content: "No hay timba times activas para este partido.",
+					});
+					return;
+				}
+
+				await interaction.editReply({
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+					components: buildVerTimbasComponent(timbas) as any,
+					flags: MessageFlags.IsComponentsV2,
+				});
 			},
 		},
 	],

@@ -1,4 +1,7 @@
-import type { VerTimbasCerradasPorPartidoRow } from "@sqlc/timba_sql";
+import type {
+	VerTimbasCerradasPorPartidoRow,
+	VerTimbasPorPartidoRow,
+} from "@sqlc/timba_sql";
 import type { APIMessageTopLevelComponent } from "discord.js";
 import {
 	ButtonBuilder,
@@ -112,6 +115,44 @@ export function buildTimbaResolucionComponents(
 						.setLabel("J2 ganó ✅")
 						.setStyle(ButtonStyle.Primary),
 				),
+		);
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+	return [container.toJSON() as any];
+}
+
+export function buildVerTimbasComponent(
+	timbas: VerTimbasPorPartidoRow[],
+): APIMessageTopLevelComponent[] {
+	if (timbas.length === 0) return [];
+
+	const first = timbas[0];
+	const partido = `${first.equipoLocalSiglas} ${first.equipoLocalBandera} vs. ${first.equipoVisitanteSiglas} ${first.equipoVisitanteBandera}`;
+
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(`## 🎰 Timba Times — ${partido}`),
+	);
+
+	for (const timba of timbas) {
+		container.addSeparatorComponents(
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+		);
+
+		const estadoBadge =
+			timba.estado === "abierta" ? "🟡 Abierta" : "🔒 Cerrada";
+		const j2Line = timba.jugador2Id
+			? `<@${timba.jugador2Id}> (${timba.jugador2Nombre})`
+			: "_Sin aceptar_";
+
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				[
+					`**#${timba.id}** — ${estadoBadge}`,
+					`💠 **${puntosStr(timba.puntos)}** en juego a: _"${timba.descripcion}"_`,
+					`<@${timba.jugador1Id}> (${timba.jugador1Nombre}) 🆚 ${j2Line}`,
+				].join("\n"),
+			),
 		);
 	}
 
