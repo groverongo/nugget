@@ -81,7 +81,7 @@ jobs:
       - name: Deploy
         id: deploy-step
         run: |
-          DATA="{\"imageUrl\": \"${{ env.IMAGE }}:${{ github.sha }}\"}"
+          DATA="{\"imageUrl\": \"docker.io/${{ env.IMAGE }}:${{ github.sha }}\"}"
 
           curl -X POST ${{ env.RENDER_API_SERVICES_URL }}/${{ env.SERVICE_ID }}/deploys \
           -H "Content-Type: application/json" \
