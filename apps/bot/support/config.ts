@@ -27,6 +27,9 @@ const ConfigSchema = z.object({
 			}),
 		}),
 	}),
+	utility: z.object({
+		base_url: z.url(),
+	}),
 	polla: z.object({
 		costo_entrada: z.number(),
 		fraccion_comision_org: z.number().min(0).max(1),
@@ -58,6 +61,9 @@ const DEFAULT_CONFIG: Config = {
 				id: "",
 			},
 		},
+	},
+	utility: {
+		base_url: "http://127.0.0.1:8000",
 	},
 	polla: {
 		costo_entrada: 100,
