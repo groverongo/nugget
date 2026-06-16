@@ -1,6 +1,7 @@
 import {
 	handlePartidosButtonInteraction,
 	handlePrediccionModalSubmitInteraction,
+	handleTimbaModalSubmitInteraction,
 } from "../src/ui/discord/handlers/interactions";
 
 jest.mock("../src/ui/discord/services/utility-client", () => ({
@@ -15,10 +16,20 @@ type PrediccionesServiceMock = {
 	guardarPrediccion: jest.Mock;
 };
 
+type TimbaServiceMock = {
+	crearTimba: jest.Mock;
+};
+
 type DiscordAppContextMock = {
 	services: {
 		partidos: PartidosServiceMock;
 		predicciones: PrediccionesServiceMock;
+	};
+};
+
+type TimbaAppContextMock = {
+	services: {
+		timba: TimbaServiceMock;
 	};
 };
 
@@ -185,5 +196,101 @@ describe("Discord interaction handlers", () => {
 		expect(editReply).toHaveBeenCalledWith(
 			"Predicción registrada para Peru vs Brasil: 2-1.",
 		);
+	});
+
+	it("replies with a validation error when the timba modal has invalid puntos", async () => {
+		const reply = jest.fn().mockResolvedValue(undefined);
+		const interaction = {
+			customId: "timba:create:42",
+			fields: {
+				getTextInputValue: jest.fn((fieldId: string) =>
+					fieldId === "descripcion" ? "Brasil gana" : "abc",
+				),
+			},
+			reply,
+			deferReply: jest.fn(),
+			editReply: jest.fn(),
+			user: { id: "discord-user-1" },
+			guild: createGuildWithPollero(),
+		} as const;
+		const appContext = {
+			services: {
+				timba: {
+					crearTimba: jest.fn(),
+				},
+			},
+		} satisfies TimbaAppContextMock;
+
+		await handleTimbaModalSubmitInteraction(
+			interaction as unknown as Parameters<
+				typeof handleTimbaModalSubmitInteraction
+			>[0],
+			appContext as unknown as Parameters<
+				typeof handleTimbaModalSubmitInteraction
+			>[1],
+		);
+
+		expect(reply).toHaveBeenCalledWith({
+			content:
+				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
+			ephemeral: true,
+		});
+		expect(appContext.services.timba.crearTimba).not.toHaveBeenCalled();
+	});
+
+	it("creates a timba from the modal submission with the Discord user id and partido id", async () => {
+		const deferReply = jest.fn().mockResolvedValue(undefined);
+		const editReply = jest.fn().mockResolvedValue(undefined);
+		const interaction = {
+			customId: "timba:create:42",
+			fields: {
+				getTextInputValue: jest.fn((fieldId: string) =>
+					fieldId === "descripcion" ? "Brasil gana" : "10",
+				),
+			},
+			deferReply,
+			editReply,
+			reply: jest.fn(),
+			user: { id: "discord-user-1" },
+			guild: createGuildWithPollero(),
+		} as const;
+		const appContext = {
+			services: {
+				timba: {
+					crearTimba: jest.fn().mockResolvedValue({
+						timbaId: 7,
+						puntos: 10,
+						descripcion: "Brasil gana",
+						jugador1Id: "discord-user-1",
+						equipoLocalNombre: "Peru",
+						equipoLocalBandera: "🇵🇪",
+						equipoLocalSiglas: "PER",
+						equipoVisitanteNombre: "Brasil",
+						equipoVisitanteBandera: "🇧🇷",
+						equipoVisitanteSiglas: "BRA",
+					}),
+				},
+			},
+		} satisfies TimbaAppContextMock;
+
+		await handleTimbaModalSubmitInteraction(
+			interaction as unknown as Parameters<
+				typeof handleTimbaModalSubmitInteraction
+			>[0],
+			appContext as unknown as Parameters<
+				typeof handleTimbaModalSubmitInteraction
+			>[1],
+		);
+
+		expect(deferReply).toHaveBeenCalledWith({ ephemeral: true });
+		expect(appContext.services.timba.crearTimba).toHaveBeenCalledWith({
+			jugador1Id: "discord-user-1",
+			partidoId: 42,
+			descripcion: "Brasil gana",
+			puntos: 10,
+		});
+		expect(editReply).toHaveBeenCalledWith({
+			content: '✅ Timba creada. **10 💠** en juego — _"Brasil gana"_',
+		});
 	});
 });

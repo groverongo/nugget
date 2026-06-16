@@ -30,18 +30,25 @@ import {
 	PREDICCIONES_DATE_SELECT_CUSTOM_ID,
 } from "../components/predicciones";
 import {
+	buildMisTimbasComponents,
 	buildTimbaAceptadaComponent,
+	buildTimbaCreacionComponent,
 	buildTimbaResolucionComponents,
+	MIS_TIMBAS_DATE_SELECT_CUSTOM_ID,
 	TIMBA_ACEPTAR_PREFIX,
 	TIMBA_RESOLVER_J1_PREFIX,
 	TIMBA_RESOLVER_J2_PREFIX,
 } from "../components/timba";
-import { golesSchema } from "../types/shared";
+import { golesSchema, puntosApuestaSchema } from "../types/shared";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
 const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
+const TIMBA_MODAL_CUSTOM_ID = "timba:create";
+const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
+const TIMBA_DESCRIPCION_FIELD_ID = "descripcion";
+const TIMBA_PUNTOS_FIELD_ID = "puntos";
 
 function buildPrediccionModal(
 	partidoId: number,
@@ -279,6 +286,45 @@ export async function handlePrediccionesDateSelectInteraction(
 		components: buildMisPrediccionesComponents(
 			selectedDate,
 			predicciones,
+			fechas,
+		),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+export async function handleMisTimbasDateSelectInteraction(
+	interaction: StringSelectMenuInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (interaction.customId !== MIS_TIMBAS_DATE_SELECT_CUSTOM_ID) {
+		return;
+	}
+
+	const selectedDate = interaction.values[0];
+	const fechas = await appContext.services.timba.verFechasDeTimbasPorUsuario(
+		interaction.user.id,
+	);
+
+	if (!fechas.includes(selectedDate)) {
+		await interaction.reply({
+			content: "La fecha seleccionada no es válida.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferUpdate();
+
+	const timbas = await appContext.services.timba.verMisTimbasPorFecha({
+		jugador1Id: interaction.user.id,
+		date: selectedDate,
+	});
+
+	await interaction.editReply({
+		components: buildMisTimbasComponents(
+			selectedDate,
+			interaction.user.id,
+			timbas,
 			fechas,
 		),
 		flags: MessageFlags.IsComponentsV2,
@@ -713,6 +759,210 @@ export async function sendComponentsToAnnouncementChannel(
 	}
 }
 
+export function buildTimbaModal(
+	partidoId: number,
+	puntosMaximoFase: number,
+): ModalBuilder {
+	return new ModalBuilder()
+		.setCustomId(`${TIMBA_MODAL_CUSTOM_ID}:${partidoId}`)
+		.setTitle("🎰 Timba Time")
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_DESCRIPCION_FIELD_ID)
+					.setLabel("Descripción del reto")
+					.setPlaceholder("Ej: 'Brasil gana' (1 a 200 caracteres)")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(200),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_FIELD_ID)
+					.setLabel("Puntos a apostar")
+					.setPlaceholder(
+						`Mínimo 1 — máximo ${puntosMaximoFase} (también tope: 10% de tus puntos)`,
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+		);
+}
+
+function parseTimbaModalCustomId(customId: string): number | null {
+	if (!customId.startsWith(`${TIMBA_MODAL_CUSTOM_ID}:`)) {
+		return null;
+	}
+
+	const partidoId = Number(customId.slice(TIMBA_MODAL_CUSTOM_ID.length + 1));
+
+	if (Number.isNaN(partidoId)) {
+		return null;
+	}
+
+	return partidoId;
+}
+
+export async function handleTimbaModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const partidoId = parseTimbaModalCustomId(interaction.customId);
+
+	if (partidoId === null) {
+		return;
+	}
+
+	const member =
+		interaction.guild?.members.cache.get(interaction.user.id) ??
+		(await interaction.guild?.members.fetch(interaction.user.id));
+	if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+		await interaction.reply({
+			content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const descripcion = interaction.fields
+		.getTextInputValue(TIMBA_DESCRIPCION_FIELD_ID)
+		.trim();
+	const puntosParsed = puntosApuestaSchema.safeParse(
+		interaction.fields.getTextInputValue(TIMBA_PUNTOS_FIELD_ID),
+	);
+
+	if (!descripcion || !puntosParsed.success) {
+		await interaction.reply({
+			content:
+				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferReply({ ephemeral: true });
+
+	try {
+		const result = await appContext.services.timba.crearTimba({
+			jugador1Id: interaction.user.id,
+			partidoId,
+			descripcion,
+			puntos: puntosParsed.data,
+		});
+
+		await interaction.editReply({
+			content: `✅ Timba creada. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
+		});
+
+		await sendComponentsToAnnouncementChannel(
+			interaction.client,
+			buildTimbaCreacionComponent(result),
+		);
+	} catch (error) {
+		await interaction.editReply({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+		});
+	}
+}
+
+export function buildTimbaAdminModal(
+	usuarioId: string,
+	partidoId: number,
+	puntosMaximoFase: number,
+): ModalBuilder {
+	return new ModalBuilder()
+		.setCustomId(`${TIMBA_ADMIN_MODAL_CUSTOM_ID}:${usuarioId}:${partidoId}`)
+		.setTitle("🎰 Timba Time (Admin)")
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_DESCRIPCION_FIELD_ID)
+					.setLabel("Descripción del reto")
+					.setPlaceholder("Ej: 'Brasil gana' (1 a 200 caracteres)")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(200),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_FIELD_ID)
+					.setLabel("Puntos a apostar")
+					.setPlaceholder(`Mínimo 1 — máximo ${puntosMaximoFase}`)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+		);
+}
+
+function parseTimbaAdminModalCustomId(
+	customId: string,
+): { usuarioId: string; partidoId: number } | null {
+	if (!customId.startsWith(`${TIMBA_ADMIN_MODAL_CUSTOM_ID}:`)) return null;
+	const rest = customId.slice(TIMBA_ADMIN_MODAL_CUSTOM_ID.length + 1);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return null;
+	const usuarioId = rest.slice(0, lastColon);
+	const partidoId = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(partidoId) || !usuarioId) return null;
+	return { usuarioId, partidoId };
+}
+
+export async function handleTimbaAdminModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const parsed = parseTimbaAdminModalCustomId(interaction.customId);
+	if (parsed === null) return;
+
+	const { usuarioId, partidoId } = parsed;
+
+	const descripcion = interaction.fields
+		.getTextInputValue(TIMBA_DESCRIPCION_FIELD_ID)
+		.trim();
+	const puntosParsed = puntosApuestaSchema.safeParse(
+		interaction.fields.getTextInputValue(TIMBA_PUNTOS_FIELD_ID),
+	);
+
+	if (!descripcion || !puntosParsed.success) {
+		await interaction.reply({
+			content:
+				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferReply({ ephemeral: true });
+
+	try {
+		const result = await appContext.services.timba.crearTimba({
+			jugador1Id: usuarioId,
+			partidoId,
+			descripcion,
+			puntos: puntosParsed.data,
+		});
+
+		await interaction.editReply({
+			content: `✅ Timba creada para <@${usuarioId}>. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
+		});
+
+		await sendComponentsToAnnouncementChannel(
+			interaction.client,
+			buildTimbaCreacionComponent(result),
+		);
+	} catch (error) {
+		await interaction.editReply({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+		});
+	}
+}
+
 export async function handleTimbaButtonInteraction(
 	interaction: ButtonInteraction,
 	appContext: AppContext,
@@ -751,7 +1001,7 @@ export async function handleTimbaButtonInteraction(
 			await sendAnnouncementChannel(
 				interaction.client,
 				[
-					`🤝 ***¡Timba Time cerrada para ${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}***`,
+					`🤝 ***¡Timba Time cerrada para ${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}!***`,
 					`<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntos} 💠** en juego`,
 					`_"${result.descripcion}"_`,
 				].join("\n"),

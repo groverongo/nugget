@@ -12,14 +12,15 @@ import {
 } from "../components/partidos";
 import { buildMisPrediccionesComponents } from "../components/predicciones";
 import {
-	buildTimbaCreacionComponent,
+	buildMisTimbasComponents,
 	buildTimbaResolucionComponents,
 	buildVerTimbasComponent,
 } from "../components/timba";
 import {
+	buildTimbaAdminModal,
+	buildTimbaModal,
 	sendAlertsChannel,
 	sendAnnouncementChannel,
-	sendComponentsToAnnouncementChannel,
 } from "../handlers/interactions";
 import { enviarAlertaAwards } from "../services/awards-scheduler";
 import { enviarAlertaDiaria } from "../services/daily-alert-scheduler";
@@ -275,6 +276,11 @@ const misPrediccionesCommand = new SlashCommandBuilder()
 	.setDescription("Muestra tus predicciones filtradas por fecha")
 	.setContexts(InteractionContextType.Guild);
 
+const misTimbasCommand = new SlashCommandBuilder()
+	.setName("mis-timbas")
+	.setDescription("Muestra tus timba times filtradas por fecha")
+	.setContexts(InteractionContextType.Guild);
+
 const misAwardsCommand = new SlashCommandBuilder()
 	.setName("mis-awards")
 	.setDescription("Muestra tus predicciones de awards del Mundial 2026")
@@ -509,20 +515,24 @@ const timbaCommand = new SlashCommandBuilder()
 			.setRequired(true)
 			.setAutocomplete(true),
 	)
+	.setContexts(InteractionContextType.Guild);
+
+const timbaAdminCommand = new SlashCommandBuilder()
+	.setName("timba-time-admin")
+	.setDescription("[ADMIN] Crea una timba time en nombre de otro usuario")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 	.addStringOption((option) =>
 		option
-			.setName("descripcion")
-			.setDescription("Descripción del reto (ej: 'Brasil gana')")
-			.setRequired(true)
-			.setMinLength(1)
-			.setMaxLength(200),
+			.setName("usuario_id")
+			.setDescription("ID de Discord del usuario que lanza el reto")
+			.setRequired(true),
 	)
 	.addIntegerOption((option) =>
 		option
-			.setName("puntos")
-			.setDescription("Puntos a apostar")
+			.setName("partido_id")
+			.setDescription("Partido sobre el que va la timba")
 			.setRequired(true)
-			.setMinValue(1),
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -673,13 +683,15 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							partidoId,
 						);
 					if (timbas.length > 0) {
+						const timbaResolucionComponents = buildTimbaResolucionComponents(
+							timbas,
+							partidoId,
+						);
 						await interaction.followUp({
 							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-							components: buildTimbaResolucionComponents(
-								timbas,
-								partidoId,
-							) as any,
-							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+							components: timbaResolucionComponents as any,
+							flags: MessageFlags.IsComponentsV2,
+							ephemeral: true,
 						});
 					}
 				} catch (error) {
@@ -883,6 +895,48 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					components: buildMisPrediccionesComponents(
 						fechaSeleccionada,
 						predicciones,
+						fechas,
+					),
+					flags: MessageFlags.IsComponentsV2,
+				});
+			},
+		},
+	],
+	[
+		"mis-timbas",
+		{
+			definition: misTimbasCommand,
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				await interaction.deferReply({ ephemeral: true });
+
+				const fechas =
+					await appContext.services.timba.verFechasDeTimbasPorUsuario(
+						interaction.user.id,
+					);
+
+				if (fechas.length === 0) {
+					await interaction.editReply({
+						content: "Aún no tienes timba times registradas.",
+					});
+					return;
+				}
+
+				const hoy = obtenerYYYYMMDDPeru();
+				const fechaSeleccionada = fechas.includes(hoy)
+					? hoy
+					: fechas[fechas.length - 1];
+				const timbas = await appContext.services.timba.verMisTimbasPorFecha({
+					jugador1Id: interaction.user.id,
+					date: fechaSeleccionada,
+				});
+
+				await interaction.editReply({
+					components: buildMisTimbasComponents(
+						fechaSeleccionada,
+						interaction.user.id,
+						timbas,
 						fechas,
 					),
 					flags: MessageFlags.IsComponentsV2,
@@ -1697,32 +1751,84 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				if (!(await assertPollero(interaction))) return;
 
 				const partidoId = interaction.options.getInteger("partido_id", true);
-				const descripcion = interaction.options.getString("descripcion", true);
-				const puntos = interaction.options.getInteger("puntos", true);
 
-				await interaction.deferReply({ ephemeral: true });
+				const partido =
+					await appContext.services.timba.verPartidoParaTimba(partidoId);
 
-				try {
-					const result = await appContext.services.timba.crearTimba({
-						jugador1Id: interaction.user.id,
-						partidoId,
-						descripcion,
-						puntos,
+				if (!partido) {
+					await interaction.reply({
+						content: `❌ No se encontró el partido #${partidoId}.`,
+						ephemeral: true,
 					});
-
-					await interaction.editReply({
-						content: `✅ Timba creada. **${puntos} 💠** en juego — _"${descripcion}"_`,
-					});
-
-					await sendComponentsToAnnouncementChannel(
-						interaction.client,
-						buildTimbaCreacionComponent(result),
-					);
-				} catch (error) {
-					await interaction.editReply({
-						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
-					});
+					return;
 				}
+
+				if (partido.estado !== "programado") {
+					await interaction.reply({
+						content: "❌ Solo puedes crear timbas para partidos programados.",
+						ephemeral: true,
+					});
+					return;
+				}
+
+				await interaction.showModal(
+					buildTimbaModal(partidoId, partido.puntosBase),
+				);
+			},
+		},
+	],
+	[
+		"timba-time-admin",
+		{
+			definition: timbaAdminCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter((p) => p.estado === "programado")
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const usuarioId = interaction.options.getString("usuario_id", true);
+				const partidoId = interaction.options.getInteger("partido_id", true);
+
+				const partido =
+					await appContext.services.timba.verPartidoParaTimba(partidoId);
+
+				if (!partido) {
+					await interaction.reply({
+						content: `❌ No se encontró el partido #${partidoId}.`,
+						ephemeral: true,
+					});
+					return;
+				}
+
+				if (partido.estado !== "programado") {
+					await interaction.reply({
+						content:
+							"❌ Solo se pueden crear timbas para partidos programados.",
+						ephemeral: true,
+					});
+					return;
+				}
+
+				await interaction.showModal(
+					buildTimbaAdminModal(usuarioId, partidoId, partido.puntosBase),
+				);
 			},
 		},
 	],

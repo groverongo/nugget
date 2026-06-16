@@ -303,6 +303,112 @@ export async function verMisTimbas(client: Client, args: VerMisTimbasArgs): Prom
     }));
 }
 
+export const verFechasDeTimbasPorUsuarioQuery = `-- name: VerFechasDeTimbasPorUsuario :many
+SELECT DISTINCT DATE(p.fecha_partido - INTERVAL '5 hours')::TEXT AS fecha
+FROM timba_time t
+JOIN partidos p ON p.id = t.partido_id
+WHERE t.jugador_1_id = $1 OR t.jugador_2_id = $1
+ORDER BY fecha ASC`;
+
+export interface VerFechasDeTimbasPorUsuarioArgs {
+    jugador1Id: string;
+}
+
+export interface VerFechasDeTimbasPorUsuarioRow {
+    fecha: string;
+}
+
+export async function verFechasDeTimbasPorUsuario(client: Client, args: VerFechasDeTimbasPorUsuarioArgs): Promise<VerFechasDeTimbasPorUsuarioRow[]> {
+    const result = await client.query({
+        text: verFechasDeTimbasPorUsuarioQuery,
+        values: [args.jugador1Id],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            fecha: row[0]
+        };
+    });
+}
+
+export const verMisTimbasPorFechaQuery = `-- name: VerMisTimbasPorFecha :many
+SELECT
+    t.id,
+    t.partido_id,
+    t.descripcion,
+    t.puntos,
+    t.estado,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    u1.username AS jugador_1_nombre,
+    COALESCE(u2.username, '') AS jugador_2_nombre,
+    p.estado AS partido_estado,
+    p.fecha_partido,
+    el.nombre AS equipo_local_nombre,
+    el.bandera AS equipo_local_bandera,
+    ev.nombre AS equipo_visitante_nombre,
+    ev.bandera AS equipo_visitante_bandera
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN partidos p ON p.id = t.partido_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE (t.jugador_1_id = $1 OR t.jugador_2_id = $1)
+AND DATE(p.fecha_partido - INTERVAL '5 hours') = DATE($2)
+ORDER BY p.fecha_partido ASC`;
+
+export interface VerMisTimbasPorFechaArgs {
+    jugador1Id: string;
+    date: string;
+}
+
+export interface VerMisTimbasPorFechaRow {
+    id: number;
+    partidoId: number;
+    descripcion: string;
+    puntos: number;
+    estado: string;
+    jugador1Id: string;
+    jugador2Id: string | null;
+    ganadorId: string | null;
+    jugador1Nombre: string;
+    jugador2Nombre: string;
+    partidoEstado: string;
+    fechaPartido: Date | null;
+    equipoLocalNombre: string;
+    equipoLocalBandera: string;
+    equipoVisitanteNombre: string;
+    equipoVisitanteBandera: string;
+}
+
+export async function verMisTimbasPorFecha(client: Client, args: VerMisTimbasPorFechaArgs): Promise<VerMisTimbasPorFechaRow[]> {
+    const result = await client.query({
+        text: verMisTimbasPorFechaQuery,
+        values: [args.jugador1Id, args.date],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        partidoId: row[1],
+        descripcion: row[2],
+        puntos: row[3],
+        estado: row[4],
+        jugador1Id: row[5],
+        jugador2Id: row[6],
+        ganadorId: row[7],
+        jugador1Nombre: row[8],
+        jugador2Nombre: row[9],
+        partidoEstado: row[10],
+        fechaPartido: row[11],
+        equipoLocalNombre: row[12],
+        equipoLocalBandera: row[13],
+        equipoVisitanteNombre: row[14],
+        equipoVisitanteBandera: row[15]
+    }));
+}
+
 export const checkEmparejamientoTimbaQuery = `-- name: CheckEmparejamientoTimba :one
 SELECT COUNT(*)::INTEGER AS count
 FROM timba_time
