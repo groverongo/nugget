@@ -8,3 +8,5 @@ export const fechaSchema = z
 	.transform((f) => f ?? obtenerYYYYMMDDPeru());
 
 export const golesSchema = z.coerce.number().int().min(0).max(99);
+
+export const puntosApuestaSchema = z.coerce.number().int().min(1).max(999999);

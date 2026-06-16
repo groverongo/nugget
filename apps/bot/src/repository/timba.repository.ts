@@ -14,12 +14,16 @@ import {
 	type ResolverTimbaArgs,
 	resolverTimba,
 	sumarApuestasActivas,
+	type VerMisTimbasPorFechaArgs,
+	type VerMisTimbasPorFechaRow,
 	type VerMisTimbasRow,
 	type VerPartidoParaTimbaRow,
 	type VerTimbaRow,
 	type VerTimbasCerradasPorPartidoRow,
 	type VerTimbasPorPartidoRow,
+	verFechasDeTimbasPorUsuario,
 	verMisTimbas,
+	verMisTimbasPorFecha,
 	verPartidoParaTimba,
 	verTimba,
 	verTimbasCerradasPorPartido,
@@ -57,6 +61,19 @@ export class TimbaRepository implements ITimbaRepository {
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {
 		return verMisTimbas(this.pool, { jugador1Id });
+	}
+
+	async verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]> {
+		const filas = await verFechasDeTimbasPorUsuario(this.pool, {
+			jugador1Id,
+		});
+		return filas.map((fila) => fila.fecha);
+	}
+
+	verMisTimbasPorFecha(
+		args: VerMisTimbasPorFechaArgs,
+	): Promise<VerMisTimbasPorFechaRow[]> {
+		return verMisTimbasPorFecha(this.pool, args);
 	}
 
 	async checkEmparejamiento(

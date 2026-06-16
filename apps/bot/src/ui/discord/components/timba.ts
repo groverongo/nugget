@@ -1,4 +1,5 @@
 import type {
+	VerMisTimbasPorFechaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -10,16 +11,20 @@ import {
 	SectionBuilder,
 	SeparatorBuilder,
 	SeparatorSpacingSize,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
 import type {
 	AceptarTimbaResult,
 	CrearTimbaResult,
 } from "../../../interface/service/timba.service";
+import { fechaADiscordTimestamp } from "../utils/fecha";
 
 export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
 export const TIMBA_RESOLVER_J1_PREFIX = "timba:resolver:j1:";
 export const TIMBA_RESOLVER_J2_PREFIX = "timba:resolver:j2:";
+export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
 
 function puntosStr(puntos: number): string {
 	return `${puntos} ${puntos === 1 ? "punto" : "puntos"}`;
@@ -142,15 +147,15 @@ export function buildVerTimbasComponent(
 		const estadoBadge =
 			timba.estado === "abierta" ? "🟡 Abierta" : "🔒 Cerrada";
 		const j2Line = timba.jugador2Id
-			? `<@${timba.jugador2Id}> (${timba.jugador2Nombre})`
+			? `<@${timba.jugador2Id}>`
 			: "_Sin aceptar_";
 
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
 				[
-					`**#${timba.id}** — ${estadoBadge}`,
+					estadoBadge,
 					`💠 **${puntosStr(timba.puntos)}** en juego a: _"${timba.descripcion}"_`,
-					`<@${timba.jugador1Id}> (${timba.jugador1Nombre}) 🆚 ${j2Line}`,
+					`<@${timba.jugador1Id}> 🆚 ${j2Line}`,
 				].join("\n"),
 			),
 		);
@@ -158,4 +163,92 @@ export function buildVerTimbasComponent(
 
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 	return [container.toJSON() as any];
+}
+
+type MiTimbaPorFecha = VerMisTimbasPorFechaRow;
+
+function getMiTimbaEstadoBadge(
+	timba: MiTimbaPorFecha,
+	usuarioId: string,
+): string {
+	switch (timba.estado) {
+		case "abierta":
+			return "🟡 Esperando rival";
+		case "cerrada":
+			return "🔒 Cerrada — pendiente de resolución";
+		case "resuelta":
+			return timba.ganadorId === usuarioId ? "🏆 ¡Ganaste!" : "💀 Perdiste";
+		case "cancelada":
+			return "🚫 Cancelada";
+		default:
+			return "";
+	}
+}
+
+function formatMiTimbaLine(timba: MiTimbaPorFecha, usuarioId: string): string {
+	const esJugador1 = timba.jugador1Id === usuarioId;
+	const oponenteNombre = esJugador1
+		? timba.jugador2Nombre || "Sin aceptar"
+		: timba.jugador1Nombre;
+	const fechaPartido = timba.fechaPartido
+		? `<t:${timba.fechaPartido.getTime() / 1_000}:t>`
+		: "Hora pendiente";
+
+	return [
+		`### ${timba.equipoLocalNombre} ${timba.equipoLocalBandera} vs. ${timba.equipoVisitanteNombre} ${timba.equipoVisitanteBandera}`,
+		`**${timba.puntos} 💠** en juego a: _"${timba.descripcion}"_`,
+		`Rival: ${oponenteNombre}`,
+		getMiTimbaEstadoBadge(timba, usuarioId),
+		fechaPartido,
+	].join("\n");
+}
+
+export function buildMisTimbasComponents(
+	date: string,
+	usuarioId: string,
+	timbas: MiTimbaPorFecha[],
+	fechas: string[],
+): APIMessageTopLevelComponent[] {
+	const titulo = `## Mis Timba Times del <t:${fechaADiscordTimestamp(date)}:D>`;
+
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(titulo),
+	);
+
+	if (timbas.length === 0) {
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				`No tienes timba times para el <t:${fechaADiscordTimestamp(date)}:D>.`,
+			),
+		);
+	} else {
+		for (const timba of timbas) {
+			container.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					formatMiTimbaLine(timba, usuarioId),
+				),
+			);
+			container.addSeparatorComponents(
+				new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+			);
+		}
+	}
+
+	container.addActionRowComponents((actionRow) =>
+		actionRow.addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(MIS_TIMBAS_DATE_SELECT_CUSTOM_ID)
+				.setPlaceholder("Selecciona otra fecha")
+				.addOptions(
+					fechas.map((optionDate) =>
+						new StringSelectMenuOptionBuilder()
+							.setLabel(optionDate)
+							.setValue(optionDate)
+							.setDefault(optionDate === date),
+					),
+				),
+		),
+	);
+
+	return [container.toJSON()];
 }

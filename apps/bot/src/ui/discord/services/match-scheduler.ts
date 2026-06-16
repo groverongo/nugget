@@ -250,12 +250,17 @@ export class MatchScheduler {
 	}
 
 	private async fireAlerta(partidoId: number): Promise<void> {
-		const [info, predicciones] = await Promise.all([
+		const [info, predicciones, timbasAbiertas] = await Promise.all([
 			this.services.partidos.verInformacionPartido({ id: partidoId }),
 			this.services.predicciones.verPrediccionesPorPartido({ partidoId }),
+			this.services.timba.verTimbasPorPartido(partidoId),
 		]);
 
 		if (!info) return;
+
+		const timbasCanceladas = timbasAbiertas.filter(
+			(t) => t.estado === "abierta",
+		);
 
 		await Promise.all([
 			sendAlertsChannel(this.client, buildAlertaPartido(info, predicciones)),
@@ -263,15 +268,13 @@ export class MatchScheduler {
 			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
 
-		const timbas =
-			await this.services.timba.verTimbasCerradasPorPartido(partidoId);
-		if (timbas.length === 0) return;
+		if (timbasCanceladas.length === 0) return;
 
 		const lineas = [
-			`⚔️ **Timba Times en juego** *(${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera})*`,
-			...timbas.map(
+			`🚫 **Timba Times canceladas** *(${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera})* — nadie las aceptó a tiempo`,
+			...timbasCanceladas.map(
 				(t) =>
-					`• <@${t.jugador1Id}> vs. <@${t.jugador2Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
+					`• <@${t.jugador1Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
 			),
 		];
 		await sendAnnouncementChannel(this.client, lineas.join("\n"));

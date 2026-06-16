@@ -1,5 +1,8 @@
 import type {
+	VerMisTimbasPorFechaArgs,
+	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
+	VerPartidoParaTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -68,6 +71,10 @@ export interface ResolverTimbaResult {
 }
 
 export interface ITimbaService {
+	verPartidoParaTimba(
+		partidoId: number,
+	): Promise<VerPartidoParaTimbaRow | null>;
+
 	crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult>;
 
 	aceptarTimba(args: AceptarTimbaInput): Promise<AceptarTimbaResult>;
@@ -83,6 +90,12 @@ export interface ITimbaService {
 	): Promise<VerTimbasCerradasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+
+	verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]>;
+
+	verMisTimbasPorFecha(
+		args: VerMisTimbasPorFechaArgs,
+	): Promise<VerMisTimbasPorFechaRow[]>;
 
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 

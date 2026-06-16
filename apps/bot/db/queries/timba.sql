@@ -94,6 +94,41 @@ JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
 WHERE t.jugador_1_id = $1 AND t.estado = 'abierta'
 ORDER BY t.created_at ASC;
 
+-- name: VerFechasDeTimbasPorUsuario :many
+SELECT DISTINCT DATE(p.fecha_partido - INTERVAL '5 hours')::TEXT AS fecha
+FROM timba_time t
+JOIN partidos p ON p.id = t.partido_id
+WHERE t.jugador_1_id = $1 OR t.jugador_2_id = $1
+ORDER BY fecha ASC;
+
+-- name: VerMisTimbasPorFecha :many
+SELECT
+    t.id,
+    t.partido_id,
+    t.descripcion,
+    t.puntos,
+    t.estado,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    u1.username AS jugador_1_nombre,
+    COALESCE(u2.username, '') AS jugador_2_nombre,
+    p.estado AS partido_estado,
+    p.fecha_partido,
+    el.nombre AS equipo_local_nombre,
+    el.bandera AS equipo_local_bandera,
+    ev.nombre AS equipo_visitante_nombre,
+    ev.bandera AS equipo_visitante_bandera
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN partidos p ON p.id = t.partido_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+WHERE (t.jugador_1_id = $1 OR t.jugador_2_id = $1)
+AND DATE(p.fecha_partido - INTERVAL '5 hours') = DATE($2)
+ORDER BY p.fecha_partido ASC;
+
 -- name: CheckEmparejamientoTimba :one
 SELECT COUNT(*)::INTEGER AS count
 FROM timba_time

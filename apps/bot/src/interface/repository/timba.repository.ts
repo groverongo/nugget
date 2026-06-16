@@ -6,6 +6,8 @@ import type {
 	CrearTimbaArgs,
 	CrearTimbaRow,
 	ResolverTimbaArgs,
+	VerMisTimbasPorFechaArgs,
+	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
 	VerTimbaRow,
@@ -30,6 +32,12 @@ export interface ITimbaRepository {
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+
+	verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]>;
+
+	verMisTimbasPorFecha(
+		args: VerMisTimbasPorFechaArgs,
+	): Promise<VerMisTimbasPorFechaRow[]>;
 
 	checkEmparejamiento(args: CheckEmparejamientoTimbaArgs): Promise<number>;
 

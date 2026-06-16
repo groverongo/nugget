@@ -1,5 +1,8 @@
 import type {
+	VerMisTimbasPorFechaArgs,
+	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
+	VerPartidoParaTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -21,6 +24,12 @@ export class TimbaService implements ITimbaService {
 		private readonly timbaRepo: ITimbaRepository,
 		private readonly usuariosRepo: IUsuariosRepository,
 	) {}
+
+	verPartidoParaTimba(
+		partidoId: number,
+	): Promise<VerPartidoParaTimbaRow | null> {
+		return this.timbaRepo.verPartidoParaTimba(partidoId);
+	}
 
 	async crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult> {
 		if (args.puntos <= 0) {
@@ -214,6 +223,16 @@ export class TimbaService implements ITimbaService {
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {
 		return this.timbaRepo.verMisTimbas(jugador1Id);
+	}
+
+	verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]> {
+		return this.timbaRepo.verFechasDeTimbasPorUsuario(jugador1Id);
+	}
+
+	verMisTimbasPorFecha(
+		args: VerMisTimbasPorFechaArgs,
+	): Promise<VerMisTimbasPorFechaRow[]> {
+		return this.timbaRepo.verMisTimbasPorFecha(args);
 	}
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void> {
