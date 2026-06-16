@@ -7,6 +7,7 @@ import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
 import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
+	handleMisTimbasDateSelectInteraction,
 	handlePartidosAdminButtonInteraction,
 	handlePartidosAdminDateSelectInteraction,
 	handlePartidosButtonInteraction,
@@ -14,7 +15,9 @@ import {
 	handlePrediccionAdminModalSubmitInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
+	handleTimbaAdminModalSubmitInteraction,
 	handleTimbaButtonInteraction,
+	handleTimbaModalSubmitInteraction,
 } from "../handlers/interactions";
 import { AwardsScheduler } from "./awards-scheduler";
 import { DailyAlertScheduler } from "./daily-alert-scheduler";
@@ -91,6 +94,8 @@ export function registerDiscordEventHandlers(
 					interaction,
 					appContext,
 				);
+				await handleTimbaModalSubmitInteraction(interaction, appContext);
+				await handleTimbaAdminModalSubmitInteraction(interaction, appContext);
 				return;
 			}
 
@@ -98,6 +103,7 @@ export function registerDiscordEventHandlers(
 				await handlePartidosDateSelectInteraction(interaction, appContext);
 				await handlePrediccionesDateSelectInteraction(interaction, appContext);
 				await handlePartidosAdminDateSelectInteraction(interaction, appContext);
+				await handleMisTimbasDateSelectInteraction(interaction, appContext);
 			}
 		} catch (error) {
 			logger.error(
