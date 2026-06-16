@@ -416,7 +416,8 @@ INNER JOIN (
     ) pa
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
-) pa_ex ON pe.partido_id = pa_ex.partido_id`;
+) pa_ex ON pe.partido_id = pa_ex.partido_id
+ORDER BY fecha_partido ASC`;
 
 export interface VerMisPrediccionesPorFechaArgs {
     usuarioId: string;
