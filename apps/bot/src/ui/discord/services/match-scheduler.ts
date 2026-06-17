@@ -294,6 +294,6 @@ export class MatchScheduler {
 				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
-		await sendAlertsChannel(this.client, lineas.join("\n"));
+		await sendAnnouncementChannel(this.client, lineas.join("\n"));
 	}
 }
