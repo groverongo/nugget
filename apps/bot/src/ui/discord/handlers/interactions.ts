@@ -998,10 +998,10 @@ export async function handleTimbaButtonInteraction(
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			await sendAlertsChannel(
+			await sendAnnouncementChannel(
 				interaction.client,
 				[
-					`🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**`,
+					`_🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
 					`<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntos} 💠** en juego`,
 					`"${result.descripcion}"`,
 				].join("\n"),

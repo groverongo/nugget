@@ -7,6 +7,7 @@ import type {
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
+import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type {
@@ -24,6 +25,7 @@ export class TimbaService implements ITimbaService {
 	constructor(
 		private readonly timbaRepo: ITimbaRepository,
 		private readonly usuariosRepo: IUsuariosRepository,
+		private readonly prediccionesRepo: IPrediccionesRepository,
 	) {}
 
 	verPartidoParaTimba(
@@ -46,6 +48,17 @@ export class TimbaService implements ITimbaService {
 		if (!partido) throw new Error("Partido no encontrado.");
 		if (partido.estado !== "programado") {
 			throw new Error("Solo puedes crear timbas para partidos programados.");
+		}
+
+		const prediccion =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.jugador1Id,
+				partidoId: args.partidoId,
+			});
+		if (!prediccion) {
+			throw new Error(
+				"Debes tener una predicción para este partido antes de crear una timba.",
+			);
 		}
 
 		if (args.puntos > partido.puntosBase) {
@@ -98,6 +111,17 @@ export class TimbaService implements ITimbaService {
 		}
 		if (timba.partidoEstado !== "programado") {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
+		}
+
+		const prediccion =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.jugador2Id,
+				partidoId: timba.partidoId,
+			});
+		if (!prediccion) {
+			throw new Error(
+				"Debes tener una predicción para este partido antes de aceptar una timba.",
+			);
 		}
 
 		const [emparejamiento, jugador2Puntos, apuestasActivas] = await Promise.all(
@@ -196,6 +220,24 @@ export class TimbaService implements ITimbaService {
 			this.timbaRepo.resolver({ id: args.timbaId, ganadorId }),
 			this.usuariosRepo.ajustarPuntos(ganadorId, timba.puntos),
 			this.usuariosRepo.ajustarPuntos(perdedorId, -timba.puntos),
+		]);
+
+		const [puntosGanador, puntosPerdedor] = await Promise.all([
+			this.usuariosRepo.obtenerPuntos(ganadorId),
+			this.usuariosRepo.obtenerPuntos(perdedorId),
+		]);
+
+		await Promise.all([
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
+				puntosActuales: puntosGanador,
+				usuarioId: ganadorId,
+				partidoId: timba.partidoId,
+			}),
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
+				puntosActuales: puntosPerdedor,
+				usuarioId: perdedorId,
+				partidoId: timba.partidoId,
+			}),
 		]);
 
 		return {

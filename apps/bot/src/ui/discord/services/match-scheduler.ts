@@ -150,13 +150,13 @@ export async function enviarEstadisticasPrePartido(
 	if (timbas.length > 0) {
 		const partido = `${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`;
 		const lineas = [
-			`⚔️ **Timba Times en juego** (${partido})`,
+			`_⚔️ **Timba Times en juego** (${partido})_`,
 			...timbas.map(
 				(t) =>
 					`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
-		await sendAnnouncementChannel(client, lineas.join("\n"));
+		await sendAlertsChannel(client, lineas.join("\n"));
 	}
 
 	return true;
@@ -272,13 +272,13 @@ export class MatchScheduler {
 
 		if (timbasCerradas.length > 0) {
 			const lineas = [
-				`⚔️ **Timba Times en juego** (${partido})`,
+				`_⚔️ **Timba Times en juego** (${partido})_`,
 				...timbasCerradas.map(
 					(t) =>
 						`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 				),
 			];
-			await sendAnnouncementChannel(this.client, lineas.join("\n"));
+			await sendAlertsChannel(this.client, lineas.join("\n"));
 		} else {
 			await sendAnnouncementChannel(
 				this.client,
@@ -294,6 +294,6 @@ export class MatchScheduler {
 				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
-		await sendAlertsChannel(this.client, lineas.join("\n"));
+		await sendAnnouncementChannel(this.client, lineas.join("\n"));
 	}
 }
