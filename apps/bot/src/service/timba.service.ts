@@ -5,6 +5,7 @@ import type {
 	VerPartidoParaTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
+	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
@@ -204,9 +205,9 @@ export class TimbaService implements ITimbaService {
 			perdedorNombre,
 			puntos: timba.puntos,
 			descripcion: timba.descripcion,
-			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalSiglas: timba.equipoLocalSiglas,
 			equipoLocalBandera: timba.equipoLocalBandera,
-			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 		};
 	}
@@ -215,6 +216,12 @@ export class TimbaService implements ITimbaService {
 		partidoId: number,
 	): Promise<VerTimbasCerradasPorPartidoRow[]> {
 		return this.timbaRepo.verTimbasCerradasPorPartido(partidoId);
+	}
+
+	verTimbasResueltasPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasResueltasPorPartidoRow[]> {
+		return this.timbaRepo.verTimbasResueltasPorPartido(partidoId);
 	}
 
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]> {

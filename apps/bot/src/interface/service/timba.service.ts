@@ -5,6 +5,7 @@ import type {
 	VerPartidoParaTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
+	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
 
 export interface CrearTimbaInput {
@@ -64,9 +65,9 @@ export interface ResolverTimbaResult {
 	perdedorNombre: string;
 	puntos: number;
 	descripcion: string;
-	equipoLocalNombre: string;
+	equipoLocalSiglas: string;
 	equipoLocalBandera: string;
-	equipoVisitanteNombre: string;
+	equipoVisitanteSiglas: string;
 	equipoVisitanteBandera: string;
 }
 
@@ -88,6 +89,10 @@ export interface ITimbaService {
 	verTimbasCerradasPorPartido(
 		partidoId: number,
 	): Promise<VerTimbasCerradasPorPartidoRow[]>;
+
+	verTimbasResueltasPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasResueltasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
 

@@ -998,12 +998,12 @@ export async function handleTimbaButtonInteraction(
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			await sendAnnouncementChannel(
+			await sendAlertsChannel(
 				interaction.client,
 				[
-					`🤝 ***¡Timba Time cerrada para ${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}!***`,
+					`🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**`,
 					`<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntos} 💠** en juego`,
-					`_"${result.descripcion}"_`,
+					`"${result.descripcion}"`,
 				].join("\n"),
 			);
 		} catch (error) {
@@ -1041,8 +1041,8 @@ export async function handleTimbaButtonInteraction(
 		await sendAnnouncementChannel(
 			interaction.client,
 			[
-				`**Resolución de Timba Times** *(${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera})*`,
-				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — _"${result.descripcion}"_`,
+				`**Resolución de Timba Times** (${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera})`,
+				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 			].join("\n"),
 		);
 
@@ -1057,9 +1057,19 @@ export async function handleTimbaButtonInteraction(
 			});
 		} else {
 			await interaction.editReply({
-				content: "✅ Todas las timba times resueltas.",
 				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				components: [] as any,
+				components: [
+					{
+						type: 17,
+						components: [
+							{
+								type: 10,
+								content: "✅ Todas las timba times resueltas.",
+							},
+						],
+					},
+				] as any,
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 	} catch (error) {

@@ -162,54 +162,69 @@ async function buildResumenDia(
 			`${partido.equipoLocalBandera} **${partido.equipoLocalSiglas} ${gL}-${gV} ${partido.equipoVisitanteSiglas}** ${partido.equipoVisitanteBandera}`,
 		);
 
-		const predicciones =
-			await services.predicciones.verPrediccionesResumenPartido({
+		const [predicciones, timbas] = await Promise.all([
+			services.predicciones.verPrediccionesResumenPartido({
 				partidoId: partido.partidoId,
-			});
+			}),
+			services.timba.verTimbasResueltasPorPartido(partido.partidoId),
+		]);
 
 		if (predicciones.length === 0) {
 			lineas.push("_Nadie predijo este partido._");
-			continue;
-		}
+		} else {
+			const exactos: string[] = [];
+			const bienIntentos: string[] = [];
+			let puntosBI = 0;
+			const fallados: string[] = [];
 
-		const exactos: string[] = [];
-		const bienIntentos: string[] = [];
-		let puntosBI = 0;
-		const fallados: string[] = [];
+			for (const p of predicciones) {
+				const esExacto =
+					p.prediccionGolesLocal === gL && p.prediccionGolesVisitante === gV;
 
-		for (const p of predicciones) {
-			const esExacto =
-				p.prediccionGolesLocal === gL && p.prediccionGolesVisitante === gV;
-
-			if (esExacto) {
-				const bonusStr = p.puntosEnRacha > 0 ? " 🔥" : "";
-				exactos.push(`<@${p.usuarioId}> (+${p.puntosTotal} 💠${bonusStr})`);
-			} else if (p.puntosTotal > 0) {
-				bienIntentos.push(`<@${p.usuarioId}>`);
-				puntosBI = p.puntosTotal;
-			} else {
-				fallados.push(`<@${p.usuarioId}>`);
-			}
-
-			if (p.puntosTotal > 0) {
-				const existing = ganadores.get(p.usuarioId);
-				if (existing) {
-					existing.hoy += p.puntosTotal;
+				if (esExacto) {
+					const bonusStr = p.puntosEnRacha > 0 ? " 🔥" : "";
+					exactos.push(`<@${p.usuarioId}> (+${p.puntosTotal} 💠${bonusStr})`);
+				} else if (p.puntosTotal > 0) {
+					bienIntentos.push(`<@${p.usuarioId}>`);
+					puntosBI = p.puntosTotal;
 				} else {
-					ganadores.set(p.usuarioId, {
-						hoy: p.puntosTotal,
-						total: p.puntosAcumulados,
-					});
+					fallados.push(`<@${p.usuarioId}>`);
+				}
+
+				if (p.puntosTotal > 0) {
+					const existing = ganadores.get(p.usuarioId);
+					if (existing) {
+						existing.hoy += p.puntosTotal;
+						existing.total = p.puntosAcumulados;
+					} else {
+						ganadores.set(p.usuarioId, {
+							hoy: p.puntosTotal,
+							total: p.puntosAcumulados,
+						});
+					}
 				}
 			}
+
+			if (exactos.length > 0) lineas.push(`✅ Exacto: ${exactos.join(", ")}`);
+			if (bienIntentos.length > 0)
+				lineas.push(
+					`⚡ Buen intento (+${puntosBI} 💠): ${bienIntentos.join(", ")}`,
+				);
+			if (fallados.length > 0)
+				lineas.push(`❌ Fallaron: ${fallados.join(", ")}`);
 		}
 
-		if (exactos.length > 0) lineas.push(`✅ Exacto: ${exactos.join(", ")}`);
-		if (bienIntentos.length > 0)
-			lineas.push(
-				`⚡ Buen intento (+${puntosBI} 💠): ${bienIntentos.join(", ")}`,
-			);
-		if (fallados.length > 0) lineas.push(`❌ Fallaron: ${fallados.join(", ")}`);
+		if (timbas.length > 0) {
+			lineas.push("🎰 Timba Times:");
+			for (const t of timbas) {
+				const ganadorMencion = `<@${t.ganadorId}>`;
+				const perdedorId =
+					t.ganadorId === t.jugador1Id ? t.jugador2Id : t.jugador1Id;
+				lineas.push(
+					`• ${ganadorMencion} 👑 le robó **${t.puntos} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
+				);
+			}
+		}
 	}
 
 	if (ganadores.size > 0) {

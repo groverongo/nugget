@@ -144,6 +144,24 @@ UPDATE timba_time
 SET jugador_2_id = $2, estado = 'cerrada'
 WHERE id = $1;
 
+-- name: VerTimbasResueltasPorPartido :many
+SELECT
+    t.id,
+    t.descripcion,
+    t.puntos,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    u1.username AS jugador_1_nombre,
+    u2.username AS jugador_2_nombre,
+    ug.username AS ganador_nombre
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN usuarios ug ON ug.id = t.ganador_id
+WHERE t.partido_id = $1 AND t.estado = 'resuelta'
+ORDER BY t.created_at ASC;
+
 -- name: ResolverTimba :exec
 UPDATE timba_time
 SET ganador_id = $2, estado = 'resuelta'

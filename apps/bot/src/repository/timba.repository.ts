@@ -21,6 +21,7 @@ import {
 	type VerTimbaRow,
 	type VerTimbasCerradasPorPartidoRow,
 	type VerTimbasPorPartidoRow,
+	type VerTimbasResueltasPorPartidoRow,
 	verFechasDeTimbasPorUsuario,
 	verMisTimbas,
 	verMisTimbasPorFecha,
@@ -28,6 +29,7 @@ import {
 	verTimba,
 	verTimbasCerradasPorPartido,
 	verTimbasPorPartido,
+	verTimbasResueltasPorPartido,
 } from "@sqlc/timba_sql";
 import type { Pool, PoolClient } from "pg";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
@@ -53,6 +55,12 @@ export class TimbaRepository implements ITimbaRepository {
 		partidoId: number,
 	): Promise<VerTimbasCerradasPorPartidoRow[]> {
 		return verTimbasCerradasPorPartido(this.pool, { partidoId });
+	}
+
+	verTimbasResueltasPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasResueltasPorPartidoRow[]> {
+		return verTimbasResueltasPorPartido(this.pool, { partidoId });
 	}
 
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]> {
