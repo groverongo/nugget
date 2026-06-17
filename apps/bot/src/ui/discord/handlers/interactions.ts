@@ -998,7 +998,7 @@ export async function handleTimbaButtonInteraction(
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			await sendAnnouncementChannel(
+			await sendAlertsChannel(
 				interaction.client,
 				[
 					`🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**`,

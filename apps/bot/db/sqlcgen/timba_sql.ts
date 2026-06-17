@@ -457,6 +457,59 @@ export async function aceptarTimba(client: Client, args: AceptarTimbaArgs): Prom
     });
 }
 
+export const verTimbasResueltasPorPartidoQuery = `-- name: VerTimbasResueltasPorPartido :many
+SELECT
+    t.id,
+    t.descripcion,
+    t.puntos,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    u1.username AS jugador_1_nombre,
+    u2.username AS jugador_2_nombre,
+    ug.username AS ganador_nombre
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+JOIN usuarios u2 ON u2.id = t.jugador_2_id
+JOIN usuarios ug ON ug.id = t.ganador_id
+WHERE t.partido_id = $1 AND t.estado = 'resuelta'
+ORDER BY t.created_at ASC`;
+
+export interface VerTimbasResueltasPorPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerTimbasResueltasPorPartidoRow {
+    id: number;
+    descripcion: string;
+    puntos: number;
+    jugador1Id: string;
+    jugador2Id: string;
+    ganadorId: string;
+    jugador1Nombre: string;
+    jugador2Nombre: string;
+    ganadorNombre: string;
+}
+
+export async function verTimbasResueltasPorPartido(client: Client, args: VerTimbasResueltasPorPartidoArgs): Promise<VerTimbasResueltasPorPartidoRow[]> {
+    const result = await client.query({
+        text: verTimbasResueltasPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        descripcion: row[1],
+        puntos: row[2],
+        jugador1Id: row[3],
+        jugador2Id: row[4],
+        ganadorId: row[5],
+        jugador1Nombre: row[6],
+        jugador2Nombre: row[7],
+        ganadorNombre: row[8],
+    }));
+}
+
 export const resolverTimbaQuery = `-- name: ResolverTimba :exec
 UPDATE timba_time
 SET ganador_id = $2, estado = 'resuelta'

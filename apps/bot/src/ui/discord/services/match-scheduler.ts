@@ -248,15 +248,17 @@ export class MatchScheduler {
 	}
 
 	private async fireAlerta(partidoId: number): Promise<void> {
-		const [info, predicciones, timbasAbiertas] = await Promise.all([
-			this.services.partidos.verInformacionPartido({ id: partidoId }),
-			this.services.predicciones.verPrediccionesPorPartido({ partidoId }),
-			this.services.timba.verTimbasPorPartido(partidoId),
-		]);
+		const [info, predicciones, todasLasTimbas, timbasCerradas] =
+			await Promise.all([
+				this.services.partidos.verInformacionPartido({ id: partidoId }),
+				this.services.predicciones.verPrediccionesPorPartido({ partidoId }),
+				this.services.timba.verTimbasPorPartido(partidoId),
+				this.services.timba.verTimbasCerradasPorPartido(partidoId),
+			]);
 
 		if (!info) return;
 
-		const timbasCanceladas = timbasAbiertas.filter(
+		const timbasCanceladas = todasLasTimbas.filter(
 			(t) => t.estado === "abierta",
 		);
 
@@ -266,14 +268,32 @@ export class MatchScheduler {
 			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
 
+		const partido = `${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`;
+
+		if (timbasCerradas.length > 0) {
+			const lineas = [
+				`⚔️ **Timba Times en juego** (${partido})`,
+				...timbasCerradas.map(
+					(t) =>
+						`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
+				),
+			];
+			await sendAnnouncementChannel(this.client, lineas.join("\n"));
+		} else {
+			await sendAnnouncementChannel(
+				this.client,
+				`🎰 No hay Timba Times para ${partido}.`,
+			);
+		}
+
 		if (timbasCanceladas.length === 0) return;
 
 		const lineas = [
-			`🚫 **Timba Times canceladas** (${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}) — nadie las aceptó a tiempo`,
+			`🚫 **Timba Times canceladas** (${partido}) — nadie las aceptó a tiempo`,
 			...timbasCanceladas.map(
 				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
-		await sendAnnouncementChannel(this.client, lineas.join("\n"));
+		await sendAlertsChannel(this.client, lineas.join("\n"));
 	}
 }
