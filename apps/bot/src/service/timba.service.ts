@@ -228,14 +228,12 @@ export class TimbaService implements ITimbaService {
 		]);
 
 		await Promise.all([
-			this.prediccionesRepo.actualizarTimbaTiemposPrediccion({
-				deltaTimbaTimes: timba.puntos,
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
 				puntosActuales: puntosGanador,
 				usuarioId: ganadorId,
 				partidoId: timba.partidoId,
 			}),
-			this.prediccionesRepo.actualizarTimbaTiemposPrediccion({
-				deltaTimbaTimes: -timba.puntos,
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
 				puntosActuales: puntosPerdedor,
 				usuarioId: perdedorId,
 				partidoId: timba.partidoId,

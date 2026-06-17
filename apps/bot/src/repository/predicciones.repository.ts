@@ -2,12 +2,10 @@ import {
 	type ActualizarPrediccionArgs,
 	type ActualizarPuntajePrediccionArgs,
 	type ActualizarPuntosActualesPrediccionArgs,
-	type ActualizarTimbaTiemposPrediccionArgs,
 	type AgregarPrediccionArgs,
 	actualizarPrediccion,
 	actualizarPuntajePrediccion,
 	actualizarPuntosActualesPrediccion,
-	actualizarTimbaTiemposPrediccion,
 	agregarPrediccion,
 	type VerGanadoresHitMasGolesRow,
 	type VerMisPrediccionesPorFechaArgs,
@@ -130,12 +128,6 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	verGanadoresHitMasGoles(): Promise<VerGanadoresHitMasGolesRow[]> {
 		return verGanadoresHitMasGoles(this.pool);
-	}
-
-	actualizarTimbaTiemposPrediccion(
-		args: ActualizarTimbaTiemposPrediccionArgs,
-	): Promise<void> {
-		return actualizarTimbaTiemposPrediccion(this.pool, args);
 	}
 
 	actualizarPuntosActualesPrediccion(
