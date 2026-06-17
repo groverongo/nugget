@@ -193,6 +193,17 @@ INNER JOIN (
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
 ORDER BY fecha_partido ASC;
 
+-- name: ActualizarTimbaTiemposPrediccion :exec
+UPDATE prediccion SET
+    timba_times = timba_times + $1,
+    puntos_actuales = $2
+WHERE usuario_id = $3 AND partido_id = $4;
+
+-- name: ActualizarPuntosActualesPrediccion :exec
+UPDATE prediccion SET
+    puntos_actuales = $1
+WHERE usuario_id = $2 AND partido_id = $3;
+
 -- name: VerGanadoresHitMasGoles :many
 SELECT DISTINCT pe.usuario_id, u.username,
        (p.goles_local + p.goles_visitante)::INTEGER AS total_goles,

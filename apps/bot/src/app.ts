@@ -51,7 +51,11 @@ export function createAppContext(): AppContext {
 		estaticoRepository,
 		txManager,
 	);
-	const timbaService = new TimbaService(timbaRepository, usuariosRepository);
+	const timbaService = new TimbaService(
+		timbaRepository,
+		usuariosRepository,
+		prediccionesRepository,
+	);
 
 	return {
 		db,

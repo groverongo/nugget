@@ -1,6 +1,8 @@
 import type {
 	ActualizarPrediccionArgs,
 	ActualizarPuntajePrediccionArgs,
+	ActualizarPuntosActualesPrediccionArgs,
+	ActualizarTimbaTiemposPrediccionArgs,
 	AgregarPrediccionArgs,
 	VerGanadoresHitMasGolesRow,
 	VerMisPrediccionesPorFechaArgs,
@@ -72,6 +74,14 @@ export interface IPrediccionesRepository {
 	): Promise<VerParticipantesSinPrediccionRow[]>;
 
 	verGanadoresHitMasGoles(): Promise<VerGanadoresHitMasGolesRow[]>;
+
+	actualizarTimbaTiemposPrediccion(
+		args: ActualizarTimbaTiemposPrediccionArgs,
+	): Promise<void>;
+
+	actualizarPuntosActualesPrediccion(
+		args: ActualizarPuntosActualesPrediccionArgs,
+	): Promise<void>;
 
 	withTx(tx: PoolClient): IPrediccionesRepository;
 }

@@ -512,6 +512,46 @@ export async function actualizarPuntajePrediccion(client: Client, args: Actualiz
     });
 }
 
+export const actualizarTimbaTiemposPrediccionQuery = `-- name: ActualizarTimbaTiemposPrediccion :exec
+UPDATE prediccion SET
+    timba_times = timba_times + $1,
+    puntos_actuales = $2
+WHERE usuario_id = $3 AND partido_id = $4`;
+
+export interface ActualizarTimbaTiemposPrediccionArgs {
+    deltaTimbaTimes: number;
+    puntosActuales: number;
+    usuarioId: string;
+    partidoId: number;
+}
+
+export async function actualizarTimbaTiemposPrediccion(client: Client, args: ActualizarTimbaTiemposPrediccionArgs): Promise<void> {
+    await client.query({
+        text: actualizarTimbaTiemposPrediccionQuery,
+        values: [args.deltaTimbaTimes, args.puntosActuales, args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+}
+
+export const actualizarPuntosActualesPrediccionQuery = `-- name: ActualizarPuntosActualesPrediccion :exec
+UPDATE prediccion SET
+    puntos_actuales = $1
+WHERE usuario_id = $2 AND partido_id = $3`;
+
+export interface ActualizarPuntosActualesPrediccionArgs {
+    puntosActuales: number;
+    usuarioId: string;
+    partidoId: number;
+}
+
+export async function actualizarPuntosActualesPrediccion(client: Client, args: ActualizarPuntosActualesPrediccionArgs): Promise<void> {
+    await client.query({
+        text: actualizarPuntosActualesPrediccionQuery,
+        values: [args.puntosActuales, args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+}
+
 export const verResultadosRecientesUsuarioQuery = `-- name: VerResultadosRecientesUsuario :many
 SELECT prediccion.resultado
 FROM prediccion
