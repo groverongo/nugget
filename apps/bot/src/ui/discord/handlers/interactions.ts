@@ -1057,9 +1057,19 @@ export async function handleTimbaButtonInteraction(
 			});
 		} else {
 			await interaction.editReply({
-				content: "✅ Todas las timba times resueltas.",
 				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				components: [] as any,
+				components: [
+					{
+						type: 17,
+						components: [
+							{
+								type: 10,
+								content: "✅ Todas las timba times resueltas.",
+							},
+						],
+					},
+				] as any,
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 	} catch (error) {
