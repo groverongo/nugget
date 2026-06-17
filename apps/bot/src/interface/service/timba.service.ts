@@ -64,9 +64,9 @@ export interface ResolverTimbaResult {
 	perdedorNombre: string;
 	puntos: number;
 	descripcion: string;
-	equipoLocalNombre: string;
+	equipoLocalSiglas: string;
 	equipoLocalBandera: string;
-	equipoVisitanteNombre: string;
+	equipoVisitanteSiglas: string;
 	equipoVisitanteBandera: string;
 }
 

@@ -204,9 +204,9 @@ export class TimbaService implements ITimbaService {
 			perdedorNombre,
 			puntos: timba.puntos,
 			descripcion: timba.descripcion,
-			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalSiglas: timba.equipoLocalSiglas,
 			equipoLocalBandera: timba.equipoLocalBandera,
-			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 		};
 	}

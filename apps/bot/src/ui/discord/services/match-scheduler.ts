@@ -58,7 +58,6 @@ function buildAlertaPrePartido(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
-	timbas: VerTimbasCerradasPorPartidoRow[],
 ): string {
 	const totalParticipantes = predicciones.length + sinPrediccion.length;
 	const count = predicciones.length;
@@ -119,15 +118,6 @@ function buildAlertaPrePartido(
 	const dispersion = ((distinctResults / count) * 100).toFixed(1);
 	lineas.push(`- **Dispersión:** ${dispersion}%`);
 
-	if (timbas.length > 0) {
-		lineas.push("**⚔️ Timba Times cerradas:**");
-		for (const t of timbas) {
-			lineas.push(
-				`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
-			);
-		}
-	}
-
 	return lineas.join("\n");
 }
 
@@ -144,12 +134,7 @@ export async function enviarEstadisticasPrePartido(
 	]);
 	if (!info) return false;
 
-	const mensaje = buildAlertaPrePartido(
-		info,
-		predicciones,
-		sinPrediccion,
-		timbas,
-	);
+	const mensaje = buildAlertaPrePartido(info, predicciones, sinPrediccion);
 	const heatmap = await generarHeatmapPredicciones(info, predicciones);
 
 	if (heatmap) {
@@ -161,6 +146,19 @@ export async function enviarEstadisticasPrePartido(
 	} else {
 		await sendAlertsChannel(client, mensaje);
 	}
+
+	if (timbas.length > 0) {
+		const partido = `${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`;
+		const lineas = [
+			`⚔️ **Timba Times en juego** (${partido})`,
+			...timbas.map(
+				(t) =>
+					`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
+			),
+		];
+		await sendAnnouncementChannel(client, lineas.join("\n"));
+	}
+
 	return true;
 }
 
@@ -271,10 +269,9 @@ export class MatchScheduler {
 		if (timbasCanceladas.length === 0) return;
 
 		const lineas = [
-			`🚫 **Timba Times canceladas** *(${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera})* — nadie las aceptó a tiempo`,
+			`🚫 **Timba Times canceladas** (${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}) — nadie las aceptó a tiempo`,
 			...timbasCanceladas.map(
-				(t) =>
-					`• <@${t.jugador1Id}> — **${t.puntos} 💠** — _"${t.descripcion}"_`,
+				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
 		await sendAnnouncementChannel(this.client, lineas.join("\n"));
