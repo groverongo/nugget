@@ -168,20 +168,22 @@ export function buildRecuento(datos: DatosRecuento): string {
 	if (eliminados.length === 0) {
 		lineas.push("_Ningún equipo eliminado aún._");
 	} else {
-		const banderas = eliminados.map((e) => e.bandera).join(" ");
-		lineas.push(`_Equipos eliminados: ${banderas}_`);
+		const equiposStr = eliminados
+			.map((e) => `${e.siglas} ${e.bandera}`)
+			.join(" / ");
+		lineas.push(`_Equipos eliminados: ${equiposStr}_`);
 	}
 
 	// Awards
 	const awardsLineas = buildAwardsSection(awards, eliminadosIds);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
-		if (eliminados.length > 0 && eliminadosIds.size > 0) {
-			const eliminadosNombres = eliminados
-				.map((e) => `**${e.nombre}**`)
+		if (eliminados.length > 0) {
+			const eliminadosStr = eliminados
+				.map((e) => `**${e.siglas} ${e.bandera}**`)
 				.join(" / ");
 			lineas.push(
-				`_***Awards*** resueltas tras la eliminación de ${eliminadosNombres}:_`,
+				`_***Awards*** resueltas tras la eliminación de ${eliminadosStr}:_`,
 			);
 		}
 		lineas.push(...awardsLineas);
@@ -201,46 +203,42 @@ export function buildRecuento(datos: DatosRecuento): string {
 		});
 	}
 
-	// Win Rate ranking
+	// Win Rate ranking — top 3 positions (including ties)
 	if (rankingWinRate.length > 0) {
 		lineas.push("");
-		lineas.push("🏅 _***Bonus récords:***_");
-		lineas.push("⭐ _***Win Rates:***_");
+		lineas.push("🏅 _Bonus récords:_");
+		lineas.push("⭐ _Win Rates:_");
 		lineas.push("_Otorga ***+5 💠*** al final de la Polla_");
 
 		let prevWr = "";
 		let prevPuesto = 0;
-		rankingWinRate.forEach((u, i) => {
+		for (const u of rankingWinRate) {
 			const wr = Number.parseFloat(u.winRate).toFixed(2);
-			const puesto = wr === prevWr ? prevPuesto : i + 1;
+			const puesto = wr === prevWr ? prevPuesto : prevPuesto + 1;
 			prevPuesto = puesto;
 			prevWr = wr;
-			lineas.push(
-				`${puesto}. <@${u.id}> (${Number.parseFloat(u.winRate).toFixed(2)}%)`,
-			);
-		});
+			if (puesto > 3) break;
+			lineas.push(`${puesto}. <@${u.id}> (${wr}%)`);
+		}
 	}
 
-	// Racha máxima ranking
+	// Racha máxima — solo el mejor (con empates)
 	if (rankingRacha.length > 0) {
 		lineas.push("");
-		lineas.push("🔥 _***Rachas máximas:***_");
+		lineas.push("🔥 _Rachas máximas:_");
 		lineas.push("_Otorga ***+3 💠*** al final de la Polla_");
 
-		let prevRacha = -1;
-		let prevPuesto = 0;
-		rankingRacha.forEach((u, i) => {
-			const puesto = u.rachaMaxima === prevRacha ? prevPuesto : i + 1;
-			prevPuesto = puesto;
-			prevRacha = u.rachaMaxima;
-			lineas.push(`${puesto}. <@${u.id}> (${u.rachaMaxima})`);
-		});
+		const mejorRacha = rankingRacha[0].rachaMaxima;
+		const ganadores = rankingRacha
+			.filter((u) => u.rachaMaxima === mejorRacha)
+			.map((u) => `<@${u.id}>`);
+		lineas.push(`${ganadores.join("/")} (${mejorRacha})`);
 	}
 
-	// Hit más goles
+	// Hit más goles — top 1 (including ties)
 	if (hitMasGoles.length > 0) {
 		lineas.push("");
-		lineas.push("_***Hit de más goles***_");
+		lineas.push("⚽ _Hit de más goles_");
 		lineas.push("_Otorgan ***+2 💠*** al final de la Polla_");
 		const { totalGoles, partido } = hitMasGoles[0];
 		const ganadores = hitMasGoles.map((h) => `<@${h.usuarioId}>`).join("/");

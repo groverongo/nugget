@@ -88,12 +88,11 @@ export async function verEstadisticasTorneo(client: Client): Promise<VerEstadist
 
 export const verWinRateGlobalQuery = `-- name: VerWinRateGlobal :one
 SELECT
-    COUNT(*) FILTER (WHERE pe.resultado = 'exacto')::INTEGER AS exactos,
-    COUNT(*) FILTER (WHERE pa.estado = 'finalizado')::INTEGER AS total_finalizados
-FROM prediccion pe
-JOIN partidos pa ON pa.id = pe.partido_id
-JOIN usuarios u ON u.id = pe.usuario_id
-WHERE u.participante = TRUE`;
+    (SELECT COUNT(DISTINCT pe.partido_id)::INTEGER
+     FROM prediccion pe
+     JOIN usuarios u ON u.id = pe.usuario_id
+     WHERE pe.resultado = 'exacto' AND u.participante = TRUE) AS exactos,
+    (SELECT COUNT(*)::INTEGER FROM partidos WHERE estado = 'finalizado') AS total_finalizados`;
 
 export interface VerWinRateGlobalRow {
     exactos: number;
@@ -165,7 +164,7 @@ export async function verRankingRachaMaxima(client: Client): Promise<VerRankingR
 }
 
 export const verEquiposEliminadosQuery = `-- name: VerEquiposEliminados :many
-SELECT id, nombre, bandera
+SELECT id, nombre, siglas, bandera
 FROM estatico_equipos
 WHERE eliminado = TRUE
 ORDER BY nombre ASC`;
@@ -173,6 +172,7 @@ ORDER BY nombre ASC`;
 export interface VerEquiposEliminadosRow {
     id: number;
     nombre: string;
+    siglas: string;
     bandera: string;
 }
 
@@ -185,7 +185,8 @@ export async function verEquiposEliminados(client: Client): Promise<VerEquiposEl
     return result.rows.map(row => ({
         id: row[0],
         nombre: row[1],
-        bandera: row[2]
+        siglas: row[2],
+        bandera: row[3]
     }));
 }
 

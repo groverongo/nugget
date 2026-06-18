@@ -28,12 +28,11 @@ FROM partidos;
 
 -- name: VerWinRateGlobal :one
 SELECT
-    COUNT(*) FILTER (WHERE pe.resultado = 'exacto')::INTEGER AS exactos,
-    COUNT(*) FILTER (WHERE pa.estado = 'finalizado')::INTEGER AS total_finalizados
-FROM prediccion pe
-JOIN partidos pa ON pa.id = pe.partido_id
-JOIN usuarios u ON u.id = pe.usuario_id
-WHERE u.participante = TRUE;
+    (SELECT COUNT(DISTINCT pe.partido_id)::INTEGER
+     FROM prediccion pe
+     JOIN usuarios u ON u.id = pe.usuario_id
+     WHERE pe.resultado = 'exacto' AND u.participante = TRUE) AS exactos,
+    (SELECT COUNT(*)::INTEGER FROM partidos WHERE estado = 'finalizado') AS total_finalizados;
 
 -- name: VerRankingWinRate :many
 SELECT id, username, win_rate::NUMERIC AS win_rate
@@ -48,7 +47,7 @@ WHERE participante = TRUE AND racha_maxima > 0
 ORDER BY racha_maxima DESC, partidos_ganados DESC;
 
 -- name: VerEquiposEliminados :many
-SELECT id, nombre, bandera
+SELECT id, nombre, siglas, bandera
 FROM estatico_equipos
 WHERE eliminado = TRUE
 ORDER BY nombre ASC;
