@@ -285,14 +285,6 @@ const miEvolucionCommand = new SlashCommandBuilder()
 	)
 	.addIntegerOption((option) =>
 		option
-			.setName("limite")
-			.setDescription("Partidos por página (por defecto: 26)")
-			.setRequired(false)
-			.setMinValue(1)
-			.setMaxValue(64),
-	)
-	.addIntegerOption((option) =>
-		option
 			.setName("pagina")
 			.setDescription("Número de página (por defecto: 1)")
 			.setRequired(false)
@@ -935,9 +927,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 				await interaction.deferReply({ ephemeral: true });
 
-				const limite =
-					interaction.options.getInteger("limite") ??
-					config.utility.evolution_limit;
+				const limite = config.utility.evolution_limit;
 				const pagina = interaction.options.getInteger("pagina") ?? 1;
 				const offset = (pagina - 1) * limite;
 
