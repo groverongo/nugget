@@ -71,4 +71,12 @@ export class PartidosService implements IPartidosService {
 			id: partidoId,
 		});
 	}
+
+	marcarResumenDiaEnviado(fecha: string): Promise<void> {
+		return this.partidosRepo.marcarResumenDiaEnviado({ fecha });
+	}
+
+	verResumenDiaEnviado(fecha: string): Promise<boolean> {
+		return this.partidosRepo.verResumenDiaEnviado({ fecha });
+	}
 }

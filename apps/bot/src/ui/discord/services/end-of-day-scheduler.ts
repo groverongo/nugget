@@ -1,5 +1,3 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
@@ -10,28 +8,10 @@ type Services = AppContext["services"];
 
 const scheduledDates = new Set<string>();
 
-const SENT_DATES_FILE = join(process.cwd(), ".resumen-sent-dates.json");
-
-function loadSentDates(): Set<string> {
-	try {
-		if (!existsSync(SENT_DATES_FILE)) return new Set();
-		const arr = JSON.parse(readFileSync(SENT_DATES_FILE, "utf-8")) as string[];
-		return new Set(arr);
-	} catch {
-		return new Set();
-	}
-}
-
-function markDateSent(date: string): void {
-	const dates = loadSentDates();
-	dates.add(date);
-	const sorted = [...dates].sort().slice(-60);
-	try {
-		writeFileSync(SENT_DATES_FILE, JSON.stringify(sorted));
-	} catch (err) {
-		logger.warn({ err }, "No se pudo guardar resumen-sent-dates");
-	}
-}
+const DELAY_MS = 15 * 60 * 1000;
+const CATCHUP_WINDOW_MS = 12 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CHECK_OFFSET_DAYS = [1, 0];
 
 function toDatePeru(date: Date): string {
 	const peru = new Date(date.getTime() - 5 * 60 * 60 * 1000);
@@ -45,7 +25,7 @@ async function sendResumen(
 ): Promise<void> {
 	const mensaje = await buildResumenDia(date, services);
 	await sendAlertsChannel(client, mensaje);
-	markDateSent(date);
+	await services.partidos.marcarResumenDiaEnviado(date);
 }
 
 export async function enviarResumenDia(
@@ -63,7 +43,7 @@ export async function checkAndScheduleEndOfDay(
 ): Promise<void> {
 	const date = toDatePeru(fechaPartido);
 	if (scheduledDates.has(date)) return;
-	if (loadSentDates().has(date)) return;
+	if (await services.partidos.verResumenDiaEnviado(date)) return;
 
 	const partidos = await services.partidos.verPartidosPorFecha({ date });
 	if (partidos.length === 0) return;
@@ -72,20 +52,17 @@ export async function checkAndScheduleEndOfDay(
 	if (!todosFinalizados) return;
 
 	scheduledDates.add(date);
-	logger.info({ date }, "Resumen del día programado para en 1 hora");
+	logger.info({ date }, "Resumen del día programado para en 15 minutos");
 
-	setTimeout(
-		async () => {
-			try {
-				await sendResumen(date, services, client);
-			} catch (err) {
-				logger.error({ err, date }, "Error enviando resumen del día");
-			} finally {
-				scheduledDates.delete(date);
-			}
-		},
-		60 * 60 * 1000,
-	);
+	setTimeout(async () => {
+		try {
+			await sendResumen(date, services, client);
+		} catch (err) {
+			logger.error({ err, date }, "Error enviando resumen del día");
+		} finally {
+			scheduledDates.delete(date);
+		}
+	}, DELAY_MS);
 }
 
 export async function initEndOfDayScheduler(
@@ -93,14 +70,12 @@ export async function initEndOfDayScheduler(
 	client: Client,
 ): Promise<void> {
 	const now = new Date();
-	const sent = loadSentDates();
 
-	for (const offsetDays of [1, 0]) {
-		const checkDate = new Date(
-			now.getTime() - offsetDays * 24 * 60 * 60 * 1000,
-		);
+	for (const offsetDays of CHECK_OFFSET_DAYS) {
+		const checkDate = new Date(now.getTime() - offsetDays * DAY_MS);
 		const date = toDatePeru(checkDate);
-		if (sent.has(date)) continue;
+
+		if (await services.partidos.verResumenDiaEnviado(date)) continue;
 		if (scheduledDates.has(date)) continue;
 
 		const partidos = await services.partidos.verPartidosPorFecha({ date });
@@ -108,7 +83,6 @@ export async function initEndOfDayScheduler(
 		const todosFinalizados = partidos.every((p) => p.estado === "finalizado");
 		if (!todosFinalizados) continue;
 
-		// Find latest fecha_partido to estimate when summary should have fired
 		const maxFechaMs = Math.max(
 			...partidos
 				.map((p) => p.fechaPartido?.getTime() ?? 0)
@@ -116,14 +90,10 @@ export async function initEndOfDayScheduler(
 		);
 		if (maxFechaMs === 0) continue;
 
-		// Summary should fire 1h after admin finalizes last match.
-		// Estimate: match ends ~2h after start, admin finalizes ~30min later,
-		// so summary expected at fechaPartido + 3.5h. We catch up if within 12h.
-		const expectedResumenMs = maxFechaMs + 3.5 * 60 * 60 * 1000;
 		const nowMs = now.getTime();
 
-		if (nowMs < maxFechaMs + 60 * 60 * 1000) continue; // too early, normal flow handles it
-		if (nowMs > expectedResumenMs + 12 * 60 * 60 * 1000) continue; // too late, assume sent
+		if (nowMs < maxFechaMs + DELAY_MS) continue;
+		if (nowMs > maxFechaMs + CATCHUP_WINDOW_MS) continue;
 
 		scheduledDates.add(date);
 		logger.info({ date }, "Startup: recuperando resumen del día perdido");

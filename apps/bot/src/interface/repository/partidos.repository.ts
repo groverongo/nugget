@@ -3,6 +3,7 @@ import type {
 	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
+	MarcarResumenDiaEnviadoArgs,
 	ObtenerPartidoArgs,
 	ObtenerPartidoRow,
 	VerInformacionPartidoArgs,
@@ -12,6 +13,7 @@ import type {
 	VerPartidosNoFinalizadosRow,
 	VerPartidosPorFechaArgs,
 	VerPartidosPorFechaRow,
+	VerResumenDiaEnviadoArgs,
 } from "@sqlc/partidos_sql";
 import type { PoolClient } from "pg";
 
@@ -43,6 +45,10 @@ export interface IPartidosRepository {
 	actualizarGolesPartido(args: ActualizarGolesPartidoArgs): Promise<void>;
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]>;
+
+	marcarResumenDiaEnviado(args: MarcarResumenDiaEnviadoArgs): Promise<void>;
+
+	verResumenDiaEnviado(args: VerResumenDiaEnviadoArgs): Promise<boolean>;
 
 	withTx(tx: PoolClient): IPartidosRepository;
 }

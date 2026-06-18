@@ -1038,10 +1038,10 @@ export async function handleTimbaButtonInteraction(
 			ganadorJugador: isJ1 ? "j1" : "j2",
 		});
 
-		await sendAnnouncementChannel(
+		await sendAlertsChannel(
 			interaction.client,
 			[
-				`**Resolución de Timba Times** (${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera})`,
+				`_**Resolución de Timba Times** (${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera})_`,
 				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 			].join("\n"),
 		);

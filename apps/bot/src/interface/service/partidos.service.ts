@@ -24,4 +24,8 @@ export interface IPartidosService {
 	sumarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void>;
 
 	restarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void>;
+
+	marcarResumenDiaEnviado(fecha: string): Promise<void>;
+
+	verResumenDiaEnviado(fecha: string): Promise<boolean>;
 }

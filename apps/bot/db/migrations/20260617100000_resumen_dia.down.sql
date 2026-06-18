@@ -1,0 +1,3 @@
+-- DOWN MIGRATION: 20260617100000_resumen_dia
+
+DROP TABLE IF EXISTS resumen_dia;

@@ -1,0 +1,6 @@
+-- UP MIGRATION: 20260617100000_resumen_dia
+
+CREATE TABLE resumen_dia (
+    fecha TEXT PRIMARY KEY,
+    enviado_en TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -280,9 +280,9 @@ export class MatchScheduler {
 			];
 			await sendAlertsChannel(this.client, lineas.join("\n"));
 		} else {
-			await sendAnnouncementChannel(
+			await sendAlertsChannel(
 				this.client,
-				`🎰 No hay Timba Times para ${partido}.`,
+				`_🎰 No hay Timba Times para ${partido}._`,
 			);
 		}
 
