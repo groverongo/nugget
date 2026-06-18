@@ -47,6 +47,10 @@ describe("PartidosService", () => {
 				partidoGolesLocal: null,
 				partidoGolesVisitante: null,
 				fechaPartido: new Date("2026-06-06T10:00:00.000Z"),
+				extraPartidazo: false,
+				extraMilagro: false,
+				extraBatacazo: false,
+				extraElElegido: false,
 			},
 		];
 		const args: VerPartidosPorFechaArgs = { date: "2026-06-06" };

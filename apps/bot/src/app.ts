@@ -5,12 +5,14 @@ import { AwardsRepository } from "./repository/awards.repository";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
+import { RecuentoRepository } from "./repository/recuento.repository";
 import { TimbaRepository } from "./repository/timba.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
 import { AdminService } from "./service/admin.service";
 import { AwardsService } from "./service/awards.service";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
+import { RecuentoService } from "./service/recuento.service";
 import { TimbaService } from "./service/timba.service";
 import { UsuariosService } from "./service/usuarios.service";
 import type { AppContext } from "./types/app-context";
@@ -28,6 +30,7 @@ export function createAppContext(): AppContext {
 	const partidosRepository = new PartidosRepository(db);
 	const prediccionesRepository = new PrediccionesRepository(db);
 	const awardsRepository = new AwardsRepository(db);
+	const recuentoRepository = new RecuentoRepository(db);
 	const timbaRepository = new TimbaRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
@@ -56,6 +59,10 @@ export function createAppContext(): AppContext {
 		usuariosRepository,
 		prediccionesRepository,
 	);
+	const recuentoService = new RecuentoService(
+		recuentoRepository,
+		prediccionesRepository,
+	);
 
 	return {
 		db,
@@ -74,6 +81,7 @@ export function createAppContext(): AppContext {
 			admin: adminService,
 			awards: awardsService,
 			timba: timbaService,
+			recuento: recuentoService,
 		},
 	};
 }
