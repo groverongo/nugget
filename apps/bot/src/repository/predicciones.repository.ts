@@ -76,8 +76,12 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		return verPredicciones(this.pool);
 	}
 
-	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]> {
-		return verMisPredicciones(this.pool, { usuarioId });
+	verMisPredicciones(
+		usuarioId: string,
+		limit: number,
+		offset: number,
+	): Promise<VerMisPrediccionesRow[]> {
+		return verMisPredicciones(this.pool, { usuarioId, limit, offset });
 	}
 
 	async verFechasDePrediccionesPorUsuario(

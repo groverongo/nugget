@@ -35,7 +35,11 @@ export interface IPrediccionesService {
 
 	verPredicciones(): Promise<VerPrediccionesRow[]>;
 
-	verMisPredicciones(usuarioId: string): Promise<VerMisPrediccionesRow[]>;
+	verMisPredicciones(
+		usuarioId: string,
+		limit: number,
+		offset: number,
+	): Promise<VerMisPrediccionesRow[]>;
 
 	verFechasDePrediccionesPorUsuario(usuarioId: string): Promise<string[]>;
 
