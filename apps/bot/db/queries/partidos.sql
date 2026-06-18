@@ -92,6 +92,12 @@ UPDATE partidos SET estado = 'en_vivo' WHERE id = $1;
 -- name: ActualizarGolesPartido :exec
 UPDATE partidos SET goles_local = $1, goles_visitante = $2 WHERE id = $3;
 
+-- name: MarcarResumenDiaEnviado :exec
+INSERT INTO resumen_dia (fecha) VALUES ($1) ON CONFLICT DO NOTHING;
+
+-- name: VerResumenDiaEnviado :one
+SELECT EXISTS(SELECT 1 FROM resumen_dia WHERE fecha = $1)::BOOLEAN AS enviado;
+
 -- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

@@ -333,6 +333,43 @@ export async function actualizarGolesPartido(client: Client, args: ActualizarGol
     });
 }
 
+export const marcarResumenDiaEnviadoQuery = `-- name: MarcarResumenDiaEnviado :exec
+INSERT INTO resumen_dia (fecha) VALUES ($1) ON CONFLICT DO NOTHING`;
+
+export interface MarcarResumenDiaEnviadoArgs {
+    fecha: string;
+}
+
+export async function marcarResumenDiaEnviado(client: Client, args: MarcarResumenDiaEnviadoArgs): Promise<void> {
+    await client.query({
+        text: marcarResumenDiaEnviadoQuery,
+        values: [args.fecha],
+        rowMode: "array"
+    });
+}
+
+export const verResumenDiaEnviadoQuery = `-- name: VerResumenDiaEnviado :one
+SELECT EXISTS(SELECT 1 FROM resumen_dia WHERE fecha = $1)::BOOLEAN AS enviado`;
+
+export interface VerResumenDiaEnviadoArgs {
+    fecha: string;
+}
+
+export interface VerResumenDiaEnviadoRow {
+    enviado: boolean;
+}
+
+export async function verResumenDiaEnviado(client: Client, args: VerResumenDiaEnviadoArgs): Promise<VerResumenDiaEnviadoRow | null> {
+    const result = await client.query({
+        text: verResumenDiaEnviadoQuery,
+        values: [args.fecha],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) return null;
+    const row = result.rows[0];
+    return { enviado: row[0] };
+}
+
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many
 SELECT
     partidos.id AS partido_id,

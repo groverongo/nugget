@@ -7,6 +7,8 @@ import {
 	actualizarPartidoEnVivo,
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
+	type MarcarResumenDiaEnviadoArgs,
+	marcarResumenDiaEnviado,
 	type ObtenerPartidoArgs,
 	type ObtenerPartidoRow,
 	obtenerPartido,
@@ -17,11 +19,13 @@ import {
 	type VerPartidosNoFinalizadosRow,
 	type VerPartidosPorFechaArgs,
 	type VerPartidosPorFechaRow,
+	type VerResumenDiaEnviadoArgs,
 	verFechasDePartidos,
 	verInformacionPartido,
 	verPartidoParaCalculo,
 	verPartidosNoFinalizados,
 	verPartidosPorFecha,
+	verResumenDiaEnviado,
 } from "@sqlc/partidos_sql";
 import type { DBExecutor } from "@support/db.provider";
 import type { PoolClient } from "pg";
@@ -79,6 +83,15 @@ export class PartidosRepository implements IPartidosRepository {
 
 	verPartidosNoFinalizados(): Promise<VerPartidosNoFinalizadosRow[]> {
 		return verPartidosNoFinalizados(this.pool);
+	}
+
+	marcarResumenDiaEnviado(args: MarcarResumenDiaEnviadoArgs): Promise<void> {
+		return marcarResumenDiaEnviado(this.pool, args);
+	}
+
+	async verResumenDiaEnviado(args: VerResumenDiaEnviadoArgs): Promise<boolean> {
+		const row = await verResumenDiaEnviado(this.pool, args);
+		return row?.enviado ?? false;
 	}
 
 	withTx(tx: PoolClient): IPartidosRepository {
