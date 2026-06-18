@@ -1,0 +1,251 @@
+import type { VerAwardsParaRecuentoRow } from "@sqlc/recuento_sql";
+import { generarPremiosPolla } from "@support/pozo";
+import type { DatosRecuento } from "../../../interface/service/recuento.service";
+
+const AWARD_LABELS: Record<string, string> = {
+	campeon: "Campeón",
+	goleador: "Goleador",
+	mejorJugador: "Mejor jugador",
+	mejorArquero: "Mejor arquero",
+	mejorJugadorJoven: "Mejor jugador joven",
+	mejorGol: "Mejor gol",
+	seleccionDecepcion: "Selección decepción",
+	seleccionSorpresa: "Selección sorpresa",
+};
+
+function premioStr(premio: number): string {
+	return `S/${premio}`;
+}
+
+function getPremioParaPuesto(
+	puesto: number,
+	listaPremios: { min: number; max: number; premio: number }[],
+): number {
+	const bloque = listaPremios.find((p) => puesto >= p.min && puesto <= p.max);
+	return bloque?.premio ?? 0;
+}
+
+function buildAwardsSection(
+	awards: VerAwardsParaRecuentoRow[],
+	eliminadosIds: Set<number>,
+): string[] {
+	if (awards.length === 0) return [];
+
+	if (eliminadosIds.size === 0) {
+		return ["🟢 _Todas las awards siguen abiertas._"];
+	}
+
+	type AwardKey = {
+		label: string;
+		isEliminated: (r: VerAwardsParaRecuentoRow) => boolean;
+	};
+
+	const awardDefs: AwardKey[] = [
+		{
+			label: AWARD_LABELS.campeon,
+			isEliminated: (r) =>
+				r.campeonId !== null && eliminadosIds.has(r.campeonId),
+		},
+		{
+			label: AWARD_LABELS.goleador,
+			isEliminated: (r) =>
+				r.goleadorEquipoId !== null && eliminadosIds.has(r.goleadorEquipoId),
+		},
+		{
+			label: AWARD_LABELS.mejorJugador,
+			isEliminated: (r) =>
+				r.mejorJugadorEquipoId !== null &&
+				eliminadosIds.has(r.mejorJugadorEquipoId),
+		},
+		{
+			label: AWARD_LABELS.mejorArquero,
+			isEliminated: (r) =>
+				r.mejorArqueroEquipoId !== null &&
+				eliminadosIds.has(r.mejorArqueroEquipoId),
+		},
+		{
+			label: AWARD_LABELS.mejorJugadorJoven,
+			isEliminated: (r) =>
+				r.mejorJugadorJovenEquipoId !== null &&
+				eliminadosIds.has(r.mejorJugadorJovenEquipoId),
+		},
+		{
+			label: AWARD_LABELS.mejorGol,
+			isEliminated: (r) =>
+				r.mejorGolEquipoId !== null && eliminadosIds.has(r.mejorGolEquipoId),
+		},
+		{
+			label: AWARD_LABELS.seleccionDecepcion,
+			isEliminated: (r) =>
+				r.seleccionDecepcionId !== null &&
+				eliminadosIds.has(r.seleccionDecepcionId),
+		},
+		{
+			label: AWARD_LABELS.seleccionSorpresa,
+			isEliminated: (r) =>
+				r.seleccionSorpresaId !== null &&
+				eliminadosIds.has(r.seleccionSorpresaId),
+		},
+	];
+
+	const lineas: string[] = [];
+	let hayMuertas = false;
+
+	for (const def of awardDefs) {
+		const muertos = awards
+			.filter((r) => def.isEliminated(r))
+			.map((r) => `<@${r.usuarioId}>`);
+		if (muertos.length > 0) {
+			hayMuertas = true;
+			lineas.push(`- ***${def.label}:*** ${muertos.join("/")} ❌`);
+		}
+	}
+
+	if (!hayMuertas) {
+		return ["🟢 _Todas las awards siguen abiertas._"];
+	}
+
+	return lineas;
+}
+
+export function buildTabla(datos: DatosRecuento): string {
+	const { ranking } = datos;
+	if (ranking.length === 0) return "No hay participantes.";
+
+	const { listaPremios } = generarPremiosPolla(ranking.length);
+	const lineas: string[] = ["🏆 ***Tabla de Posiciones***", ""];
+
+	ranking.forEach((u, i) => {
+		const puesto = i + 1;
+		const rachaStr = u.racha > 0 ? ` 🔥${u.racha}` : "";
+		const wr = Number.parseFloat(u.winRate).toFixed(1);
+		const buenIntento =
+			u.partidosApostados - u.partidosGanados - u.partidosPerdidos;
+		const premio = getPremioParaPuesto(puesto, listaPremios);
+		const premioLabel = premio > 0 ? ` · ${premioStr(premio)}` : " · S/0";
+
+		lineas.push(
+			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% WR · ${u.partidosApostados} ap. (${u.partidosGanados}✅/${buenIntento}⚡/${u.partidosPerdidos}❌)${premioLabel}`,
+		);
+	});
+
+	return lineas.join("\n");
+}
+
+export function buildRecuento(datos: DatosRecuento): string {
+	const {
+		titulo,
+		partidosFinalizados,
+		partidosTotal,
+		exactos,
+		totalFinalizados,
+		ranking,
+		rankingWinRate,
+		rankingRacha,
+		eliminados,
+		awards,
+		hitMasGoles,
+	} = datos;
+
+	const pct =
+		partidosTotal > 0
+			? `${((partidosFinalizados / partidosTotal) * 100).toFixed(0)}%`
+			: "0%";
+	const wrPct =
+		totalFinalizados > 0
+			? `${((exactos / totalFinalizados) * 100).toFixed(1)}%`
+			: "0%";
+
+	const eliminadosIds = new Set(eliminados.map((e) => e.id));
+
+	const lineas: string[] = [
+		`⚽ _***${titulo}***_`,
+		`_***${partidosFinalizados}/${partidosTotal}*** partidos disputados_ (${pct})`,
+		`_***Win Rate grupal:*** ${exactos}/${totalFinalizados} atinados_ (${wrPct})`,
+	];
+
+	// Eliminados
+	if (eliminados.length === 0) {
+		lineas.push("_Ningún equipo eliminado aún._");
+	} else {
+		const banderas = eliminados.map((e) => e.bandera).join(" ");
+		lineas.push(`_Equipos eliminados: ${banderas}_`);
+	}
+
+	// Awards
+	const awardsLineas = buildAwardsSection(awards, eliminadosIds);
+	if (awardsLineas.length > 0) {
+		lineas.push("");
+		if (eliminados.length > 0 && eliminadosIds.size > 0) {
+			const eliminadosNombres = eliminados
+				.map((e) => `**${e.nombre}**`)
+				.join(" / ");
+			lineas.push(
+				`_***Awards*** resueltas tras la eliminación de ${eliminadosNombres}:_`,
+			);
+		}
+		lineas.push(...awardsLineas);
+	}
+
+	// Aura Points ranking top 6
+	if (ranking.length > 0) {
+		const { listaPremios } = generarPremiosPolla(ranking.length);
+		lineas.push("");
+		lineas.push("💠 _***Aura Points:***_");
+		const top = ranking.slice(0, 6);
+		top.forEach((u, i) => {
+			const puesto = i + 1;
+			const premio = getPremioParaPuesto(puesto, listaPremios);
+			const premioLabel = premio > 0 ? ` _(${premioStr(premio)})_` : "";
+			lineas.push(`${puesto}. <@${u.id}> (${u.puntos})${premioLabel}`);
+		});
+	}
+
+	// Win Rate ranking
+	if (rankingWinRate.length > 0) {
+		lineas.push("");
+		lineas.push("🏅 _***Bonus récords:***_");
+		lineas.push("⭐ _***Win Rates:***_");
+		lineas.push("_Otorga ***+5 💠*** al final de la Polla_");
+
+		let prevWr = "";
+		let prevPuesto = 0;
+		rankingWinRate.forEach((u, i) => {
+			const wr = Number.parseFloat(u.winRate).toFixed(2);
+			const puesto = wr === prevWr ? prevPuesto : i + 1;
+			prevPuesto = puesto;
+			prevWr = wr;
+			lineas.push(
+				`${puesto}. <@${u.id}> (${Number.parseFloat(u.winRate).toFixed(2)}%)`,
+			);
+		});
+	}
+
+	// Racha máxima ranking
+	if (rankingRacha.length > 0) {
+		lineas.push("");
+		lineas.push("🔥 _***Rachas máximas:***_");
+		lineas.push("_Otorga ***+3 💠*** al final de la Polla_");
+
+		let prevRacha = -1;
+		let prevPuesto = 0;
+		rankingRacha.forEach((u, i) => {
+			const puesto = u.rachaMaxima === prevRacha ? prevPuesto : i + 1;
+			prevPuesto = puesto;
+			prevRacha = u.rachaMaxima;
+			lineas.push(`${puesto}. <@${u.id}> (${u.rachaMaxima})`);
+		});
+	}
+
+	// Hit más goles
+	if (hitMasGoles.length > 0) {
+		lineas.push("");
+		lineas.push("_***Hit de más goles***_");
+		lineas.push("_Otorgan ***+2 💠*** al final de la Polla_");
+		const { totalGoles, partido } = hitMasGoles[0];
+		const ganadores = hitMasGoles.map((h) => `<@${h.usuarioId}>`).join("/");
+		lineas.push(`${ganadores} — ${totalGoles} goles (${partido})`);
+	}
+
+	return lineas.join("\n");
+}

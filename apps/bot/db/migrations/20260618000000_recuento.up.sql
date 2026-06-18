@@ -1,0 +1,4 @@
+-- UP MIGRATION: 20260618000000_recuento
+
+ALTER TABLE estatico_equipos
+    ADD COLUMN eliminado BOOLEAN NOT NULL DEFAULT FALSE;

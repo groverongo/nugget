@@ -40,6 +40,7 @@ import {
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
 } from "../utils/match-announcement";
+import { buildRecuento, buildTabla } from "../utils/recuento-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 export const POLLERO_ROLE_ID = "1513773724074250350";
@@ -584,6 +585,43 @@ const verTimbasCommand = new SlashCommandBuilder()
 			.setDescription("Partido a consultar")
 			.setRequired(true)
 			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const tablaCommand = new SlashCommandBuilder()
+	.setName("tabla")
+	.setDescription("[ADMIN] Muestra la tabla de posiciones completa con premios")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.setContexts(InteractionContextType.Guild);
+
+const recuentoCommand = new SlashCommandBuilder()
+	.setName("recuento")
+	.setDescription("[ADMIN] Envía el recuento de la polla al canal de alertas")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("titulo")
+			.setDescription("Título del recuento (ej: Jornada 1 - Fase de Grupos)")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const registrarEliminadoCommand = new SlashCommandBuilder()
+	.setName("registrar-eliminado")
+	.setDescription("[ADMIN] Marca o desmarca un equipo como eliminado")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("equipo")
+			.setDescription("Equipo a marcar/desmarcar como eliminado")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addBooleanOption((option) =>
+		option
+			.setName("eliminado")
+			.setDescription("true = eliminado, false = restaurar")
+			.setRequired(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -2004,6 +2042,64 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 				await interaction.editReply({
 					content: "✅ Bonuses asignados y alerta enviada.",
+				});
+			},
+		},
+	],
+	[
+		"tabla",
+		{
+			definition: tablaCommand,
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+				const datos =
+					await appContext.services.recuento.obtenerDatosRecuento("");
+				const mensaje = buildTabla(datos);
+				await sendAlertsChannel(interaction.client, mensaje);
+				await interaction.editReply({ content: "✅ Tabla enviada." });
+			},
+		},
+	],
+	[
+		"recuento",
+		{
+			definition: recuentoCommand,
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+				const titulo = interaction.options.getString("titulo", true);
+				const datos =
+					await appContext.services.recuento.obtenerDatosRecuento(titulo);
+				const mensaje = buildRecuento(datos);
+				await sendAlertsChannel(interaction.client, mensaje);
+				await interaction.editReply({ content: "✅ Recuento enviado." });
+			},
+		},
+	],
+	[
+		"registrar-eliminado",
+		{
+			definition: registrarEliminadoCommand,
+			autocomplete: async (interaction, appContext) => {
+				const query = interaction.options.getFocused(true).value.toString();
+				const equipos = await appContext.services.awards.verEquipos();
+				const opciones = equipos
+					.filter((e) => e.nombre.toLowerCase().includes(query.toLowerCase()))
+					.slice(0, 25)
+					.map((e) => ({ name: e.nombre, value: e.id }));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+				const equipoId = interaction.options.getInteger("equipo", true);
+				const eliminado = interaction.options.getBoolean("eliminado", true);
+				if (eliminado) {
+					await appContext.services.recuento.marcarEquipoEliminado(equipoId);
+				} else {
+					await appContext.services.recuento.marcarEquipoNoEliminado(equipoId);
+				}
+				const estado = eliminado ? "marcado como eliminado" : "restaurado";
+				await interaction.editReply({
+					content: `✅ Equipo #${equipoId} ${estado}.`,
 				});
 			},
 		},
