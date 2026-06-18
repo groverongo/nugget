@@ -12,7 +12,11 @@ SELECT
 	partidos.estado,
 	partidos.goles_local AS partido_goles_local,
 	partidos.goles_visitante AS partido_goles_visitante,
-	partidos.fecha_partido
+	partidos.fecha_partido,
+	partidos.extra_partidazo,
+	partidos.extra_milagro,
+	partidos.extra_batacazo,
+	partidos.extra_el_elegido
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id

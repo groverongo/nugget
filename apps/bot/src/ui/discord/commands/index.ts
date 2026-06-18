@@ -649,20 +649,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						].join("\n"),
 					});
 
-					const [info, predicciones, puntajes] = await Promise.all([
-						appContext.services.partidos.verInformacionPartido({
-							id: partidoId,
-						}),
-						appContext.services.predicciones.verPrediccionesPorPartido({
-							partidoId,
-						}),
-						appContext.services.predicciones.verPuntajesPartido({ partidoId }),
-					]);
+					const [info, predicciones, sinPrediccion, puntajes] =
+						await Promise.all([
+							appContext.services.partidos.verInformacionPartido({
+								id: partidoId,
+							}),
+							appContext.services.predicciones.verPrediccionesPorPartido({
+								partidoId,
+							}),
+							appContext.services.predicciones.verParticipantesSinPrediccion({
+								partidoId,
+							}),
+							appContext.services.predicciones.verPuntajesPartido({
+								partidoId,
+							}),
+						]);
 
 					if (info) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaFinPartido(info, predicciones),
+							buildAlertaFinPartido(info, predicciones, sinPrediccion),
 						);
 						const mensajeAura = buildAlertaAuraPoints(puntajes);
 						if (mensajeAura) {
@@ -747,11 +753,14 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `⏸️ **Partido #${partidoId}** — Medio tiempo: **${golesLocal} - ${golesVisitante}**`,
 					});
 
-					const [info, predicciones] = await Promise.all([
+					const [info, predicciones, sinPrediccion] = await Promise.all([
 						appContext.services.partidos.verInformacionPartido({
 							id: partidoId,
 						}),
 						appContext.services.predicciones.verPrediccionesPorPartido({
+							partidoId,
+						}),
+						appContext.services.predicciones.verParticipantesSinPrediccion({
 							partidoId,
 						}),
 					]);
@@ -759,7 +768,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					if (info) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaMedioTiempo(info, predicciones),
+							buildAlertaMedioTiempo(info, predicciones, sinPrediccion),
 						);
 					}
 				} catch (error) {

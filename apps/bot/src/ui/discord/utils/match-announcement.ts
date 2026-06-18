@@ -1,5 +1,6 @@
 import type { VerInformacionPartidoRow } from "@sqlc/partidos_sql";
 import type {
+	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorPartidoRow,
 	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
@@ -22,9 +23,21 @@ function groupAndSort(
 	});
 }
 
+function sinPrediccionLine(
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
+): string | null {
+	if (sinPrediccion.length === 0) return null;
+	const menciones =
+		sinPrediccion.length <= 7
+			? sinPrediccion.map((u) => `<@${u.id}>`).join(", ")
+			: `${sinPrediccion.length} personas`;
+	return `📵 Sin apostar: ${menciones}`;
+}
+
 export function buildAlertaMedioTiempo(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
@@ -63,6 +76,8 @@ export function buildAlertaMedioTiempo(
 	} else {
 		lineas.push(`⏺️ *Nadie ha atinado por ahora.*`);
 	}
+	const sinLine = sinPrediccionLine(sinPrediccion);
+	if (sinLine) lineas.push(sinLine);
 
 	return lineas.join("\n");
 }
@@ -70,6 +85,7 @@ export function buildAlertaMedioTiempo(
 export function buildAlertaFinPartido(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
@@ -122,6 +138,8 @@ export function buildAlertaFinPartido(
 	} else {
 		lineas.push(`✅ ***¡Bravo!** Ganador(es):* ${ganadores.join(", ")}`);
 	}
+	const sinLine = sinPrediccionLine(sinPrediccion);
+	if (sinLine) lineas.push(sinLine);
 
 	return lineas.join("\n");
 }

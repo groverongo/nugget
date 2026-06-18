@@ -132,6 +132,13 @@ async function buildResumenDia(
 			`${partido.equipoLocalBandera} **${partido.equipoLocalSiglas} ${gL}-${gV} ${partido.equipoVisitanteSiglas}** ${partido.equipoVisitanteBandera}`,
 		);
 
+		const extras: string[] = [];
+		if (partido.extraPartidazo) extras.push("💥 Partidazo");
+		if (partido.extraMilagro) extras.push("✝️ Milagro");
+		if (partido.extraBatacazo) extras.push("🎯 Batacazo");
+		if (partido.extraElElegido) extras.push("👑 El Elegido");
+		if (extras.length > 0) lineas.push(`_${extras.join(" · ")}_`);
+
 		const [predicciones, timbas] = await Promise.all([
 			services.predicciones.verPrediccionesResumenPartido({
 				partidoId: partido.partidoId,
@@ -143,22 +150,24 @@ async function buildResumenDia(
 			lineas.push("_Nadie predijo este partido._");
 		} else {
 			const exactos: string[] = [];
+			let puntosExactoBase = 0;
 			const bienIntentos: string[] = [];
 			let puntosBI = 0;
-			const fallados: string[] = [];
+			let fallados = 0;
 
 			for (const p of predicciones) {
 				const esExacto =
 					p.prediccionGolesLocal === gL && p.prediccionGolesVisitante === gV;
 
 				if (esExacto) {
-					const bonusStr = p.puntosEnRacha > 0 ? " 🔥" : "";
-					exactos.push(`<@${p.usuarioId}> (+${p.puntosTotal} 💠${bonusStr})`);
+					puntosExactoBase = p.puntosTotal - p.puntosEnRacha;
+					const rachaStr = p.puntosEnRacha > 0 ? ` +${p.puntosEnRacha} 🔥` : "";
+					exactos.push(`<@${p.usuarioId}>${rachaStr}`);
 				} else if (p.puntosTotal > 0) {
 					bienIntentos.push(`<@${p.usuarioId}>`);
 					puntosBI = p.puntosTotal;
 				} else {
-					fallados.push(`<@${p.usuarioId}>`);
+					fallados++;
 				}
 
 				if (p.puntosTotal > 0) {
@@ -175,13 +184,16 @@ async function buildResumenDia(
 				}
 			}
 
-			if (exactos.length > 0) lineas.push(`✅ Exacto: ${exactos.join(", ")}`);
+			if (exactos.length > 0)
+				lineas.push(
+					`✅ Exacto (+${puntosExactoBase} 💠): ${exactos.join(", ")}`,
+				);
 			if (bienIntentos.length > 0)
 				lineas.push(
 					`⚡ Buen intento (+${puntosBI} 💠): ${bienIntentos.join(", ")}`,
 				);
-			if (fallados.length > 0)
-				lineas.push(`❌ Fallaron: ${fallados.join(", ")}`);
+			if (fallados > 0 && exactos.length === 0 && bienIntentos.length === 0)
+				lineas.push("❌ Fallaron todos los jugadores.");
 		}
 
 		if (timbas.length > 0) {

@@ -20,6 +20,7 @@ type Services = AppContext["services"];
 function buildAlertaPartido(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
 ): string {
 	const lineas = [
 		"🕛 **¡EMPEZÓ EL PARTIDO!**",
@@ -29,26 +30,33 @@ function buildAlertaPartido(
 
 	if (predicciones.length === 0) {
 		lineas.push("_Nadie apostó en este partido._");
-		return lineas.join("\n");
+	} else {
+		const grouped = new Map<string, string[]>();
+		for (const p of predicciones) {
+			const key = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
+			const group = grouped.get(key) ?? [];
+			group.push(`<@${p.usuarioId}>`);
+			grouped.set(key, group);
+		}
+
+		const sorted = [...grouped.entries()].sort(([a], [b]) => {
+			const [aL, aV] = a.split("-").map(Number);
+			const [bL, bV] = b.split("-").map(Number);
+			const totalDiff = bL + bV - (aL + aV);
+			return totalDiff !== 0 ? totalDiff : bL - aL;
+		});
+
+		for (const [resultado, menciones] of sorted) {
+			lineas.push(`${resultado}: ${menciones.join("/")}`);
+		}
 	}
 
-	const grouped = new Map<string, string[]>();
-	for (const p of predicciones) {
-		const key = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
-		const group = grouped.get(key) ?? [];
-		group.push(`<@${p.usuarioId}>`);
-		grouped.set(key, group);
-	}
-
-	const sorted = [...grouped.entries()].sort(([a], [b]) => {
-		const [aL, aV] = a.split("-").map(Number);
-		const [bL, bV] = b.split("-").map(Number);
-		const totalDiff = bL + bV - (aL + aV);
-		return totalDiff !== 0 ? totalDiff : bL - aL;
-	});
-
-	for (const [resultado, menciones] of sorted) {
-		lineas.push(`${resultado}: ${menciones.join("/")}`);
+	if (sinPrediccion.length > 0) {
+		const menciones =
+			sinPrediccion.length <= 7
+				? sinPrediccion.map((u) => `<@${u.id}>`).join(", ")
+				: `${sinPrediccion.length} personas`;
+		lineas.push(`📵 Sin apostar: ${menciones}`);
 	}
 
 	return lineas.join("\n");
@@ -167,12 +175,16 @@ export async function enviarAlertaInicioPartidoSoloMensaje(
 	services: Services,
 	client: Client,
 ): Promise<boolean> {
-	const [info, predicciones] = await Promise.all([
+	const [info, predicciones, sinPrediccion] = await Promise.all([
 		services.partidos.verInformacionPartido({ id: partidoId }),
 		services.predicciones.verPrediccionesPorPartido({ partidoId }),
+		services.predicciones.verParticipantesSinPrediccion({ partidoId }),
 	]);
 	if (!info) return false;
-	await sendAlertsChannel(client, buildAlertaPartido(info, predicciones));
+	await sendAlertsChannel(
+		client,
+		buildAlertaPartido(info, predicciones, sinPrediccion),
+	);
 	return true;
 }
 
@@ -248,10 +260,11 @@ export class MatchScheduler {
 	}
 
 	private async fireAlerta(partidoId: number): Promise<void> {
-		const [info, predicciones, todasLasTimbas, timbasCerradas] =
+		const [info, predicciones, sinPrediccion, todasLasTimbas, timbasCerradas] =
 			await Promise.all([
 				this.services.partidos.verInformacionPartido({ id: partidoId }),
 				this.services.predicciones.verPrediccionesPorPartido({ partidoId }),
+				this.services.predicciones.verParticipantesSinPrediccion({ partidoId }),
 				this.services.timba.verTimbasPorPartido(partidoId),
 				this.services.timba.verTimbasCerradasPorPartido(partidoId),
 			]);
@@ -263,7 +276,10 @@ export class MatchScheduler {
 		);
 
 		await Promise.all([
-			sendAlertsChannel(this.client, buildAlertaPartido(info, predicciones)),
+			sendAlertsChannel(
+				this.client,
+				buildAlertaPartido(info, predicciones, sinPrediccion),
+			),
 			this.services.partidos.actualizarPartidoEnVivo(partidoId),
 			this.services.timba.cancelarTimbasAbiertas(partidoId),
 		]);
