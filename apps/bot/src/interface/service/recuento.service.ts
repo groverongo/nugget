@@ -6,6 +6,12 @@ import type {
 	VerRankingWinRateRow,
 } from "@sqlc/recuento_sql";
 
+export interface HitMasGoles {
+	totalGoles: number;
+	partidos: string[];
+	usuarios: { usuarioId: string }[];
+}
+
 export interface DatosRecuento {
 	titulo: string;
 	partidosFinalizados: number;
@@ -17,16 +23,14 @@ export interface DatosRecuento {
 	rankingRacha: VerRankingRachaMaximaRow[];
 	eliminados: VerEquiposEliminadosRow[];
 	awards: VerAwardsParaRecuentoRow[];
-	hitMasGoles: {
-		usuarioId: string;
-		username: string;
-		totalGoles: number;
-		partido: string;
-	}[];
+	hitMasGoles: HitMasGoles | null;
 }
 
 export interface IRecuentoService {
-	obtenerDatosRecuento(titulo: string): Promise<DatosRecuento>;
+	obtenerDatosRecuento(
+		titulo: string,
+		totalPartidos?: number,
+	): Promise<DatosRecuento>;
 	marcarEquipoEliminado(equipoId: number): Promise<void>;
 	marcarEquipoNoEliminado(equipoId: number): Promise<void>;
 }

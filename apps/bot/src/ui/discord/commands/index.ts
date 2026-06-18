@@ -604,6 +604,15 @@ const recuentoCommand = new SlashCommandBuilder()
 			.setDescription("Título del recuento (ej: Jornada 1 - Fase de Grupos)")
 			.setRequired(true),
 	)
+	.addIntegerOption((option) =>
+		option
+			.setName("total_partidos")
+			.setDescription(
+				"Total de partidos del torneo (ej: 104). Por defecto: los registrados en BD.",
+			)
+			.setRequired(false)
+			.setMinValue(1),
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const registrarEliminadoCommand = new SlashCommandBuilder()
@@ -2067,8 +2076,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				await interaction.deferReply({ ephemeral: true });
 				const titulo = interaction.options.getString("titulo", true);
-				const datos =
-					await appContext.services.recuento.obtenerDatosRecuento(titulo);
+				const totalPartidos =
+					interaction.options.getInteger("total_partidos") ?? undefined;
+				const datos = await appContext.services.recuento.obtenerDatosRecuento(
+					titulo,
+					totalPartidos,
+				);
 				const mensaje = buildRecuento(datos);
 				await sendAlertsChannel(interaction.client, mensaje);
 				await interaction.editReply({ content: "✅ Recuento enviado." });
