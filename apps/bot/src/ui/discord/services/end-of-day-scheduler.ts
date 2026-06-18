@@ -9,6 +9,9 @@ type Services = AppContext["services"];
 const scheduledDates = new Set<string>();
 
 const DELAY_MS = 15 * 60 * 1000;
+const CATCHUP_WINDOW_MS = 12 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CHECK_OFFSET_DAYS = [1, 0];
 
 function toDatePeru(date: Date): string {
 	const peru = new Date(date.getTime() - 5 * 60 * 60 * 1000);
@@ -68,10 +71,8 @@ export async function initEndOfDayScheduler(
 ): Promise<void> {
 	const now = new Date();
 
-	for (const offsetDays of [1, 0]) {
-		const checkDate = new Date(
-			now.getTime() - offsetDays * 24 * 60 * 60 * 1000,
-		);
+	for (const offsetDays of CHECK_OFFSET_DAYS) {
+		const checkDate = new Date(now.getTime() - offsetDays * DAY_MS);
 		const date = toDatePeru(checkDate);
 
 		if (await services.partidos.verResumenDiaEnviado(date)) continue;
@@ -91,10 +92,8 @@ export async function initEndOfDayScheduler(
 
 		const nowMs = now.getTime();
 
-		// muy temprano: el flujo normal lo manejará
 		if (nowMs < maxFechaMs + DELAY_MS) continue;
-		// muy tarde: asumir que ya se envió por otro medio
-		if (nowMs > maxFechaMs + 12 * 60 * 60 * 1000) continue;
+		if (nowMs > maxFechaMs + CATCHUP_WINDOW_MS) continue;
 
 		scheduledDates.add(date);
 		logger.info({ date }, "Startup: recuperando resumen del día perdido");
