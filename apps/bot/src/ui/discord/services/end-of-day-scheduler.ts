@@ -205,6 +205,20 @@ async function buildResumenDia(
 				lineas.push(
 					`• ${ganadorMencion} 👑 le robó **${t.puntos} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
 				);
+
+				const existingGanador = ganadores.get(t.ganadorId);
+				if (existingGanador) {
+					existingGanador.hoy += t.puntos;
+				} else {
+					ganadores.set(t.ganadorId, { hoy: t.puntos, total: 0 });
+				}
+
+				const existingPerdedor = ganadores.get(perdedorId);
+				if (existingPerdedor) {
+					existingPerdedor.hoy -= t.puntos;
+				} else {
+					ganadores.set(perdedorId, { hoy: -t.puntos, total: 0 });
+				}
 			}
 		}
 	}
@@ -212,13 +226,15 @@ async function buildResumenDia(
 	if (ganadores.size > 0) {
 		lineas.push("");
 		lineas.push("────────────────────");
-		lineas.push("✴️ ***Ganadores del día:***");
+		lineas.push("✴️ ***Puntos otorgados del día:***");
 
 		const sorted = [...ganadores.entries()].sort(
 			([, a], [, b]) => b.hoy - a.hoy,
 		);
 		for (const [userId, { hoy, total }] of sorted) {
-			lineas.push(`• <@${userId}> **+${hoy}** 💠 (total: ${total})`);
+			const signo = hoy >= 0 ? "+" : "";
+			const totalStr = total > 0 ? ` (total: ${total})` : "";
+			lineas.push(`• <@${userId}> **${signo}${hoy}** 💠${totalStr}`);
 		}
 	}
 
