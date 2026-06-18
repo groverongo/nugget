@@ -69,29 +69,17 @@ export async function generarEvolucionPredicciones(
 	predicciones: VerMisPrediccionesRow[],
 	usuarioUsername: string,
 ): Promise<Buffer | null> {
-	const finalizadas = predicciones
-		.filter((p) => p.estado === "finalizado")
-		.sort(
-			(a, b) =>
-				(a.fechaPartido?.getTime() ?? 0) - (b.fechaPartido?.getTime() ?? 0),
-		);
-
-	if (finalizadas.length === 0) {
+	if (predicciones.length === 0) {
 		return null;
 	}
 
-	const matches = finalizadas.map((p) => {
+	const matches = predicciones.map((p) => {
 		const local = p.equipoLocalSiglas || p.equipoLocalNombre;
 		const visitante = p.equipoVisitanteSiglas || p.equipoVisitanteNombre;
 		return `${local} vs ${visitante}`;
 	});
 
-	const cumulativePoints: number[] = [];
-	let running = 0;
-	for (const p of finalizadas) {
-		running += p.puntosTotal;
-		cumulativePoints.push(running);
-	}
+	const cumulativePoints = predicciones.map((p) => p.puntosAcumulados);
 
 	try {
 		const response = await axios.post<ArrayBuffer>(

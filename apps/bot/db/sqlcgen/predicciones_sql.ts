@@ -349,7 +349,7 @@ export async function verPredicciones(client: Client): Promise<VerPrediccionesRo
 }
 
 export const verMisPrediccionesQuery = `-- name: VerMisPredicciones :many
-SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo, equipo_local_siglas, equipo_visitante_siglas, puntos_total
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo, equipo_local_siglas, equipo_visitante_siglas, puntos_total, SUM(puntos_total) OVER (ORDER BY fecha_partido ROWS UNBOUNDED PRECEDING) AS puntos_acumulados
 FROM (
     SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante, puntos_total
     FROM prediccion
@@ -361,10 +361,14 @@ INNER JOIN (
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
-ORDER BY fecha_partido ASC`;
+WHERE estado = 'finalizado'
+ORDER BY fecha_partido ASC
+LIMIT $2 OFFSET $3`;
 
 export interface VerMisPrediccionesArgs {
     usuarioId: string;
+    limit: number;
+    offset: number;
 }
 
 export interface VerMisPrediccionesRow {
@@ -386,12 +390,13 @@ export interface VerMisPrediccionesRow {
     equipoLocalSiglas: string;
     equipoVisitanteSiglas: string;
     puntosTotal: number;
+    puntosAcumulados: number;
 }
 
 export async function verMisPredicciones(client: Client, args: VerMisPrediccionesArgs): Promise<VerMisPrediccionesRow[]> {
     const result = await client.query({
         text: verMisPrediccionesQuery,
-        values: [args.usuarioId],
+        values: [args.usuarioId, args.limit, args.offset],
         rowMode: "array"
     });
     return result.rows.map(row => {
@@ -413,7 +418,8 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
             equipoVisitanteGrupo: row[14],
             equipoLocalSiglas: row[15],
             equipoVisitanteSiglas: row[16],
-            puntosTotal: row[17]
+            puntosTotal: row[17],
+            puntosAcumulados: row[18]
         };
     });
 }
