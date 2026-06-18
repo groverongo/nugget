@@ -1,5 +1,6 @@
 import { config } from "@support/config";
 import {
+	AttachmentBuilder,
 	Collection,
 	InteractionContextType,
 	MessageFlags,
@@ -33,6 +34,7 @@ import {
 	enviarAlertaInicioPartidoSoloMensaje,
 	enviarEstadisticasPrePartido,
 } from "../services/match-scheduler";
+import { generarEvolucionPredicciones } from "../services/utility-client";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
@@ -274,6 +276,13 @@ const sayCommand = new SlashCommandBuilder()
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
 	.setDescription("Muestra tus predicciones filtradas por fecha")
+	.setContexts(InteractionContextType.Guild);
+
+const miEvolucionCommand = new SlashCommandBuilder()
+	.setName("mi-evolucion")
+	.setDescription(
+		"Ver la evolución acumulada de tus puntos a lo largo del torneo",
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const misTimbasCommand = new SlashCommandBuilder()
@@ -898,6 +907,38 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						fechas,
 					),
 					flags: MessageFlags.IsComponentsV2,
+				});
+			},
+		},
+	],
+	[
+		"mi-evolucion",
+		{
+			definition: miEvolucionCommand,
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				await interaction.deferReply({ ephemeral: true });
+
+				const predicciones =
+					await appContext.services.predicciones.verMisPredicciones(
+						interaction.user.id,
+					);
+
+				const chart = await generarEvolucionPredicciones(
+					predicciones,
+					interaction.user.username,
+				);
+
+				if (!chart) {
+					await interaction.editReply({
+						content: "Aún no tienes predicciones en partidos finalizados.",
+					});
+					return;
+				}
+
+				await interaction.editReply({
+					files: [new AttachmentBuilder(chart, { name: "evolucion.png" })],
 				});
 			},
 		},
