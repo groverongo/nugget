@@ -156,6 +156,44 @@ export async function verPrediccionesPorPartido(client: Client, args: VerPredicc
     });
 }
 
+export const verPuntajesPartidoQuery = `-- name: VerPuntajesPartido :many
+SELECT
+    p.usuario_id,
+    u.username,
+    p.puntos_total AS puntos_ganados,
+    u.puntos AS puntos_acumulados
+FROM prediccion p
+JOIN usuarios u ON u.id = p.usuario_id
+WHERE p.partido_id = $1 AND p.puntos_total > 0 AND u.participante = TRUE
+ORDER BY p.puntos_total DESC, u.username`;
+
+export interface VerPuntajesPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerPuntajesPartidoRow {
+    usuarioId: string;
+    username: string;
+    puntosGanados: number;
+    puntosAcumulados: number;
+}
+
+export async function verPuntajesPartido(client: Client, args: VerPuntajesPartidoArgs): Promise<VerPuntajesPartidoRow[]> {
+    const result = await client.query({
+        text: verPuntajesPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            usuarioId: row[0],
+            username: row[1],
+            puntosGanados: row[2],
+            puntosAcumulados: row[3]
+        };
+    });
+}
+
 export const verPrediccionesPorFechaQuery = `-- name: VerPrediccionesPorFecha :many
 SELECT 
     prediccion.partido_id AS partido_id,
@@ -180,7 +218,8 @@ JOIN usuarios ON usuarios.id = prediccion.usuario_id
 JOIN partidos ON partidos.id = prediccion.partido_id
 JOIN estatico_equipos el on el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev on ev.id = partidos.equipo_visitante_id
-WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)`;
+WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)
+ORDER BY partidos.fecha_partido ASC`;
 
 export interface VerPrediccionesPorFechaArgs {
     date: string;
@@ -310,18 +349,19 @@ export async function verPredicciones(client: Client): Promise<VerPrediccionesRo
 }
 
 export const verMisPrediccionesQuery = `-- name: VerMisPredicciones :many
-SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo, equipo_local_siglas, equipo_visitante_siglas, puntos_total
 FROM (
-    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
+    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante, puntos_total
     FROM prediccion
     WHERE usuario_id = $1
 ) pe
 INNER JOIN (
-    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
+    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo, el.siglas AS equipo_local_siglas, ev.siglas AS equipo_visitante_siglas
     FROM partidos pa
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
-) pa_ex ON pe.partido_id = pa_ex.partido_id`;
+) pa_ex ON pe.partido_id = pa_ex.partido_id
+ORDER BY fecha_partido ASC`;
 
 export interface VerMisPrediccionesArgs {
     usuarioId: string;
@@ -343,6 +383,9 @@ export interface VerMisPrediccionesRow {
     equipoVisitanteNombre: string;
     equipoVisitantePuntosFifa: string | null;
     equipoVisitanteGrupo: string;
+    equipoLocalSiglas: string;
+    equipoVisitanteSiglas: string;
+    puntosTotal: number;
 }
 
 export async function verMisPredicciones(client: Client, args: VerMisPrediccionesArgs): Promise<VerMisPrediccionesRow[]> {
@@ -367,7 +410,77 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
             equipoLocalGrupo: row[11],
             equipoVisitanteNombre: row[12],
             equipoVisitantePuntosFifa: row[13],
-            equipoVisitanteGrupo: row[14]
+            equipoVisitanteGrupo: row[14],
+            equipoLocalSiglas: row[15],
+            equipoVisitanteSiglas: row[16],
+            puntosTotal: row[17]
+        };
+    });
+}
+
+export const actualizarPuntajePrediccionQuery = `-- name: ActualizarPuntajePrediccion :exec
+UPDATE prediccion SET
+    resultado = $1,
+    puntos_base = $2,
+    puntos_en_racha = $3,
+    puntos_partidazo = $4,
+    puntos_milagro = $5,
+    puntos_batacazo = $6,
+    puntos_el_elegido = $7,
+    puntos_gran_final = $8,
+    puntos_total = $9
+WHERE usuario_id = $10 AND partido_id = $11`;
+
+export interface ActualizarPuntajePrediccionArgs {
+    resultado: string;
+    puntosBase: number;
+    puntosEnRacha: number;
+    puntosPartidazo: number;
+    puntosMilagro: number;
+    puntosBatacazo: number;
+    puntosElElegido: number;
+    puntosGranFinal: number;
+    puntosTotal: number;
+    usuarioId: string;
+    partidoId: number;
+}
+
+export async function actualizarPuntajePrediccion(client: Client, args: ActualizarPuntajePrediccionArgs): Promise<void> {
+    await client.query({
+        text: actualizarPuntajePrediccionQuery,
+        values: [args.resultado, args.puntosBase, args.puntosEnRacha, args.puntosPartidazo, args.puntosMilagro, args.puntosBatacazo, args.puntosElElegido, args.puntosGranFinal, args.puntosTotal, args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+}
+
+export const verResultadosRecientesUsuarioQuery = `-- name: VerResultadosRecientesUsuario :many
+SELECT prediccion.resultado
+FROM prediccion
+JOIN partidos ON partidos.id = prediccion.partido_id
+WHERE prediccion.usuario_id = $1
+  AND prediccion.partido_id != $2
+  AND partidos.estado = 'finalizado'
+ORDER BY partidos.fecha_partido DESC
+LIMIT 20`;
+
+export interface VerResultadosRecientesUsuarioArgs {
+    usuarioId: string;
+    partidoId: number;
+}
+
+export interface VerResultadosRecientesUsuarioRow {
+    resultado: string;
+}
+
+export async function verResultadosRecientesUsuario(client: Client, args: VerResultadosRecientesUsuarioArgs): Promise<VerResultadosRecientesUsuarioRow[]> {
+    const result = await client.query({
+        text: verResultadosRecientesUsuarioQuery,
+        values: [args.usuarioId, args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            resultado: row[0]
         };
     });
 }
@@ -396,6 +509,89 @@ export async function verFechasDePrediccionesPorUsuario(client: Client, args: Ve
     return result.rows.map(row => {
         return {
             fecha: row[0]
+        };
+    });
+}
+
+export const verParticipantesSinPrediccionQuery = `-- name: VerParticipantesSinPrediccion :many
+SELECT u.id, u.username
+FROM usuarios u
+WHERE u.participante = TRUE
+  AND NOT EXISTS (
+    SELECT 1 FROM prediccion p
+    WHERE p.usuario_id = u.id AND p.partido_id = $1
+  )
+ORDER BY u.username`;
+
+export interface VerParticipantesSinPrediccionArgs {
+    partidoId: number;
+}
+
+export interface VerParticipantesSinPrediccionRow {
+    id: string;
+    username: string;
+}
+
+export async function verParticipantesSinPrediccion(client: Client, args: VerParticipantesSinPrediccionArgs): Promise<VerParticipantesSinPrediccionRow[]> {
+    const result = await client.query({
+        text: verParticipantesSinPrediccionQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1]
+        };
+    });
+}
+
+export const verPrediccionesResumenPartidoQuery = `-- name: VerPrediccionesResumenPartido :many
+SELECT
+    pe.usuario_id,
+    u.username,
+    pe.goles_local AS prediccion_goles_local,
+    pe.goles_visitante AS prediccion_goles_visitante,
+    COALESCE(pe.puntos_base, 0)::INTEGER AS puntos_base,
+    COALESCE(pe.puntos_en_racha, 0)::INTEGER AS puntos_en_racha,
+    COALESCE(pe.puntos_total, 0)::INTEGER AS puntos_total,
+    u.puntos AS puntos_acumulados
+FROM prediccion pe
+JOIN usuarios u ON u.id = pe.usuario_id
+WHERE pe.partido_id = $1 AND u.participante = TRUE
+ORDER BY COALESCE(pe.puntos_total, 0) DESC, u.username`;
+
+export interface VerPrediccionesResumenPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerPrediccionesResumenPartidoRow {
+    usuarioId: string;
+    username: string;
+    prediccionGolesLocal: number;
+    prediccionGolesVisitante: number;
+    puntosBase: number;
+    puntosEnRacha: number;
+    puntosTotal: number;
+    puntosAcumulados: number;
+}
+
+export async function verPrediccionesResumenPartido(client: Client, args: VerPrediccionesResumenPartidoArgs): Promise<VerPrediccionesResumenPartidoRow[]> {
+    const result = await client.query({
+        text: verPrediccionesResumenPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            usuarioId: row[0],
+            username: row[1],
+            prediccionGolesLocal: row[2],
+            prediccionGolesVisitante: row[3],
+            puntosBase: row[4],
+            puntosEnRacha: row[5],
+            puntosTotal: row[6],
+            puntosAcumulados: row[7]
         };
     });
 }
@@ -473,52 +669,13 @@ export async function verMisPrediccionesPorFecha(client: Client, args: VerMisPre
     });
 }
 
-export const actualizarPuntajePrediccionQuery = `-- name: ActualizarPuntajePrediccion :exec
-UPDATE prediccion SET
-    resultado = $1,
-    puntos_base = $2,
-    puntos_en_racha = $3,
-    puntos_partidazo = $4,
-    puntos_milagro = $5,
-    puntos_batacazo = $6,
-    puntos_el_elegido = $7,
-    puntos_gran_final = $8,
-    puntos_total = $9
-WHERE usuario_id = $10 AND partido_id = $11`;
-
-export interface ActualizarPuntajePrediccionArgs {
-    resultado: string;
-    puntosBase: number;
-    puntosEnRacha: number;
-    puntosPartidazo: number;
-    puntosMilagro: number;
-    puntosBatacazo: number;
-    puntosElElegido: number;
-    puntosGranFinal: number;
-    puntosTotal: number;
-    usuarioId: string;
-    partidoId: number;
-}
-
-export async function actualizarPuntajePrediccion(client: Client, args: ActualizarPuntajePrediccionArgs): Promise<void> {
-    await client.query({
-        text: actualizarPuntajePrediccionQuery,
-        values: [
-            args.resultado, args.puntosBase, args.puntosEnRacha, args.puntosPartidazo,
-            args.puntosMilagro, args.puntosBatacazo, args.puntosElElegido,
-            args.puntosGranFinal, args.puntosTotal, args.usuarioId, args.partidoId
-        ],
-        rowMode: "array"
-    });
-}
-
 export const actualizarPuntosActualesPrediccionQuery = `-- name: ActualizarPuntosActualesPrediccion :exec
 UPDATE prediccion SET
     puntos_actuales = $1
 WHERE usuario_id = $2 AND partido_id = $3`;
 
 export interface ActualizarPuntosActualesPrediccionArgs {
-    puntosActuales: number;
+    puntosActuales: number | null;
     usuarioId: string;
     partidoId: number;
 }
@@ -529,155 +686,6 @@ export async function actualizarPuntosActualesPrediccion(client: Client, args: A
         values: [args.puntosActuales, args.usuarioId, args.partidoId],
         rowMode: "array"
     });
-}
-
-export const verResultadosRecientesUsuarioQuery = `-- name: VerResultadosRecientesUsuario :many
-SELECT prediccion.resultado
-FROM prediccion
-JOIN partidos ON partidos.id = prediccion.partido_id
-WHERE prediccion.usuario_id = $1
-  AND prediccion.partido_id != $2
-  AND partidos.estado = 'finalizado'
-ORDER BY partidos.fecha_partido DESC
-LIMIT 20`;
-
-export interface VerResultadosRecientesUsuarioArgs {
-    usuarioId: string;
-    partidoId: number;
-}
-
-export interface VerResultadosRecientesUsuarioRow {
-    resultado: string;
-}
-
-export async function verResultadosRecientesUsuario(client: Client, args: VerResultadosRecientesUsuarioArgs): Promise<VerResultadosRecientesUsuarioRow[]> {
-    const result = await client.query({
-        text: verResultadosRecientesUsuarioQuery,
-        values: [args.usuarioId, args.partidoId],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            resultado: row[0]
-        };
-    });
-}
-
-export const verPuntajesPartidoQuery = `-- name: VerPuntajesPartido :many
-SELECT
-    p.usuario_id,
-    u.username,
-    p.puntos_total AS puntos_ganados,
-    u.puntos AS puntos_acumulados
-FROM prediccion p
-JOIN usuarios u ON u.id = p.usuario_id
-WHERE p.partido_id = $1 AND p.puntos_total > 0 AND u.participante = TRUE
-ORDER BY p.puntos_total DESC, u.username`;
-
-export interface VerPuntajesPartidoArgs {
-    partidoId: number;
-}
-
-export interface VerPuntajesPartidoRow {
-    usuarioId: string;
-    username: string;
-    puntosGanados: number;
-    puntosAcumulados: number;
-}
-
-export async function verPuntajesPartido(client: Client, args: VerPuntajesPartidoArgs): Promise<VerPuntajesPartidoRow[]> {
-    const result = await client.query({
-        text: verPuntajesPartidoQuery,
-        values: [args.partidoId],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            usuarioId: row[0],
-            username: row[1],
-            puntosGanados: row[2],
-            puntosAcumulados: row[3]
-        };
-    });
-}
-
-export const verParticipantesSinPrediccionQuery = `-- name: VerParticipantesSinPrediccion :many
-SELECT u.id, u.username
-FROM usuarios u
-WHERE u.participante = TRUE
-  AND NOT EXISTS (
-    SELECT 1 FROM prediccion p
-    WHERE p.usuario_id = u.id AND p.partido_id = $1
-  )
-ORDER BY u.username`;
-
-export interface VerParticipantesSinPrediccionArgs {
-    partidoId: number;
-}
-
-export interface VerParticipantesSinPrediccionRow {
-    id: string;
-    username: string;
-}
-
-export async function verParticipantesSinPrediccion(client: Client, args: VerParticipantesSinPrediccionArgs): Promise<VerParticipantesSinPrediccionRow[]> {
-    const result = await client.query({
-        text: verParticipantesSinPrediccionQuery,
-        values: [args.partidoId],
-        rowMode: "array"
-    });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-    }));
-}
-
-export const verPrediccionesResumenPartidoQuery = `-- name: VerPrediccionesResumenPartido :many
-SELECT
-    pe.usuario_id,
-    u.username,
-    pe.goles_local AS prediccion_goles_local,
-    pe.goles_visitante AS prediccion_goles_visitante,
-    COALESCE(pe.puntos_base, 0)::INTEGER AS puntos_base,
-    COALESCE(pe.puntos_en_racha, 0)::INTEGER AS puntos_en_racha,
-    COALESCE(pe.puntos_total, 0)::INTEGER AS puntos_total,
-    u.puntos AS puntos_acumulados
-FROM prediccion pe
-JOIN usuarios u ON u.id = pe.usuario_id
-WHERE pe.partido_id = $1 AND u.participante = TRUE
-ORDER BY COALESCE(pe.puntos_total, 0) DESC, u.username`;
-
-export interface VerPrediccionesResumenPartidoArgs {
-    partidoId: number;
-}
-
-export interface VerPrediccionesResumenPartidoRow {
-    usuarioId: string;
-    username: string;
-    prediccionGolesLocal: number;
-    prediccionGolesVisitante: number;
-    puntosBase: number;
-    puntosEnRacha: number;
-    puntosTotal: number;
-    puntosAcumulados: number;
-}
-
-export async function verPrediccionesResumenPartido(client: Client, args: VerPrediccionesResumenPartidoArgs): Promise<VerPrediccionesResumenPartidoRow[]> {
-    const result = await client.query({
-        text: verPrediccionesResumenPartidoQuery,
-        values: [args.partidoId],
-        rowMode: "array"
-    });
-    return result.rows.map(row => ({
-        usuarioId: row[0],
-        username: row[1],
-        prediccionGolesLocal: row[2],
-        prediccionGolesVisitante: row[3],
-        puntosBase: row[4],
-        puntosEnRacha: row[5],
-        puntosTotal: row[6],
-        puntosAcumulados: row[7],
-    }));
 }
 
 export const verGanadoresHitMasGolesQuery = `-- name: VerGanadoresHitMasGoles :many
@@ -721,15 +729,18 @@ export async function verGanadoresHitMasGoles(client: Client): Promise<VerGanado
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        usuarioId: row[0],
-        username: row[1],
-        totalGoles: row[2],
-        equipoLocalSiglas: row[3],
-        equipoVisitanteSiglas: row[4],
-        equipoLocalBandera: row[5],
-        equipoVisitanteBandera: row[6],
-        golesLocal: row[7],
-        golesVisitante: row[8],
-    }));
+    return result.rows.map(row => {
+        return {
+            usuarioId: row[0],
+            username: row[1],
+            totalGoles: row[2],
+            equipoLocalSiglas: row[3],
+            equipoVisitanteSiglas: row[4],
+            equipoLocalBandera: row[5],
+            equipoVisitanteBandera: row[6],
+            golesLocal: row[7],
+            golesVisitante: row[8]
+        };
+    });
 }
+
