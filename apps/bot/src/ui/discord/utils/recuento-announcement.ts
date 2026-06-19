@@ -119,13 +119,11 @@ export function buildTabla(datos: DatosRecuento): string {
 		const puesto = i + 1;
 		const rachaStr = u.racha > 0 ? ` 🔥${u.racha}` : "";
 		const wr = Number.parseFloat(u.winRate).toFixed(1);
-		const buenIntento =
-			u.partidosApostados - u.partidosGanados - u.partidosPerdidos;
 		const premio = getPremioParaPuesto(puesto, listaPremios);
 		const premioLabel = premio > 0 ? ` · ${premioStr(premio)}` : " · S/0";
 
 		lineas.push(
-			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% WR · ${u.partidosApostados} ap. (${u.partidosGanados}✅/${buenIntento}⚡/${u.partidosPerdidos}❌)${premioLabel}`,
+			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% ⭐ · ${u.partidosApostados} 🎲 (${u.partidosGanados} ✅ / ${u.partidosBuenIntento} ⚡ / ${u.partidosPerdidos} ❌)${premioLabel}`,
 		);
 	});
 
