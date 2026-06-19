@@ -2066,8 +2066,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 				const datos =
 					await appContext.services.recuento.obtenerDatosRecuento("");
-				const mensaje = buildTabla(datos);
-				await sendAlertsChannel(interaction.client, mensaje);
+				for (const chunk of buildTabla(datos)) {
+					await sendAlertsChannel(interaction.client, chunk);
+				}
 				await interaction.editReply({ content: "✅ Tabla enviada." });
 			},
 		},

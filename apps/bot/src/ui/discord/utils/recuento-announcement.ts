@@ -129,12 +129,14 @@ export function buildAlertaEliminacion(
 	return lineas.join("\n");
 }
 
-export function buildTabla(datos: DatosRecuento): string {
+const TABLA_CHUNK_SIZE = 10;
+
+export function buildTabla(datos: DatosRecuento): string[] {
 	const { ranking } = datos;
-	if (ranking.length === 0) return "No hay participantes.";
+	if (ranking.length === 0) return ["No hay participantes."];
 
 	const { listaPremios } = generarPremiosPolla(ranking.length);
-	const lineas: string[] = ["🏆 ***Tabla de Posiciones***", ""];
+	const entradas: string[] = [];
 
 	ranking.forEach((u, i) => {
 		const puesto = i + 1;
@@ -143,12 +145,18 @@ export function buildTabla(datos: DatosRecuento): string {
 		const premio = getPremioParaPuesto(puesto, listaPremios);
 		const premioLabel = premio > 0 ? ` · ${premioStr(premio)}` : " · S/0";
 
-		lineas.push(
+		entradas.push(
 			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% ⭐ · ${u.partidosApostados} 🎲 (${u.partidosGanados} ✅ / ${u.partidosBuenIntento} ⚡ / ${u.partidosPerdidos} ❌)${premioLabel}`,
 		);
 	});
 
-	return lineas.join("\n");
+	const chunks: string[] = [];
+	for (let i = 0; i < entradas.length; i += TABLA_CHUNK_SIZE) {
+		const slice = entradas.slice(i, i + TABLA_CHUNK_SIZE);
+		if (i === 0) slice.unshift("🏆 ***Tabla de Posiciones***", "");
+		chunks.push(slice.join("\n"));
+	}
+	return chunks;
 }
 
 export function buildRecuento(datos: DatosRecuento): string {
