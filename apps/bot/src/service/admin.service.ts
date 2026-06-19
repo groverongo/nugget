@@ -163,7 +163,7 @@ export class AdminService implements IAdminService {
 					await usuariosRepo.actualizarStats({
 						id: pred.usuarioId,
 						partidosGanados: 0,
-						partidosPerdidos: 1,
+						partidosPerdidos: 0,
 						puntos: puntosBase,
 						racha: 0,
 					});
