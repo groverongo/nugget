@@ -108,6 +108,24 @@ function buildAwardsSection(
 	return lineas;
 }
 
+export function buildAlertaEliminacion(
+	equipo: { nombre: string; bandera: string },
+	awards: VerAwardsParaRecuentoRow[],
+	equipoId: number,
+): string {
+	const lineas: string[] = [
+		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
+	];
+
+	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
+	if (afectadas.length > 0 && afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._") {
+		lineas.push("");
+		lineas.push(...afectadas);
+	}
+
+	return lineas.join("\n");
+}
+
 export function buildTabla(datos: DatosRecuento): string {
 	const { ranking } = datos;
 	if (ranking.length === 0) return "No hay participantes.";

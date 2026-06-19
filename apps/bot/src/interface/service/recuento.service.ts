@@ -6,6 +6,8 @@ import type {
 	VerRankingWinRateRow,
 } from "@sqlc/recuento_sql";
 
+export type { VerAwardsParaRecuentoRow, VerEquiposEliminadosRow };
+
 export interface HitMasGoles {
 	totalGoles: number;
 	partidos: string[];
@@ -31,6 +33,8 @@ export interface IRecuentoService {
 		titulo: string,
 		totalPartidos?: number,
 	): Promise<DatosRecuento>;
+	verEquiposEliminados(): Promise<VerEquiposEliminadosRow[]>;
+	verAwardsParaRecuento(): Promise<VerAwardsParaRecuentoRow[]>;
 	marcarEquipoEliminado(equipoId: number): Promise<void>;
 	marcarEquipoNoEliminado(equipoId: number): Promise<void>;
 }

@@ -40,7 +40,7 @@ import {
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
 } from "../utils/match-announcement";
-import { buildRecuento, buildTabla } from "../utils/recuento-announcement";
+import { buildAlertaEliminacion, buildRecuento, buildTabla } from "../utils/recuento-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 export const POLLERO_ROLE_ID = "1513773724074250350";
@@ -2106,6 +2106,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const eliminado = interaction.options.getBoolean("eliminado", true);
 				if (eliminado) {
 					await appContext.services.recuento.marcarEquipoEliminado(equipoId);
+					const [eliminados, awards] = await Promise.all([
+						appContext.services.recuento.verEquiposEliminados(),
+						appContext.services.recuento.verAwardsParaRecuento(),
+					]);
+					const equipo = eliminados.find((e) => e.id === equipoId);
+					if (equipo) {
+						await sendAlertsChannel(
+							interaction.client,
+							buildAlertaEliminacion(equipo, awards, equipoId),
+						);
+					}
 				} else {
 					await appContext.services.recuento.marcarEquipoNoEliminado(equipoId);
 				}

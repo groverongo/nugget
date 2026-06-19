@@ -73,6 +73,14 @@ export class RecuentoService implements IRecuentoService {
 		};
 	}
 
+	verEquiposEliminados() {
+		return this.recuentoRepo.verEquiposEliminados();
+	}
+
+	verAwardsParaRecuento() {
+		return this.recuentoRepo.verAwardsParaRecuento();
+	}
+
 	marcarEquipoEliminado(equipoId: number): Promise<void> {
 		return this.recuentoRepo.marcarEquipoEliminado({ id: equipoId });
 	}
