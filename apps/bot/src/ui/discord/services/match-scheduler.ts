@@ -304,7 +304,7 @@ export class MatchScheduler {
 		if (timbasCanceladas.length === 0) return;
 
 		const lineas = [
-			`🚫 **Timba Times canceladas** (${partido}) — nadie las aceptó a tiempo`,
+			`🚫 _**Timba Times canceladas** (${partido}):_`,
 			...timbasCanceladas.map(
 				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
