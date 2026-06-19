@@ -139,11 +139,11 @@ async function buildResumenDia(
 		);
 
 		const extras: string[] = [];
-		if (partido.extraPartidazo) extras.push("💥 **Partidazo**");
-		if (partido.extraMilagro) extras.push("✝️ **Milagro**");
-		if (partido.extraBatacazo) extras.push("🎯 **Batacazo**");
-		if (partido.extraElElegido) extras.push("👑 **El Elegido**");
-		if (extras.length > 0) lineas.push(`_${extras.join(" · ")}_`);
+		if (partido.extraPartidazo) extras.push("**Partidazo 💥**");
+		if (partido.extraMilagro) extras.push("**Milagro ✝️**");
+		if (partido.extraBatacazo) extras.push("**Batacazo 🐴**");
+		if (partido.extraElElegido) extras.push("**El Elegido 👑**");
+		if (extras.length > 0) lineas.push(extras.join(" · "));
 
 		const [predicciones, timbas] = await Promise.all([
 			services.predicciones.verPrediccionesResumenPartido({

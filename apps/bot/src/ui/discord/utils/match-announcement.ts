@@ -137,7 +137,7 @@ export function buildAlertaFinPartido(
 	if (info.extraMilagro) extras.push("**Milagro ✝️**");
 	if (info.extraBatacazo) extras.push("**Batacazo 🐴**");
 	if (info.extraElElegido) extras.push("**El Elegido 👑**");
-	if (extras.length > 0) lineas.push(extras.join(", "));
+	if (extras.length > 0) lineas.push(extras.join(" · "));
 
 	if (!hayGanadores) {
 		lineas.push(`⏹️ ***¡No Winner!** Nadie atinó el resultado.*`);
