@@ -114,7 +114,13 @@ async function buildResumenDia(
 	date: string,
 	services: Services,
 ): Promise<string> {
-	const partidos = await services.partidos.verPartidosPorFecha({ date });
+	const [partidos, datosRecuento] = await Promise.all([
+		services.partidos.verPartidosPorFecha({ date }),
+		services.recuento.obtenerDatosRecuento(""),
+	]);
+	const puntosActuales = new Map(
+		datosRecuento.ranking.map((u) => [u.id, u.puntos]),
+	);
 	const finalizados = partidos.filter((p) => p.estado === "finalizado");
 
 	const lineas: string[] = [
@@ -133,11 +139,11 @@ async function buildResumenDia(
 		);
 
 		const extras: string[] = [];
-		if (partido.extraPartidazo) extras.push("💥 Partidazo");
-		if (partido.extraMilagro) extras.push("✝️ Milagro");
-		if (partido.extraBatacazo) extras.push("🎯 Batacazo");
-		if (partido.extraElElegido) extras.push("👑 El Elegido");
-		if (extras.length > 0) lineas.push(`_${extras.join(" · ")}_`);
+		if (partido.extraPartidazo) extras.push("**Partidazo 💥**");
+		if (partido.extraMilagro) extras.push("**Milagro ✝️**");
+		if (partido.extraBatacazo) extras.push("**Batacazo 🐴**");
+		if (partido.extraElElegido) extras.push("**El Elegido 👑**");
+		if (extras.length > 0) lineas.push(extras.join(" · "));
 
 		const [predicciones, timbas] = await Promise.all([
 			services.predicciones.verPrediccionesResumenPartido({
@@ -210,14 +216,20 @@ async function buildResumenDia(
 				if (existingGanador) {
 					existingGanador.hoy += t.puntos;
 				} else {
-					ganadores.set(t.ganadorId, { hoy: t.puntos, total: 0 });
+					ganadores.set(t.ganadorId, {
+						hoy: t.puntos,
+						total: puntosActuales.get(t.ganadorId) ?? 0,
+					});
 				}
 
 				const existingPerdedor = ganadores.get(perdedorId);
 				if (existingPerdedor) {
 					existingPerdedor.hoy -= t.puntos;
 				} else {
-					ganadores.set(perdedorId, { hoy: -t.puntos, total: 0 });
+					ganadores.set(perdedorId, {
+						hoy: -t.puntos,
+						total: puntosActuales.get(perdedorId) ?? 0,
+					});
 				}
 			}
 		}

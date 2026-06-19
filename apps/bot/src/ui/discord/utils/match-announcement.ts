@@ -109,15 +109,21 @@ export function buildAlertaFinPartido(
 
 	const ganadores: string[] = [];
 
+	const resultadoReal = gL > gV ? "local" : gL < gV ? "visitante" : "empate";
+
 	for (const [key, menciones] of grouped) {
 		const [pL, pV] = key.split("-").map(Number);
 		const esExacto = pL === gL && pV === gV;
+		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
+		const esBuenIntento = !esExacto && resultadoPred === resultadoReal;
 		let emoji: string;
 		if (!hayGanadores) {
 			emoji = "⏹️";
 		} else if (esExacto) {
 			emoji = "✅";
 			ganadores.push(...menciones);
+		} else if (esBuenIntento) {
+			emoji = "⚡";
 		} else {
 			emoji = "❌";
 		}
@@ -131,7 +137,7 @@ export function buildAlertaFinPartido(
 	if (info.extraMilagro) extras.push("**Milagro ✝️**");
 	if (info.extraBatacazo) extras.push("**Batacazo 🐴**");
 	if (info.extraElElegido) extras.push("**El Elegido 👑**");
-	if (extras.length > 0) lineas.push(extras.join(", "));
+	if (extras.length > 0) lineas.push(extras.join(" · "));
 
 	if (!hayGanadores) {
 		lineas.push(`⏹️ ***¡No Winner!** Nadie atinó el resultado.*`);

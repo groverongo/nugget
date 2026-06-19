@@ -759,12 +759,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							timbas,
 							partidoId,
 						);
-						await interaction.followUp({
-							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-							components: timbaResolucionComponents as any,
-							flags: MessageFlags.IsComponentsV2,
-							ephemeral: true,
-						});
+						await Promise.all([
+							sendAlertsChannel(
+								interaction.client,
+								`👑 _Resolución de **Timba Times**:_`,
+							),
+							interaction.followUp({
+								// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+								components: timbaResolucionComponents as any,
+								flags: MessageFlags.IsComponentsV2,
+								ephemeral: true,
+							}),
+						]);
 					}
 				} catch (error) {
 					await interaction.editReply({
@@ -2120,8 +2126,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 				const datos =
 					await appContext.services.recuento.obtenerDatosRecuento("");
-				const mensaje = buildTabla(datos);
-				await sendAlertsChannel(interaction.client, mensaje);
+				for (const chunk of buildTabla(datos)) {
+					await sendAlertsChannel(interaction.client, chunk);
+				}
 				await interaction.editReply({ content: "✅ Tabla enviada." });
 			},
 		},

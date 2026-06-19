@@ -206,8 +206,8 @@ export async function handlePrediccionModalSubmitInteraction(
 		await sendAnnouncementChannel(
 			interaction.client,
 			resultado === "created"
-				? `_🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
-				: `_✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+				? `_🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
+				: `_✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
 		);
 	} catch (error) {
 		logger.error(
@@ -480,8 +480,8 @@ export async function handlePrediccionAdminModalSubmitInteraction(
 		await sendAnnouncementChannel(
 			interaction.client,
 			resultado === "created"
-				? `_🎯 ¡<@${usuarioId}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
-				: `_✏️ ¡<@${usuarioId}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+				? `_🎯 ¡<@${usuarioId}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
+				: `_✏️ ¡<@${usuarioId}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -1040,10 +1040,7 @@ export async function handleTimbaButtonInteraction(
 
 		await sendAlertsChannel(
 			interaction.client,
-			[
-				`_**Resolución de Timba Times** (${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera})_`,
-				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
-			].join("\n"),
+			`* <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 		);
 
 		const remaining =
@@ -1057,7 +1054,6 @@ export async function handleTimbaButtonInteraction(
 			});
 		} else {
 			await interaction.editReply({
-				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				components: [
 					{
 						type: 17,
@@ -1068,6 +1064,7 @@ export async function handleTimbaButtonInteraction(
 							},
 						],
 					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				] as any,
 				flags: MessageFlags.IsComponentsV2,
 			});
