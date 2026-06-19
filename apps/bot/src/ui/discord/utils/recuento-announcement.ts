@@ -118,7 +118,10 @@ export function buildAlertaEliminacion(
 	];
 
 	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
-	if (afectadas.length > 0 && afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._") {
+	if (
+		afectadas.length > 0 &&
+		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
+	) {
 		lineas.push("");
 		lineas.push(...afectadas);
 	}

@@ -3,7 +3,6 @@ import type {
 	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorPartidoRow,
 } from "@sqlc/predicciones_sql";
-import type { VerTimbasCerradasPorPartidoRow } from "@sqlc/timba_sql";
 import { logger } from "@support/logger";
 import { AttachmentBuilder, type Client } from "discord.js";
 import type { AppContext } from "../../../app";

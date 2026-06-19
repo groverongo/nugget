@@ -40,7 +40,11 @@ import {
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
 } from "../utils/match-announcement";
-import { buildAlertaEliminacion, buildRecuento, buildTabla } from "../utils/recuento-announcement";
+import {
+	buildAlertaEliminacion,
+	buildRecuento,
+	buildTabla,
+} from "../utils/recuento-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 export const POLLERO_ROLE_ID = "1513773724074250350";
