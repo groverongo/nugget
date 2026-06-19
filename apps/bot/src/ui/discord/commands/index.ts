@@ -743,12 +743,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							timbas,
 							partidoId,
 						);
-						await interaction.followUp({
-							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-							components: timbaResolucionComponents as any,
-							flags: MessageFlags.IsComponentsV2,
-							ephemeral: true,
-						});
+						await Promise.all([
+							sendAlertsChannel(
+								interaction.client,
+								`👑 _Resolución de **Timba Times**:_`,
+							),
+							interaction.followUp({
+								// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+								components: timbaResolucionComponents as any,
+								flags: MessageFlags.IsComponentsV2,
+								ephemeral: true,
+							}),
+						]);
 					}
 				} catch (error) {
 					await interaction.editReply({

@@ -1040,10 +1040,7 @@ export async function handleTimbaButtonInteraction(
 
 		await sendAlertsChannel(
 			interaction.client,
-			[
-				`_**Resolución de Timba Times** (${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera})_`,
-				`👑 <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
-			].join("\n"),
+			`* <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 		);
 
 		const remaining =
