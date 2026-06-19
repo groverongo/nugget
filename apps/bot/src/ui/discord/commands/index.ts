@@ -1916,10 +1916,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							.includes(q),
 					)
 					.slice(0, 25)
-					.map((t) => ({
-						name: `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`,
-						value: t.id,
-					}));
+					.map((t) => {
+						const label = `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`;
+						return {
+							name: label.length > 100 ? label.slice(0, 97) + "..." : label,
+							value: t.id,
+						};
+					});
 				await interaction.respond(opciones);
 			},
 			handle: async (interaction, appContext) => {

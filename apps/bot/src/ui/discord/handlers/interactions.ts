@@ -546,6 +546,9 @@ export async function handleAutocompleteInteraction(
 			{ err: error, commandName: interaction.commandName },
 			"Error al manejar autocomplete de Discord",
 		);
+		try {
+			await interaction.respond([]);
+		} catch {}
 	}
 }
 
