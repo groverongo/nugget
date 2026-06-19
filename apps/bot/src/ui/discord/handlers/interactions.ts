@@ -1057,7 +1057,6 @@ export async function handleTimbaButtonInteraction(
 			});
 		} else {
 			await interaction.editReply({
-				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				components: [
 					{
 						type: 17,
@@ -1068,6 +1067,7 @@ export async function handleTimbaButtonInteraction(
 							},
 						],
 					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				] as any,
 				flags: MessageFlags.IsComponentsV2,
 			});
