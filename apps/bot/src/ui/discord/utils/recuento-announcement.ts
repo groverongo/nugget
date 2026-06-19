@@ -140,20 +140,21 @@ export function buildTabla(datos: DatosRecuento): string[] {
 
 	ranking.forEach((u, i) => {
 		const puesto = i + 1;
+		const puestoStr = puesto < 10 ? `#${puesto} ` : `#${puesto}`;
 		const rachaStr = u.racha > 0 ? ` 🔥${u.racha}` : "";
 		const wr = Number.parseFloat(u.winRate).toFixed(1);
 		const premio = getPremioParaPuesto(puesto, listaPremios);
 		const premioLabel = premio > 0 ? ` · ${premioStr(premio)}` : " · S/0";
 
 		entradas.push(
-			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% ⭐ · ${u.partidosApostados} 🎲 (${u.partidosGanados} ✅ / ${u.partidosBuenIntento} ⚡ / ${u.partidosPerdidos} ❌)${premioLabel}`,
+			`**${puestoStr}** <@${u.id}>\t**${u.puntos} 💠**${rachaStr} · ${wr}% ⭐ · ${u.partidosApostados} 🎲 (${u.partidosGanados} ✅ / ${u.partidosBuenIntento} ⚡ / ${u.partidosPerdidos} ❌)${premioLabel}`,
 		);
 	});
 
 	const chunks: string[] = [];
 	for (let i = 0; i < entradas.length; i += TABLA_CHUNK_SIZE) {
 		const slice = entradas.slice(i, i + TABLA_CHUNK_SIZE);
-		if (i === 0) slice.unshift("🏆 ***Tabla de Posiciones***", "");
+		if (i === 0) slice.unshift("🏆 ***Tabla de Posiciones***");
 		chunks.push(slice.join("\n"));
 	}
 	return chunks;
