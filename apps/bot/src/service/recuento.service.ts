@@ -1,8 +1,8 @@
-import type { VerGanadoresHitMasGolesRow } from "@sqlc/predicciones_sql";
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { IRecuentoRepository } from "../interface/repository/recuento.repository";
 import type {
 	DatosRecuento,
+	HitMasGoles,
 	IRecuentoService,
 } from "../interface/service/recuento.service";
 
@@ -12,7 +12,10 @@ export class RecuentoService implements IRecuentoService {
 		private readonly prediccionesRepo: IPrediccionesRepository,
 	) {}
 
-	async obtenerDatosRecuento(titulo: string): Promise<DatosRecuento> {
+	async obtenerDatosRecuento(
+		titulo: string,
+		totalPartidos?: number,
+	): Promise<DatosRecuento> {
 		const [
 			stats,
 			winRate,
@@ -33,17 +36,32 @@ export class RecuentoService implements IRecuentoService {
 			this.prediccionesRepo.verGanadoresHitMasGoles(),
 		]);
 
-		const hitMasGoles = hitRaw.map((r: VerGanadoresHitMasGolesRow) => ({
-			usuarioId: r.usuarioId,
-			username: r.username,
-			totalGoles: r.totalGoles,
-			partido: `${r.equipoLocalBandera} ${r.equipoLocalSiglas} ${r.golesLocal}-${r.golesVisitante} ${r.equipoVisitanteSiglas} ${r.equipoVisitanteBandera}`,
-		}));
+		let hitMasGoles: HitMasGoles | null = null;
+		if (hitRaw.length > 0) {
+			const totalGoles = hitRaw[0].totalGoles;
+			const seenUsuarios = new Set<string>();
+			const seenPartidos = new Set<string>();
+			const usuarios: { usuarioId: string }[] = [];
+			const partidos: string[] = [];
+
+			for (const r of hitRaw) {
+				const partidoStr = `${r.equipoLocalBandera} ${r.equipoLocalSiglas} ${r.golesLocal}-${r.golesVisitante} ${r.equipoVisitanteSiglas} ${r.equipoVisitanteBandera}`;
+				if (!seenPartidos.has(partidoStr)) {
+					seenPartidos.add(partidoStr);
+					partidos.push(partidoStr);
+				}
+				if (!seenUsuarios.has(r.usuarioId)) {
+					seenUsuarios.add(r.usuarioId);
+					usuarios.push({ usuarioId: r.usuarioId });
+				}
+			}
+			hitMasGoles = { totalGoles, partidos, usuarios };
+		}
 
 		return {
 			titulo,
 			partidosFinalizados: stats?.partidosFinalizados ?? 0,
-			partidosTotal: stats?.partidosTotal ?? 0,
+			partidosTotal: totalPartidos ?? stats?.partidosTotal ?? 0,
 			exactos: winRate?.exactos ?? 0,
 			totalFinalizados: winRate?.totalFinalizados ?? 0,
 			ranking,
@@ -53,6 +71,14 @@ export class RecuentoService implements IRecuentoService {
 			awards,
 			hitMasGoles,
 		};
+	}
+
+	verEquiposEliminados() {
+		return this.recuentoRepo.verEquiposEliminados();
+	}
+
+	verAwardsParaRecuento() {
+		return this.recuentoRepo.verAwardsParaRecuento();
 	}
 
 	marcarEquipoEliminado(equipoId: number): Promise<void> {

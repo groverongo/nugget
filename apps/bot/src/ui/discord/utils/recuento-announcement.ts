@@ -32,7 +32,7 @@ function buildAwardsSection(
 	if (awards.length === 0) return [];
 
 	if (eliminadosIds.size === 0) {
-		return ["🟢 _Todas las awards siguen abiertas._"];
+		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
 
 	type AwardKey = {
@@ -102,10 +102,31 @@ function buildAwardsSection(
 	}
 
 	if (!hayMuertas) {
-		return ["🟢 _Todas las awards siguen abiertas._"];
+		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
 
 	return lineas;
+}
+
+export function buildAlertaEliminacion(
+	equipo: { nombre: string; bandera: string },
+	awards: VerAwardsParaRecuentoRow[],
+	equipoId: number,
+): string {
+	const lineas: string[] = [
+		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
+	];
+
+	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
+	if (
+		afectadas.length > 0 &&
+		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
+	) {
+		lineas.push("");
+		lineas.push(...afectadas);
+	}
+
+	return lineas.join("\n");
 }
 
 export function buildTabla(datos: DatosRecuento): string {
@@ -119,13 +140,11 @@ export function buildTabla(datos: DatosRecuento): string {
 		const puesto = i + 1;
 		const rachaStr = u.racha > 0 ? ` 🔥${u.racha}` : "";
 		const wr = Number.parseFloat(u.winRate).toFixed(1);
-		const buenIntento =
-			u.partidosApostados - u.partidosGanados - u.partidosPerdidos;
 		const premio = getPremioParaPuesto(puesto, listaPremios);
 		const premioLabel = premio > 0 ? ` · ${premioStr(premio)}` : " · S/0";
 
 		lineas.push(
-			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% WR · ${u.partidosApostados} ap. (${u.partidosGanados}✅/${buenIntento}⚡/${u.partidosPerdidos}❌)${premioLabel}`,
+			`**#${puesto}** <@${u.id}> — **${u.puntos} 💠**${rachaStr} · ${wr}% ⭐ · ${u.partidosApostados} 🎲 (${u.partidosGanados} ✅ / ${u.partidosBuenIntento} ⚡ / ${u.partidosPerdidos} ❌)${premioLabel}`,
 		);
 	});
 
@@ -159,14 +178,15 @@ export function buildRecuento(datos: DatosRecuento): string {
 	const eliminadosIds = new Set(eliminados.map((e) => e.id));
 
 	const lineas: string[] = [
-		`⚽ _***${titulo}***_`,
+		`⚽ 🏆  ***RECUENTO: POLLITA FWC 2026***`,
+		`_***${titulo}***_`,
 		`_***${partidosFinalizados}/${partidosTotal}*** partidos disputados_ (${pct})`,
 		`_***Win Rate grupal:*** ${exactos}/${totalFinalizados} atinados_ (${wrPct})`,
 	];
 
 	// Eliminados
 	if (eliminados.length === 0) {
-		lineas.push("_Ningún equipo eliminado aún._");
+		lineas.push("_🙅 Ningún equipo eliminado aún._");
 	} else {
 		const equiposStr = eliminados
 			.map((e) => `${e.siglas} ${e.bandera}`)
@@ -198,7 +218,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 		top.forEach((u, i) => {
 			const puesto = i + 1;
 			const premio = getPremioParaPuesto(puesto, listaPremios);
-			const premioLabel = premio > 0 ? ` _(${premioStr(premio)})_` : "";
+			const premioLabel = premio > 0 ? ` _(+${premioStr(premio)})_` : "";
 			lineas.push(`${puesto}. <@${u.id}> (${u.puntos})${premioLabel}`);
 		});
 	}
@@ -206,7 +226,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 	// Win Rate ranking — top 3 positions (including ties)
 	if (rankingWinRate.length > 0) {
 		lineas.push("");
-		lineas.push("🏅 _Bonus récords:_");
+		lineas.push("🏅 _**Bonus Récords:**_");
 		lineas.push("⭐ _Win Rates:_");
 		lineas.push("_Otorga ***+5 💠*** al final de la Polla_");
 
@@ -235,14 +255,18 @@ export function buildRecuento(datos: DatosRecuento): string {
 		lineas.push(`${ganadores.join("/")} (${mejorRacha})`);
 	}
 
-	// Hit más goles — top 1 (including ties)
-	if (hitMasGoles.length > 0) {
+	// Hit más goles — top 1 (including ties), deduplicated users
+	if (hitMasGoles !== null) {
 		lineas.push("");
-		lineas.push("⚽ _Hit de más goles_");
+		lineas.push("⚽ _Hit de más goles:_");
 		lineas.push("_Otorgan ***+2 💠*** al final de la Polla_");
-		const { totalGoles, partido } = hitMasGoles[0];
-		const ganadores = hitMasGoles.map((h) => `<@${h.usuarioId}>`).join("/");
-		lineas.push(`${ganadores} — ${totalGoles} goles (${partido})`);
+		const ganadores = hitMasGoles.usuarios
+			.map((u) => `<@${u.usuarioId}>`)
+			.join("/");
+		const partidosStr = hitMasGoles.partidos.join(", ");
+		lineas.push(
+			`${ganadores} — ${hitMasGoles.totalGoles} goles (${partidosStr})`,
+		);
 	}
 
 	return lineas.join("\n");

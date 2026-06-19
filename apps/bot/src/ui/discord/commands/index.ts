@@ -42,7 +42,11 @@ import {
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
 } from "../utils/match-announcement";
-import { buildRecuento, buildTabla } from "../utils/recuento-announcement";
+import {
+	buildAlertaEliminacion,
+	buildRecuento,
+	buildTabla,
+} from "../utils/recuento-announcement";
 import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 export const POLLERO_ROLE_ID = "1513773724074250350";
@@ -593,8 +597,7 @@ const anularTimbaCommand = new SlashCommandBuilder()
 
 const verTimbasCommand = new SlashCommandBuilder()
 	.setName("ver-timbas")
-	.setDescription("[ADMIN] Ver todas las timba times activas de un partido")
-	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.setDescription("Ver todas las timba times activas de un partido")
 	.addIntegerOption((option) =>
 		option
 			.setName("partido_id")
@@ -619,6 +622,15 @@ const recuentoCommand = new SlashCommandBuilder()
 			.setName("titulo")
 			.setDescription("Título del recuento (ej: Jornada 1 - Fase de Grupos)")
 			.setRequired(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("total_partidos")
+			.setDescription(
+				"Total de partidos del torneo (ej: 104). Por defecto: los registrados en BD.",
+			)
+			.setRequired(false)
+			.setMinValue(1),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -2029,7 +2041,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				const partidoId = interaction.options.getInteger("partido_id", true);
 
-				await interaction.deferReply({ ephemeral: true });
+				await interaction.deferReply();
 
 				const timbas =
 					await appContext.services.timba.verTimbasPorPartido(partidoId);
@@ -2121,8 +2133,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				await interaction.deferReply({ ephemeral: true });
 				const titulo = interaction.options.getString("titulo", true);
-				const datos =
-					await appContext.services.recuento.obtenerDatosRecuento(titulo);
+				const totalPartidos =
+					interaction.options.getInteger("total_partidos") ?? undefined;
+				const datos = await appContext.services.recuento.obtenerDatosRecuento(
+					titulo,
+					totalPartidos,
+				);
 				const mensaje = buildRecuento(datos);
 				await sendAlertsChannel(interaction.client, mensaje);
 				await interaction.editReply({ content: "✅ Recuento enviado." });
@@ -2148,6 +2164,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const eliminado = interaction.options.getBoolean("eliminado", true);
 				if (eliminado) {
 					await appContext.services.recuento.marcarEquipoEliminado(equipoId);
+					const [eliminados, awards] = await Promise.all([
+						appContext.services.recuento.verEquiposEliminados(),
+						appContext.services.recuento.verAwardsParaRecuento(),
+					]);
+					const equipo = eliminados.find((e) => e.id === equipoId);
+					if (equipo) {
+						await sendAlertsChannel(
+							interaction.client,
+							buildAlertaEliminacion(equipo, awards, equipoId),
+						);
+					}
 				} else {
 					await appContext.services.recuento.marcarEquipoNoEliminado(equipoId);
 				}
