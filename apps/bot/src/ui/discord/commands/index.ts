@@ -577,8 +577,7 @@ const anularTimbaCommand = new SlashCommandBuilder()
 
 const verTimbasCommand = new SlashCommandBuilder()
 	.setName("ver-timbas")
-	.setDescription("[ADMIN] Ver todas las timba times activas de un partido")
-	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.setDescription("Ver todas las timba times activas de un partido")
 	.addIntegerOption((option) =>
 		option
 			.setName("partido_id")
@@ -1984,7 +1983,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				const partidoId = interaction.options.getInteger("partido_id", true);
 
-				await interaction.deferReply({ ephemeral: true });
+				await interaction.deferReply();
 
 				const timbas =
 					await appContext.services.timba.verTimbasPorPartido(partidoId);
