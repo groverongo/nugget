@@ -115,7 +115,9 @@ export function buildAlertaFinPartido(
 		const [pL, pV] = key.split("-").map(Number);
 		const esExacto = pL === gL && pV === gV;
 		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
-		const esBuenIntento = !esExacto && resultadoPred === resultadoReal;
+		const mismaDiferencia = pL - pV === gL - gV;
+		const esBuenIntento =
+			!esExacto && resultadoPred === resultadoReal && mismaDiferencia;
 		let emoji: string;
 		if (!hayGanadores) {
 			emoji = "⏹️";
