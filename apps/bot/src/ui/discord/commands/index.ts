@@ -1996,7 +1996,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				const partidoId = interaction.options.getInteger("partido_id", true);
 
-				await interaction.deferReply();
+				await interaction.deferReply({ ephemeral: true });
 
 				const timbas =
 					await appContext.services.timba.verTimbasPorPartido(partidoId);
@@ -2011,7 +2011,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.editReply({
 					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 					components: buildVerTimbasComponent(timbas) as any,
-					flags: MessageFlags.IsComponentsV2,
+					flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
 				});
 			},
 		},
