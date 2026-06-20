@@ -3,6 +3,7 @@ import type {
 	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
+	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
@@ -53,6 +54,17 @@ export interface CancelarTimbaInput {
 	jugador1Id: string;
 }
 
+export type CancelarTimbaResult = Pick<
+	VerTimbaRow,
+	| "jugador1Id"
+	| "equipoLocalNombre"
+	| "equipoLocalBandera"
+	| "equipoLocalSiglas"
+	| "equipoVisitanteNombre"
+	| "equipoVisitanteBandera"
+	| "equipoVisitanteSiglas"
+>;
+
 export interface ResolverTimbaInput {
 	timbaId: number;
 	ganadorJugador: "j1" | "j2";
@@ -80,7 +92,7 @@ export interface ITimbaService {
 
 	aceptarTimba(args: AceptarTimbaInput): Promise<AceptarTimbaResult>;
 
-	cancelarTimba(args: CancelarTimbaInput): Promise<void>;
+	cancelarTimba(args: CancelarTimbaInput): Promise<CancelarTimbaResult>;
 
 	anularTimba(timbaId: number): Promise<void>;
 

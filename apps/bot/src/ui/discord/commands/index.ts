@@ -1933,13 +1933,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					await appContext.services.timba.cancelarTimba({
+					const cancelada = await appContext.services.timba.cancelarTimba({
 						timbaId,
 						jugador1Id: interaction.user.id,
 					});
 					await interaction.editReply({
 						content: `✅ Timba #${timbaId} cancelada.`,
 					});
+					const partido = `${cancelada.equipoLocalNombre} ${cancelada.equipoLocalBandera} vs. ${cancelada.equipoVisitanteNombre} ${cancelada.equipoVisitanteBandera}`;
+					await sendAnnouncementChannel(
+						interaction.client,
+						`🚫 _¡<@${cancelada.jugador1Id}> canceló una timba para **${partido}**!_`,
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
