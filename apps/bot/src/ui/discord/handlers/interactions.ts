@@ -546,6 +546,9 @@ export async function handleAutocompleteInteraction(
 			{ err: error, commandName: interaction.commandName },
 			"Error al manejar autocomplete de Discord",
 		);
+		try {
+			await interaction.respond([]);
+		} catch {}
 	}
 }
 
@@ -857,6 +860,11 @@ export async function handleTimbaModalSubmitInteraction(
 			content: `✅ Timba creada. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
 		});
 
+		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
+		await sendAnnouncementChannel(
+			interaction.client,
+			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
+		);
 		await sendComponentsToAnnouncementChannel(
 			interaction.client,
 			buildTimbaCreacionComponent(result),
@@ -952,6 +960,11 @@ export async function handleTimbaAdminModalSubmitInteraction(
 			content: `✅ Timba creada para <@${usuarioId}>. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
 		});
 
+		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
+		await sendAnnouncementChannel(
+			interaction.client,
+			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
+		);
 		await sendComponentsToAnnouncementChannel(
 			interaction.client,
 			buildTimbaCreacionComponent(result),

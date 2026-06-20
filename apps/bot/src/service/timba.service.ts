@@ -14,6 +14,7 @@ import type {
 	AceptarTimbaInput,
 	AceptarTimbaResult,
 	CancelarTimbaInput,
+	CancelarTimbaResult,
 	CrearTimbaInput,
 	CrearTimbaResult,
 	ITimbaService,
@@ -174,7 +175,7 @@ export class TimbaService implements ITimbaService {
 		};
 	}
 
-	async cancelarTimba(args: CancelarTimbaInput): Promise<void> {
+	async cancelarTimba(args: CancelarTimbaInput): Promise<CancelarTimbaResult> {
 		const timba = await this.timbaRepo.verTimba(args.timbaId);
 
 		if (!timba) throw new Error("Timba no encontrada.");
@@ -188,6 +189,16 @@ export class TimbaService implements ITimbaService {
 		}
 
 		await this.timbaRepo.cancelar({ id: args.timbaId });
+
+		return {
+			jugador1Id: timba.jugador1Id,
+			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoLocalSiglas: timba.equipoLocalSiglas,
+			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
+		};
 	}
 
 	async anularTimba(timbaId: number): Promise<void> {

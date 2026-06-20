@@ -1970,10 +1970,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							.includes(q),
 					)
 					.slice(0, 25)
-					.map((t) => ({
-						name: `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`,
-						value: t.id,
-					}));
+					.map((t) => {
+						const label = `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`;
+						return {
+							name: label.length > 100 ? label.slice(0, 97) + "..." : label,
+							value: t.id,
+						};
+					});
 				await interaction.respond(opciones);
 			},
 			handle: async (interaction, appContext) => {
@@ -1984,13 +1987,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					await appContext.services.timba.cancelarTimba({
+					const cancelada = await appContext.services.timba.cancelarTimba({
 						timbaId,
 						jugador1Id: interaction.user.id,
 					});
 					await interaction.editReply({
 						content: `✅ Timba #${timbaId} cancelada.`,
 					});
+					const partido = `${cancelada.equipoLocalNombre} ${cancelada.equipoLocalBandera} vs. ${cancelada.equipoVisitanteNombre} ${cancelada.equipoVisitanteBandera}`;
+					await sendAnnouncementChannel(
+						interaction.client,
+						`🚫 _¡<@${cancelada.jugador1Id}> canceló una timba para **${partido}**!_`,
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2047,7 +2055,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			handle: async (interaction, appContext) => {
 				const partidoId = interaction.options.getInteger("partido_id", true);
 
-				await interaction.deferReply();
+				await interaction.deferReply({ ephemeral: true });
 
 				const timbas =
 					await appContext.services.timba.verTimbasPorPartido(partidoId);
@@ -2062,7 +2070,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.editReply({
 					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 					components: buildVerTimbasComponent(timbas) as any,
-					flags: MessageFlags.IsComponentsV2,
+					flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
 				});
 			},
 		},
