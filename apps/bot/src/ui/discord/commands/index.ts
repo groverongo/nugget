@@ -1,5 +1,6 @@
 import { config } from "@support/config";
 import {
+	AttachmentBuilder,
 	Collection,
 	InteractionContextType,
 	MessageFlags,
@@ -33,6 +34,7 @@ import {
 	enviarAlertaInicioPartidoSoloMensaje,
 	enviarEstadisticasPrePartido,
 } from "../services/match-scheduler";
+import { generarEvolucionPredicciones } from "../services/utility-client";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
@@ -293,6 +295,20 @@ const sayCommand = new SlashCommandBuilder()
 const misPrediccionesCommand = new SlashCommandBuilder()
 	.setName("mis-predicciones")
 	.setDescription("Muestra tus predicciones filtradas por fecha")
+	.setContexts(InteractionContextType.Guild);
+
+const miEvolucionCommand = new SlashCommandBuilder()
+	.setName("mi-evolucion")
+	.setDescription(
+		"Ver la evolución acumulada de tus puntos a lo largo del torneo",
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("pagina")
+			.setDescription("Número de página (por defecto: 1)")
+			.setRequired(false)
+			.setMinValue(1),
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const misTimbasCommand = new SlashCommandBuilder()
@@ -1023,6 +1039,44 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						fechas,
 					),
 					flags: MessageFlags.IsComponentsV2,
+				});
+			},
+		},
+	],
+	[
+		"mi-evolucion",
+		{
+			definition: miEvolucionCommand,
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				await interaction.deferReply({ ephemeral: true });
+
+				const limite = config.utility.evolution_limit;
+				const pagina = interaction.options.getInteger("pagina") ?? 1;
+				const offset = (pagina - 1) * limite;
+
+				const predicciones =
+					await appContext.services.predicciones.verMisPredicciones(
+						interaction.user.id,
+						limite,
+						offset,
+					);
+
+				const chart = await generarEvolucionPredicciones(
+					predicciones,
+					interaction.user.displayName,
+				);
+
+				if (!chart) {
+					await interaction.editReply({
+						content: "Aún no tienes predicciones en partidos finalizados.",
+					});
+					return;
+				}
+
+				await interaction.editReply({
+					files: [new AttachmentBuilder(chart, { name: "evolucion.png" })],
 				});
 			},
 		},

@@ -29,6 +29,7 @@ const ConfigSchema = z.object({
 	}),
 	utility: z.object({
 		base_url: z.url(),
+		evolution_limit: z.number().int().positive().default(26),
 	}),
 	polla: z.object({
 		costo_entrada: z.number(),
@@ -64,6 +65,7 @@ const DEFAULT_CONFIG: Config = {
 	},
 	utility: {
 		base_url: "http://127.0.0.1:8000",
+		evolution_limit: 26,
 	},
 	polla: {
 		costo_entrada: 100,
