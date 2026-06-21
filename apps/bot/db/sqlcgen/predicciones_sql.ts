@@ -531,6 +531,24 @@ export async function actualizarPuntosActualesPrediccion(client: Client, args: A
     });
 }
 
+export const actualizarPuntosActualesUsuarioQuery = `-- name: ActualizarPuntosActualesUsuario :exec
+UPDATE prediccion SET
+    puntos_actuales = $1
+WHERE usuario_id = $2`;
+
+export interface ActualizarPuntosActualesUsuarioArgs {
+    puntosActuales: number;
+    usuarioId: string;
+}
+
+export async function actualizarPuntosActualesUsuario(client: Client, args: ActualizarPuntosActualesUsuarioArgs): Promise<void> {
+    await client.query({
+        text: actualizarPuntosActualesUsuarioQuery,
+        values: [args.puntosActuales, args.usuarioId],
+        rowMode: "array"
+    });
+}
+
 export const verResultadosRecientesUsuarioQuery = `-- name: VerResultadosRecientesUsuario :many
 SELECT prediccion.resultado
 FROM prediccion

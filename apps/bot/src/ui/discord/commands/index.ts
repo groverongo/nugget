@@ -235,6 +235,20 @@ const actualizarPartidoCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const resolverTimbasCommand = new SlashCommandBuilder()
+	.setName("resolver-timbas")
+	.setDescription(
+		"[ADMIN] Reenvía los botones de resolución de Timba Times para un partido",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("ID del partido")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const actualizarPartidoMtCommand = new SlashCommandBuilder()
 	.setName("halftime-partido")
 	.setDescription(
@@ -739,22 +753,68 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							partidoId,
 						);
 					if (timbas.length > 0) {
-						const timbaResolucionComponents = buildTimbaResolucionComponents(
-							timbas,
-							partidoId,
+						await sendAlertsChannel(
+							interaction.client,
+							`👑 _Resolución de **Timba Times**:_`,
 						);
-						await Promise.all([
-							sendAlertsChannel(
-								interaction.client,
-								`👑 _Resolución de **Timba Times**:_`,
-							),
-							interaction.followUp({
-								// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-								components: timbaResolucionComponents as any,
+						for (let i = 0; i < timbas.length; i += 3) {
+							const batch = timbas.slice(i, i + 3);
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							await interaction.followUp({
+								components: buildTimbaResolucionComponents(
+									batch,
+									partidoId,
+								) as any,
 								flags: MessageFlags.IsComponentsV2,
 								ephemeral: true,
-							}),
-						]);
+							});
+						}
+					}
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"resolver-timbas",
+		{
+			definition: resolverTimbasCommand,
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const timbas =
+						await appContext.services.timba.verTimbasCerradasPorPartido(
+							partidoId,
+						);
+
+					if (timbas.length === 0) {
+						await interaction.editReply({
+							content: `ℹ️ No hay Timba Times pendientes de resolución para el partido #${partidoId}.`,
+						});
+						return;
+					}
+
+					await interaction.editReply({
+						content: `🎲 **${timbas.length} Timba Time(s)** pendientes para el partido #${partidoId}:`,
+					});
+
+					for (let i = 0; i < timbas.length; i += 3) {
+						const batch = timbas.slice(i, i + 3);
+						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+						await interaction.followUp({
+							components: buildTimbaResolucionComponents(
+								batch,
+								partidoId,
+							) as any,
+							flags: MessageFlags.IsComponentsV2,
+							ephemeral: true,
+						});
 					}
 				} catch (error) {
 					await interaction.editReply({

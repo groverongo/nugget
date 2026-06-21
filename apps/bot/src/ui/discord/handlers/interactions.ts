@@ -1062,25 +1062,34 @@ export async function handleTimbaButtonInteraction(
 		if (remaining.length > 0) {
 			await interaction.editReply({
 				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				components: buildTimbaResolucionComponents(remaining, partidoId) as any,
+				components: buildTimbaResolucionComponents(
+					remaining.slice(0, 3),
+					partidoId,
+				) as any,
 				flags: MessageFlags.IsComponentsV2,
 			});
 		} else {
-			await interaction.editReply({
-				components: [
-					{
-						type: 17,
-						components: [
-							{
-								type: 10,
-								content: "✅ Todas las timba times resueltas.",
-							},
-						],
-					},
-					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				] as any,
-				flags: MessageFlags.IsComponentsV2,
-			});
+			await Promise.all([
+				interaction.editReply({
+					components: [
+						{
+							type: 17,
+							components: [
+								{
+									type: 10,
+									content: "✅ Todas las timba times resueltas.",
+								},
+							],
+						},
+						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+					] as any,
+					flags: MessageFlags.IsComponentsV2,
+				}),
+				sendAlertsChannel(
+					interaction.client,
+					`✅ _Todas las **Timba Times** del partido resueltas._`,
+				),
+			]);
 		}
 	} catch (error) {
 		await interaction.followUp({
