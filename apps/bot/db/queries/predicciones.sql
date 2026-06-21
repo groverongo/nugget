@@ -200,6 +200,11 @@ UPDATE prediccion SET
     puntos_actuales = $1
 WHERE usuario_id = $2 AND partido_id = $3;
 
+-- name: ActualizarPuntosActualesUsuario :exec
+UPDATE prediccion SET
+    puntos_actuales = $1
+WHERE usuario_id = $2;
+
 -- name: VerGanadoresHitMasGoles :many
 SELECT DISTINCT pe.usuario_id, u.username,
        (p.goles_local + p.goles_visitante)::INTEGER AS total_goles,
