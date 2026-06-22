@@ -463,13 +463,12 @@ export async function handlePrediccionAdminModalSubmitInteraction(
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		const resultado =
-			await appContext.services.predicciones.guardarPrediccionAdmin({
-				usuarioId,
-				partidoId,
-				golesLocal: golesLocalParsed.data,
-				golesVisitante: golesVisitanteParsed.data,
-			});
+		const resultado = await appContext.services.predicciones.guardarPrediccion({
+			usuarioId,
+			partidoId,
+			golesLocal: golesLocalParsed.data,
+			golesVisitante: golesVisitanteParsed.data,
+		});
 
 		await interaction.editReply(
 			resultado === "created"

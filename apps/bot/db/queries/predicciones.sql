@@ -14,7 +14,7 @@ actualizado_en = NOW()
 WHERE usuario_id = $3 AND partido_id = $4;
 
 -- name: VerPrediccionPorUsuarioYPartido :one
-SELECT usuario_id, partido_id
+SELECT usuario_id, partido_id, goles_local, goles_visitante
 FROM prediccion
 WHERE usuario_id = $1 AND partido_id = $2;
 

@@ -7,6 +7,8 @@ import {
 	actualizarPuntajePrediccion,
 	actualizarPuntosActualesPrediccion,
 	agregarPrediccion,
+	type MonitorearAntiguaPrediccionArgs,
+	monitorearAntiguaPrediccion,
 	type VerGanadoresHitMasGolesRow,
 	type VerMisPrediccionesPorFechaArgs,
 	type VerMisPrediccionesPorFechaRow,
@@ -48,6 +50,12 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 
 	agregarPrediccion(args: AgregarPrediccionArgs): Promise<void> {
 		return agregarPrediccion(this.pool, args);
+	}
+
+	agregarHistoriaPrediccion(
+		args: MonitorearAntiguaPrediccionArgs,
+	): Promise<void> {
+		return monitorearAntiguaPrediccion(this.pool, args);
 	}
 
 	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void> {

@@ -21,10 +21,6 @@ export interface IPrediccionesService {
 		args: AgregarPrediccionArgs,
 	): Promise<"created" | "updated">;
 
-	guardarPrediccionAdmin(
-		args: AgregarPrediccionArgs,
-	): Promise<"created" | "updated">;
-
 	verPrediccionesPorPartido(
 		args: VerPrediccionesPorPartidoArgs,
 	): Promise<VerPrediccionesPorPartidoRow[]>;

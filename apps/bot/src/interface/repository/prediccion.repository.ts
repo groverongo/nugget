@@ -3,6 +3,7 @@ import type {
 	ActualizarPuntajePrediccionArgs,
 	ActualizarPuntosActualesPrediccionArgs,
 	AgregarPrediccionArgs,
+	MonitorearAntiguaPrediccionArgs,
 	VerGanadoresHitMasGolesRow,
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
@@ -27,6 +28,10 @@ import type { PoolClient } from "pg";
 
 export interface IPrediccionesRepository {
 	agregarPrediccion(args: AgregarPrediccionArgs): Promise<void>;
+
+	agregarHistoriaPrediccion(
+		args: MonitorearAntiguaPrediccionArgs,
+	): Promise<void>;
 
 	actualizarPrediccion(args: ActualizarPrediccionArgs): Promise<void>;
 

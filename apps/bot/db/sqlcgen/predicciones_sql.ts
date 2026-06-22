@@ -65,7 +65,7 @@ export async function actualizarPrediccion(client: Client, args: ActualizarPredi
 }
 
 export const verPrediccionPorUsuarioYPartidoQuery = `-- name: VerPrediccionPorUsuarioYPartido :one
-SELECT usuario_id, partido_id
+SELECT usuario_id, partido_id, goles_local, goles_visitante
 FROM prediccion
 WHERE usuario_id = $1 AND partido_id = $2`;
 
@@ -77,6 +77,8 @@ export interface VerPrediccionPorUsuarioYPartidoArgs {
 export interface VerPrediccionPorUsuarioYPartidoRow {
     usuarioId: string;
     partidoId: number;
+    golesLocal: number;
+    golesVisitante: number;
 }
 
 export async function verPrediccionPorUsuarioYPartido(client: Client, args: VerPrediccionPorUsuarioYPartidoArgs): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
@@ -91,7 +93,9 @@ export async function verPrediccionPorUsuarioYPartido(client: Client, args: VerP
     const row = result.rows[0];
     return {
         usuarioId: row[0],
-        partidoId: row[1]
+        partidoId: row[1],
+        golesLocal: row[2],
+        golesVisitante: row[3]
     };
 }
 
