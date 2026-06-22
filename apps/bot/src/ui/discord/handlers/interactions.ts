@@ -316,7 +316,7 @@ export async function handleMisTimbasDateSelectInteraction(
 	await interaction.deferUpdate();
 
 	const timbas = await appContext.services.timba.verMisTimbasPorFecha({
-		jugador1Id: interaction.user.id,
+		jugador_1Id: interaction.user.id,
 		date: selectedDate,
 	});
 
@@ -1064,8 +1064,7 @@ export async function handleTimbaButtonInteraction(
 				components: buildTimbaResolucionComponents(
 					remaining.slice(0, 3),
 					partidoId,
-					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				) as any,
+				),
 				flags: MessageFlags.IsComponentsV2,
 			});
 		} else {

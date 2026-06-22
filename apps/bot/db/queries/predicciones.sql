@@ -2,6 +2,10 @@
 INSERT INTO prediccion (usuario_id, partido_id, goles_local, goles_visitante)
 VALUES ($1, $2, $3, $4);
 
+-- name: MonitorearAntiguaPrediccion :exec
+INSERT INTO monitoreo_prediccion (usuario_id, partido_id, goles_local, goles_visitante)
+VALUES ($1, $2, $3, $4);
+
 -- name: ActualizarPrediccion :exec
 UPDATE prediccion SET
 goles_local = $1,
@@ -119,7 +123,7 @@ INNER JOIN (
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
 WHERE estado = 'finalizado'
 ORDER BY fecha_partido ASC
-LIMIT $2 OFFSET $3;
+LIMIT sqlc.arg('limit')::INTEGER OFFSET sqlc.arg('offset')::INTEGER;
 
 -- name: ActualizarPuntajePrediccion :exec
 UPDATE prediccion SET

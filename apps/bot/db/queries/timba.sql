@@ -183,5 +183,5 @@ WHERE partido_id = $1 AND estado = 'abierta';
 -- name: SumarApuestasActivas :one
 SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
 FROM timba_time
-WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
+WHERE (jugador_1_id = sqlc.arg('user_id') OR jugador_2_id = sqlc.arg('user_id'))
 AND estado IN ('abierta', 'cerrada');

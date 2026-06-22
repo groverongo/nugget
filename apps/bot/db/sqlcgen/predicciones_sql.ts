@@ -23,6 +23,25 @@ export async function agregarPrediccion(client: Client, args: AgregarPrediccionA
     });
 }
 
+export const monitorearAntiguaPrediccionQuery = `-- name: MonitorearAntiguaPrediccion :exec
+INSERT INTO monitoreo_prediccion (usuario_id, partido_id, goles_local, goles_visitante)
+VALUES ($1, $2, $3, $4)`;
+
+export interface MonitorearAntiguaPrediccionArgs {
+    usuarioId: string;
+    partidoId: number;
+    golesLocal: number;
+    golesVisitante: number;
+}
+
+export async function monitorearAntiguaPrediccion(client: Client, args: MonitorearAntiguaPrediccionArgs): Promise<void> {
+    await client.query({
+        text: monitorearAntiguaPrediccionQuery,
+        values: [args.usuarioId, args.partidoId, args.golesLocal, args.golesVisitante],
+        rowMode: "array"
+    });
+}
+
 export const actualizarPrediccionQuery = `-- name: ActualizarPrediccion :exec
 UPDATE prediccion SET
 goles_local = $1,
@@ -363,12 +382,12 @@ INNER JOIN (
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
 WHERE estado = 'finalizado'
 ORDER BY fecha_partido ASC
-LIMIT $2 OFFSET $3`;
+LIMIT $3::INTEGER OFFSET $2::INTEGER`;
 
 export interface VerMisPrediccionesArgs {
     usuarioId: string;
-    limit: number;
     offset: number;
+    limit: number;
 }
 
 export interface VerMisPrediccionesRow {
@@ -390,13 +409,13 @@ export interface VerMisPrediccionesRow {
     equipoLocalSiglas: string;
     equipoVisitanteSiglas: string;
     puntosTotal: number;
-    puntosAcumulados: number;
+    puntosAcumulados: string;
 }
 
 export async function verMisPredicciones(client: Client, args: VerMisPrediccionesArgs): Promise<VerMisPrediccionesRow[]> {
     const result = await client.query({
         text: verMisPrediccionesQuery,
-        values: [args.usuarioId, args.limit, args.offset],
+        values: [args.usuarioId, args.offset, args.limit],
         rowMode: "array"
     });
     return result.rows.map(row => {
@@ -700,7 +719,7 @@ UPDATE prediccion SET
 WHERE usuario_id = $2`;
 
 export interface ActualizarPuntosActualesUsuarioArgs {
-    puntosActuales: number;
+    puntosActuales: number | null;
     usuarioId: string;
 }
 

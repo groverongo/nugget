@@ -275,8 +275,8 @@ UPDATE partidos SET
 WHERE id = $7`;
 
 export interface ActualizarPartidoFinalizadoArgs {
-    golesLocal: number;
-    golesVisitante: number;
+    golesLocal: number | null;
+    golesVisitante: number | null;
     extraMilagro: boolean;
     extraPartidazo: boolean;
     extraBatacazo: boolean;
@@ -300,8 +300,8 @@ UPDATE partidos SET
 WHERE id = $3`;
 
 export interface ActualizarPartidoMedioTiempoArgs {
-    golesLocal: number;
-    golesVisitante: number;
+    golesLocal: number | null;
+    golesVisitante: number | null;
     id: number;
 }
 
@@ -332,8 +332,8 @@ export const actualizarGolesPartidoQuery = `-- name: ActualizarGolesPartido :exe
 UPDATE partidos SET goles_local = $1, goles_visitante = $2 WHERE id = $3`;
 
 export interface ActualizarGolesPartidoArgs {
-    golesLocal: number;
-    golesVisitante: number;
+    golesLocal: number | null;
+    golesVisitante: number | null;
     id: number;
 }
 
@@ -377,9 +377,13 @@ export async function verResumenDiaEnviado(client: Client, args: VerResumenDiaEn
         values: [args.fecha],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
-    return { enviado: row[0] };
+    return {
+        enviado: row[0]
+    };
 }
 
 export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados :many

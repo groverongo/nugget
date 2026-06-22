@@ -12,7 +12,7 @@ RETURNING id`;
 export interface CrearTimbaArgs {
     partidoId: number;
     descripcion: string;
-    jugador1Id: string;
+    jugador_1Id: string;
     puntos: number;
 }
 
@@ -23,12 +23,16 @@ export interface CrearTimbaRow {
 export async function crearTimba(client: Client, args: CrearTimbaArgs): Promise<CrearTimbaRow | null> {
     const result = await client.query({
         text: crearTimbaQuery,
-        values: [args.partidoId, args.descripcion, args.jugador1Id, args.puntos],
+        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntos],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
-    return { id: row[0] };
+    return {
+        id: row[0]
+    };
 }
 
 export const verTimbaQuery = `-- name: VerTimba :one
@@ -68,13 +72,13 @@ export interface VerTimbaRow {
     id: number;
     partidoId: number;
     descripcion: string;
-    jugador1Id: string;
-    jugador2Id: string | null;
+    jugador_1Id: string;
+    jugador_2Id: string | null;
     puntos: number;
     ganadorId: string | null;
     estado: string;
-    jugador1Nombre: string;
-    jugador2Nombre: string;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
     partidoEstado: string;
     fasePuntosBase: number;
     equipoLocalNombre: string;
@@ -91,19 +95,21 @@ export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerT
         values: [args.id],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
     return {
         id: row[0],
         partidoId: row[1],
         descripcion: row[2],
-        jugador1Id: row[3],
-        jugador2Id: row[4],
+        jugador_1Id: row[3],
+        jugador_2Id: row[4],
         puntos: row[5],
         ganadorId: row[6],
         estado: row[7],
-        jugador1Nombre: row[8],
-        jugador2Nombre: row[9],
+        jugador_1Nombre: row[8],
+        jugador_2Nombre: row[9],
         partidoEstado: row[10],
         fasePuntosBase: row[11],
         equipoLocalNombre: row[12],
@@ -140,7 +146,9 @@ export async function verPartidoParaTimba(client: Client, args: VerPartidoParaTi
         values: [args.id],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
     return {
         partidoId: row[0],
@@ -181,10 +189,10 @@ export interface VerTimbasPorPartidoRow {
     estado: string;
     descripcion: string;
     puntos: number;
-    jugador1Id: string;
-    jugador2Id: string;
-    jugador1Nombre: string;
-    jugador2Nombre: string;
+    jugador_1Id: string;
+    jugador_2Id: string;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
     equipoLocalSiglas: string;
     equipoLocalBandera: string;
     equipoVisitanteSiglas: string;
@@ -197,20 +205,22 @@ export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPart
         values: [args.partidoId],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        estado: row[1],
-        descripcion: row[2],
-        puntos: row[3],
-        jugador1Id: row[4],
-        jugador2Id: row[5],
-        jugador1Nombre: row[6],
-        jugador2Nombre: row[7],
-        equipoLocalSiglas: row[8],
-        equipoLocalBandera: row[9],
-        equipoVisitanteSiglas: row[10],
-        equipoVisitanteBandera: row[11]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            estado: row[1],
+            descripcion: row[2],
+            puntos: row[3],
+            jugador_1Id: row[4],
+            jugador_2Id: row[5],
+            jugador_1Nombre: row[6],
+            jugador_2Nombre: row[7],
+            equipoLocalSiglas: row[8],
+            equipoLocalBandera: row[9],
+            equipoVisitanteSiglas: row[10],
+            equipoVisitanteBandera: row[11]
+        };
+    });
 }
 
 export const verTimbasCerradasPorPartidoQuery = `-- name: VerTimbasCerradasPorPartido :many
@@ -235,11 +245,11 @@ export interface VerTimbasCerradasPorPartidoArgs {
 export interface VerTimbasCerradasPorPartidoRow {
     id: number;
     descripcion: string;
-    jugador1Id: string;
-    jugador2Id: string;
+    jugador_1Id: string;
+    jugador_2Id: string | null;
     puntos: number;
-    jugador1Nombre: string;
-    jugador2Nombre: string;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
 }
 
 export async function verTimbasCerradasPorPartido(client: Client, args: VerTimbasCerradasPorPartidoArgs): Promise<VerTimbasCerradasPorPartidoRow[]> {
@@ -248,15 +258,17 @@ export async function verTimbasCerradasPorPartido(client: Client, args: VerTimba
         values: [args.partidoId],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        descripcion: row[1],
-        jugador1Id: row[2],
-        jugador2Id: row[3],
-        puntos: row[4],
-        jugador1Nombre: row[5],
-        jugador2Nombre: row[6]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            descripcion: row[1],
+            jugador_1Id: row[2],
+            jugador_2Id: row[3],
+            puntos: row[4],
+            jugador_1Nombre: row[5],
+            jugador_2Nombre: row[6]
+        };
+    });
 }
 
 export const verMisTimbasQuery = `-- name: VerMisTimbas :many
@@ -275,7 +287,7 @@ WHERE t.jugador_1_id = $1 AND t.estado = 'abierta'
 ORDER BY t.created_at ASC`;
 
 export interface VerMisTimbasArgs {
-    jugador1Id: string;
+    jugador_1Id: string;
 }
 
 export interface VerMisTimbasRow {
@@ -290,17 +302,19 @@ export interface VerMisTimbasRow {
 export async function verMisTimbas(client: Client, args: VerMisTimbasArgs): Promise<VerMisTimbasRow[]> {
     const result = await client.query({
         text: verMisTimbasQuery,
-        values: [args.jugador1Id],
+        values: [args.jugador_1Id],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        partidoId: row[1],
-        descripcion: row[2],
-        puntos: row[3],
-        equipoLocalNombre: row[4],
-        equipoVisitanteNombre: row[5]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            partidoId: row[1],
+            descripcion: row[2],
+            puntos: row[3],
+            equipoLocalNombre: row[4],
+            equipoVisitanteNombre: row[5]
+        };
+    });
 }
 
 export const verFechasDeTimbasPorUsuarioQuery = `-- name: VerFechasDeTimbasPorUsuario :many
@@ -311,7 +325,7 @@ WHERE t.jugador_1_id = $1 OR t.jugador_2_id = $1
 ORDER BY fecha ASC`;
 
 export interface VerFechasDeTimbasPorUsuarioArgs {
-    jugador1Id: string;
+    jugador_1Id: string;
 }
 
 export interface VerFechasDeTimbasPorUsuarioRow {
@@ -321,7 +335,7 @@ export interface VerFechasDeTimbasPorUsuarioRow {
 export async function verFechasDeTimbasPorUsuario(client: Client, args: VerFechasDeTimbasPorUsuarioArgs): Promise<VerFechasDeTimbasPorUsuarioRow[]> {
     const result = await client.query({
         text: verFechasDeTimbasPorUsuarioQuery,
-        values: [args.jugador1Id],
+        values: [args.jugador_1Id],
         rowMode: "array"
     });
     return result.rows.map(row => {
@@ -360,7 +374,7 @@ AND DATE(p.fecha_partido - INTERVAL '5 hours') = DATE($2)
 ORDER BY p.fecha_partido ASC`;
 
 export interface VerMisTimbasPorFechaArgs {
-    jugador1Id: string;
+    jugador_1Id: string;
     date: string;
 }
 
@@ -370,11 +384,11 @@ export interface VerMisTimbasPorFechaRow {
     descripcion: string;
     puntos: number;
     estado: string;
-    jugador1Id: string;
-    jugador2Id: string | null;
+    jugador_1Id: string;
+    jugador_2Id: string | null;
     ganadorId: string | null;
-    jugador1Nombre: string;
-    jugador2Nombre: string;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
     partidoEstado: string;
     fechaPartido: Date | null;
     equipoLocalNombre: string;
@@ -386,27 +400,29 @@ export interface VerMisTimbasPorFechaRow {
 export async function verMisTimbasPorFecha(client: Client, args: VerMisTimbasPorFechaArgs): Promise<VerMisTimbasPorFechaRow[]> {
     const result = await client.query({
         text: verMisTimbasPorFechaQuery,
-        values: [args.jugador1Id, args.date],
+        values: [args.jugador_1Id, args.date],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        partidoId: row[1],
-        descripcion: row[2],
-        puntos: row[3],
-        estado: row[4],
-        jugador1Id: row[5],
-        jugador2Id: row[6],
-        ganadorId: row[7],
-        jugador1Nombre: row[8],
-        jugador2Nombre: row[9],
-        partidoEstado: row[10],
-        fechaPartido: row[11],
-        equipoLocalNombre: row[12],
-        equipoLocalBandera: row[13],
-        equipoVisitanteNombre: row[14],
-        equipoVisitanteBandera: row[15]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            partidoId: row[1],
+            descripcion: row[2],
+            puntos: row[3],
+            estado: row[4],
+            jugador_1Id: row[5],
+            jugador_2Id: row[6],
+            ganadorId: row[7],
+            jugador_1Nombre: row[8],
+            jugador_2Nombre: row[9],
+            partidoEstado: row[10],
+            fechaPartido: row[11],
+            equipoLocalNombre: row[12],
+            equipoLocalBandera: row[13],
+            equipoVisitanteNombre: row[14],
+            equipoVisitanteBandera: row[15]
+        };
+    });
 }
 
 export const checkEmparejamientoTimbaQuery = `-- name: CheckEmparejamientoTimba :one
@@ -421,8 +437,8 @@ AND (
 
 export interface CheckEmparejamientoTimbaArgs {
     partidoId: number;
-    jugador1Id: string;
-    jugador2Id: string;
+    jugador_1Id: string;
+    jugador_2Id: string | null;
 }
 
 export interface CheckEmparejamientoTimbaRow {
@@ -432,11 +448,16 @@ export interface CheckEmparejamientoTimbaRow {
 export async function checkEmparejamientoTimba(client: Client, args: CheckEmparejamientoTimbaArgs): Promise<CheckEmparejamientoTimbaRow | null> {
     const result = await client.query({
         text: checkEmparejamientoTimbaQuery,
-        values: [args.partidoId, args.jugador1Id, args.jugador2Id],
+        values: [args.partidoId, args.jugador_1Id, args.jugador_2Id],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
-    return { count: result.rows[0][0] };
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
 }
 
 export const aceptarTimbaQuery = `-- name: AceptarTimba :exec
@@ -446,13 +467,13 @@ WHERE id = $1`;
 
 export interface AceptarTimbaArgs {
     id: number;
-    jugador2Id: string;
+    jugador_2Id: string | null;
 }
 
 export async function aceptarTimba(client: Client, args: AceptarTimbaArgs): Promise<void> {
     await client.query({
         text: aceptarTimbaQuery,
-        values: [args.id, args.jugador2Id],
+        values: [args.id, args.jugador_2Id],
         rowMode: "array"
     });
 }
@@ -483,11 +504,11 @@ export interface VerTimbasResueltasPorPartidoRow {
     id: number;
     descripcion: string;
     puntos: number;
-    jugador1Id: string;
-    jugador2Id: string;
-    ganadorId: string;
-    jugador1Nombre: string;
-    jugador2Nombre: string;
+    jugador_1Id: string;
+    jugador_2Id: string | null;
+    ganadorId: string | null;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
     ganadorNombre: string;
 }
 
@@ -497,17 +518,19 @@ export async function verTimbasResueltasPorPartido(client: Client, args: VerTimb
         values: [args.partidoId],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        descripcion: row[1],
-        puntos: row[2],
-        jugador1Id: row[3],
-        jugador2Id: row[4],
-        ganadorId: row[5],
-        jugador1Nombre: row[6],
-        jugador2Nombre: row[7],
-        ganadorNombre: row[8],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            descripcion: row[1],
+            puntos: row[2],
+            jugador_1Id: row[3],
+            jugador_2Id: row[4],
+            ganadorId: row[5],
+            jugador_1Nombre: row[6],
+            jugador_2Nombre: row[7],
+            ganadorNombre: row[8]
+        };
+    });
 }
 
 export const resolverTimbaQuery = `-- name: ResolverTimba :exec
@@ -517,7 +540,7 @@ WHERE id = $1`;
 
 export interface ResolverTimbaArgs {
     id: number;
-    ganadorId: string;
+    ganadorId: string | null;
 }
 
 export async function resolverTimba(client: Client, args: ResolverTimbaArgs): Promise<void> {
@@ -560,6 +583,23 @@ export async function anularTimba(client: Client, args: AnularTimbaArgs): Promis
     });
 }
 
+export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE partido_id = $1 AND estado = 'abierta'`;
+
+export interface CancelarTimbasAbiertasPorPartidoArgs {
+    partidoId: number;
+}
+
+export async function cancelarTimbasAbiertasPorPartido(client: Client, args: CancelarTimbasAbiertasPorPartidoArgs): Promise<void> {
+    await client.query({
+        text: cancelarTimbasAbiertasPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+}
+
 export const sumarApuestasActivasQuery = `-- name: SumarApuestasActivas :one
 SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
 FROM timba_time
@@ -580,23 +620,12 @@ export async function sumarApuestasActivas(client: Client, args: SumarApuestasAc
         values: [args.userId],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
-    return { total: result.rows[0][0] };
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        total: row[0]
+    };
 }
 
-export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec
-UPDATE timba_time
-SET estado = 'cancelada'
-WHERE partido_id = $1 AND estado = 'abierta'`;
-
-export interface CancelarTimbasAbiertasPorPartidoArgs {
-    partidoId: number;
-}
-
-export async function cancelarTimbasAbiertasPorPartido(client: Client, args: CancelarTimbasAbiertasPorPartidoArgs): Promise<void> {
-    await client.query({
-        text: cancelarTimbasAbiertasPorPartidoQuery,
-        values: [args.partidoId],
-        rowMode: "array"
-    });
-}

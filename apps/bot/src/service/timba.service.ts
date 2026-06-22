@@ -79,7 +79,7 @@ export class TimbaService implements ITimbaService {
 		const created = await this.timbaRepo.crear({
 			partidoId: args.partidoId,
 			descripcion: args.descripcion,
-			jugador1Id: args.jugador1Id,
+			jugador_1Id: args.jugador1Id,
 			puntos: args.puntos,
 		});
 		if (!created) throw new Error("Error creando la timba.");
@@ -91,7 +91,7 @@ export class TimbaService implements ITimbaService {
 			timbaId: created.id,
 			puntos: timba.puntos,
 			descripcion: timba.descripcion,
-			jugador1Id: timba.jugador1Id,
+			jugador1Id: timba.jugador_1Id,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
 			equipoLocalSiglas: timba.equipoLocalSiglas,
@@ -107,7 +107,7 @@ export class TimbaService implements ITimbaService {
 		if (!timba) throw new Error("Timba no encontrada.");
 		if (timba.estado !== "abierta")
 			throw new Error("Esta timba ya no está disponible.");
-		if (timba.jugador1Id === args.jugador2Id) {
+		if (timba.jugador_1Id === args.jugador2Id) {
 			throw new Error("No puedes aceptar tu propio reto.");
 		}
 		if (timba.partidoEstado !== "programado") {
@@ -129,8 +129,8 @@ export class TimbaService implements ITimbaService {
 			[
 				this.timbaRepo.checkEmparejamiento({
 					partidoId: timba.partidoId,
-					jugador1Id: timba.jugador1Id,
-					jugador2Id: args.jugador2Id,
+					jugador_1Id: timba.jugador_1Id,
+					jugador_2Id: args.jugador2Id,
 				}),
 				this.usuariosRepo.obtenerPuntos(args.jugador2Id),
 				this.timbaRepo.sumarApuestasActivas(args.jugador2Id),
@@ -156,16 +156,16 @@ export class TimbaService implements ITimbaService {
 
 		await this.timbaRepo.aceptar({
 			id: args.timbaId,
-			jugador2Id: args.jugador2Id,
+			jugador_2Id: args.jugador2Id,
 		});
 
 		return {
 			timbaId: args.timbaId,
 			puntos: timba.puntos,
 			descripcion: timba.descripcion,
-			jugador1Id: timba.jugador1Id,
+			jugador1Id: timba.jugador_1Id,
 			jugador2Id: args.jugador2Id,
-			jugador1Nombre: timba.jugador1Nombre,
+			jugador1Nombre: timba.jugador_1Nombre,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
 			equipoLocalSiglas: timba.equipoLocalSiglas,
@@ -179,7 +179,7 @@ export class TimbaService implements ITimbaService {
 		const timba = await this.timbaRepo.verTimba(args.timbaId);
 
 		if (!timba) throw new Error("Timba no encontrada.");
-		if (timba.jugador1Id !== args.jugador1Id) {
+		if (timba.jugador_1Id !== args.jugador1Id) {
 			throw new Error("Solo puedes cancelar tus propias timbas.");
 		}
 		if (timba.estado !== "abierta") {
@@ -191,7 +191,7 @@ export class TimbaService implements ITimbaService {
 		await this.timbaRepo.cancelar({ id: args.timbaId });
 
 		return {
-			jugador1Id: timba.jugador1Id,
+			jugador_1Id: timba.jugador_1Id,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
 			equipoLocalSiglas: timba.equipoLocalSiglas,
@@ -211,21 +211,21 @@ export class TimbaService implements ITimbaService {
 		if (!timba) throw new Error("Timba no encontrada.");
 		if (timba.estado !== "cerrada")
 			throw new Error("Esta timba no está cerrada.");
-		if (!timba.jugador2Id)
+		if (!timba.jugador_2Id)
 			throw new Error("La timba no tiene segundo jugador.");
 
 		const ganadorId =
-			args.ganadorJugador === "j1" ? timba.jugador1Id : timba.jugador2Id;
+			args.ganadorJugador === "j1" ? timba.jugador_1Id : timba.jugador_2Id;
 		const perdedorId =
-			args.ganadorJugador === "j1" ? timba.jugador2Id : timba.jugador1Id;
+			args.ganadorJugador === "j1" ? timba.jugador_2Id : timba.jugador_1Id;
 		const ganadorNombre =
 			args.ganadorJugador === "j1"
-				? timba.jugador1Nombre
-				: timba.jugador2Nombre;
+				? timba.jugador_1Nombre
+				: timba.jugador_2Nombre;
 		const perdedorNombre =
 			args.ganadorJugador === "j1"
-				? timba.jugador2Nombre
-				: timba.jugador1Nombre;
+				? timba.jugador_2Nombre
+				: timba.jugador_1Nombre;
 
 		await Promise.all([
 			this.timbaRepo.resolver({ id: args.timbaId, ganadorId }),

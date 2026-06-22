@@ -97,7 +97,7 @@ export function buildTimbaResolucionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador1Id}> (${timba.jugador1Nombre})`,
+						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre})`,
 					),
 				)
 				.setButtonAccessory(
@@ -111,7 +111,7 @@ export function buildTimbaResolucionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador2Id}> (${timba.jugador2Nombre})`,
+						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre})`,
 					),
 				)
 				.setButtonAccessory(
@@ -146,8 +146,8 @@ export function buildVerTimbasComponent(
 
 		const estadoBadge =
 			timba.estado === "abierta" ? "🟡 Abierta" : "🔒 Cerrada";
-		const j2Line = timba.jugador2Id
-			? `<@${timba.jugador2Id}>`
+		const j2Line = timba.jugador_2Id
+			? `<@${timba.jugador_2Id}>`
 			: "_Sin aceptar_";
 
 		container.addTextDisplayComponents(
@@ -155,7 +155,7 @@ export function buildVerTimbasComponent(
 				[
 					estadoBadge,
 					`💠 **${puntosStr(timba.puntos)}** en juego a: _"${timba.descripcion}"_`,
-					`<@${timba.jugador1Id}> 🆚 ${j2Line}`,
+					`<@${timba.jugador_1Id}> 🆚 ${j2Line}`,
 				].join("\n"),
 			),
 		);
@@ -186,10 +186,10 @@ function getMiTimbaEstadoBadge(
 }
 
 function formatMiTimbaLine(timba: MiTimbaPorFecha, usuarioId: string): string {
-	const esJugador1 = timba.jugador1Id === usuarioId;
+	const esJugador1 = timba.jugador_1Id === usuarioId;
 	const oponenteNombre = esJugador1
-		? timba.jugador2Nombre || "Sin aceptar"
-		: timba.jugador1Nombre;
+		? timba.jugador_2Nombre || "Sin aceptar"
+		: timba.jugador_1Nombre;
 	const fechaPartido = timba.fechaPartido
 		? `<t:${timba.fechaPartido.getTime() / 1_000}:t>`
 		: "Hora pendiente";
