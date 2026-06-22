@@ -775,11 +775,11 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						);
 						for (let i = 0; i < timbas.length; i += 3) {
 							const batch = timbas.slice(i, i + 3);
-							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 							await interaction.followUp({
 								components: buildTimbaResolucionComponents(
 									batch,
 									partidoId,
+									// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 								) as any,
 								flags: MessageFlags.IsComponentsV2,
 								ephemeral: true,
@@ -817,21 +817,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					}
 
 					await interaction.editReply({
-						content: `🎲 **${timbas.length} Timba Time(s)** pendientes para el partido #${partidoId}:`,
+						components: buildTimbaResolucionComponents(
+							timbas.slice(0, 3),
+							partidoId,
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+						) as any,
+						flags: MessageFlags.IsComponentsV2,
 					});
-
-					for (let i = 0; i < timbas.length; i += 3) {
-						const batch = timbas.slice(i, i + 3);
-						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-						await interaction.followUp({
-							components: buildTimbaResolucionComponents(
-								batch,
-								partidoId,
-							) as any,
-							flags: MessageFlags.IsComponentsV2,
-							ephemeral: true,
-						});
-					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2033,7 +2025,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.map((t) => {
 						const label = `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`;
 						return {
-							name: label.length > 100 ? label.slice(0, 97) + "..." : label,
+							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
 							value: t.id,
 						};
 					});
