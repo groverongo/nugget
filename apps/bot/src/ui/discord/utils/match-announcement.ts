@@ -70,14 +70,15 @@ export function buildAlertaMedioTiempo(
 		lineas.push(`${key}: ${menciones.join("/")} ${emoji}`);
 	}
 
+	const sinLine = sinPrediccionLine(sinPrediccion);
+	if (sinLine) lineas.push(sinLine);
+
 	lineas.push("");
 	if (ganadoresActuales.length > 0) {
 		lineas.push(`❇️ *Ganador(es) por ahora:* ${ganadoresActuales.join(", ")}`);
 	} else {
 		lineas.push(`⏺️ *Nadie ha atinado por ahora.*`);
 	}
-	const sinLine = sinPrediccionLine(sinPrediccion);
-	if (sinLine) lineas.push(sinLine);
 
 	return lineas.join("\n");
 }
@@ -132,6 +133,9 @@ export function buildAlertaFinPartido(
 		lineas.push(`${key}: ${menciones.join("/")} ${emoji}`);
 	}
 
+	const sinLine = sinPrediccionLine(sinPrediccion);
+	if (sinLine) lineas.push(sinLine);
+
 	lineas.push("");
 
 	const extras: string[] = [];
@@ -146,8 +150,6 @@ export function buildAlertaFinPartido(
 	} else {
 		lineas.push(`✅ ***¡Bravo!** Ganador(es):* ${ganadores.join(", ")}`);
 	}
-	const sinLine = sinPrediccionLine(sinPrediccion);
-	if (sinLine) lineas.push(sinLine);
 
 	return lineas.join("\n");
 }
