@@ -6,42 +6,32 @@ interface Client {
 
 export const guardarAwardsQuery = `-- name: GuardarAwards :exec
 UPDATE usuarios SET
-    award_campeon = $2,
-    award_goleador = $3,
-    award_mejor_jugador = $4,
-    award_mejor_arquero = $5,
-    award_mejor_jugador_joven = $6,
-    award_mejor_gol = $7,
-    award_seleccion_decepcion = $8,
-    award_seleccion_sorpresa = $9
-WHERE id = $1`;
+    award_campeon = $1,
+    award_goleador = $2,
+    award_mejor_jugador = $3,
+    award_mejor_arquero = $4,
+    award_mejor_jugador_joven = $5,
+    award_mejor_gol = $6,
+    award_seleccion_decepcion = $7,
+    award_seleccion_sorpresa = $8
+WHERE id = $9`;
 
 export interface GuardarAwardsArgs {
+    awardCampeon: number | null;
+    awardGoleador: number | null;
+    awardMejorJugador: number | null;
+    awardMejorArquero: number | null;
+    awardMejorJugadorJoven: number | null;
+    awardMejorGol: number | null;
+    awardSeleccionDecepcion: number | null;
+    awardSeleccionSorpresa: number | null;
     id: string;
-    award_campeon: number | null;
-    award_goleador: number | null;
-    award_mejor_jugador: number | null;
-    award_mejor_arquero: number | null;
-    award_mejor_jugador_joven: number | null;
-    award_mejor_gol: number | null;
-    award_seleccion_decepcion: number | null;
-    award_seleccion_sorpresa: number | null;
 }
 
 export async function guardarAwards(client: Client, args: GuardarAwardsArgs): Promise<void> {
     await client.query({
         text: guardarAwardsQuery,
-        values: [
-            args.id,
-            args.award_campeon,
-            args.award_goleador,
-            args.award_mejor_jugador,
-            args.award_mejor_arquero,
-            args.award_mejor_jugador_joven,
-            args.award_mejor_gol,
-            args.award_seleccion_decepcion,
-            args.award_seleccion_sorpresa,
-        ],
+        values: [args.awardCampeon, args.awardGoleador, args.awardMejorJugador, args.awardMejorArquero, args.awardMejorJugadorJoven, args.awardMejorGol, args.awardSeleccionDecepcion, args.awardSeleccionSorpresa, args.id],
         rowMode: "array"
     });
 }
@@ -64,14 +54,14 @@ export interface VerAwardsDeUsuarioArgs {
 }
 
 export interface VerAwardsDeUsuarioRow {
-    award_campeon: number | null;
-    award_goleador: number | null;
-    award_mejor_jugador: number | null;
-    award_mejor_arquero: number | null;
-    award_mejor_jugador_joven: number | null;
-    award_mejor_gol: number | null;
-    award_seleccion_decepcion: number | null;
-    award_seleccion_sorpresa: number | null;
+    awardCampeon: number | null;
+    awardGoleador: number | null;
+    awardMejorJugador: number | null;
+    awardMejorArquero: number | null;
+    awardMejorJugadorJoven: number | null;
+    awardMejorGol: number | null;
+    awardSeleccionDecepcion: number | null;
+    awardSeleccionSorpresa: number | null;
 }
 
 export async function verAwardsDeUsuario(client: Client, args: VerAwardsDeUsuarioArgs): Promise<VerAwardsDeUsuarioRow | null> {
@@ -80,17 +70,19 @@ export async function verAwardsDeUsuario(client: Client, args: VerAwardsDeUsuari
         values: [args.id],
         rowMode: "array"
     });
-    if (result.rows.length === 0) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
     return {
-        award_campeon: row[0],
-        award_goleador: row[1],
-        award_mejor_jugador: row[2],
-        award_mejor_arquero: row[3],
-        award_mejor_jugador_joven: row[4],
-        award_mejor_gol: row[5],
-        award_seleccion_decepcion: row[6],
-        award_seleccion_sorpresa: row[7],
+        awardCampeon: row[0],
+        awardGoleador: row[1],
+        awardMejorJugador: row[2],
+        awardMejorArquero: row[3],
+        awardMejorJugadorJoven: row[4],
+        awardMejorGol: row[5],
+        awardSeleccionDecepcion: row[6],
+        awardSeleccionSorpresa: row[7]
     };
 }
 
@@ -122,14 +114,14 @@ export interface ListUsuariosConAwardsRow {
     id: string;
     username: string;
     puntos: number;
-    award_campeon: number;
-    award_goleador: number;
-    award_mejor_jugador: number;
-    award_mejor_arquero: number;
-    award_mejor_jugador_joven: number;
-    award_mejor_gol: number;
-    award_seleccion_decepcion: number;
-    award_seleccion_sorpresa: number;
+    awardCampeon: number | null;
+    awardGoleador: number | null;
+    awardMejorJugador: number | null;
+    awardMejorArquero: number | null;
+    awardMejorJugadorJoven: number | null;
+    awardMejorGol: number | null;
+    awardSeleccionDecepcion: number | null;
+    awardSeleccionSorpresa: number | null;
 }
 
 export async function listUsuariosConAwards(client: Client): Promise<ListUsuariosConAwardsRow[]> {
@@ -138,35 +130,37 @@ export async function listUsuariosConAwards(client: Client): Promise<ListUsuario
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        puntos: row[2],
-        award_campeon: row[3],
-        award_goleador: row[4],
-        award_mejor_jugador: row[5],
-        award_mejor_arquero: row[6],
-        award_mejor_jugador_joven: row[7],
-        award_mejor_gol: row[8],
-        award_seleccion_decepcion: row[9],
-        award_seleccion_sorpresa: row[10],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            puntos: row[2],
+            awardCampeon: row[3],
+            awardGoleador: row[4],
+            awardMejorJugador: row[5],
+            awardMejorArquero: row[6],
+            awardMejorJugadorJoven: row[7],
+            awardMejorGol: row[8],
+            awardSeleccionDecepcion: row[9],
+            awardSeleccionSorpresa: row[10]
+        };
+    });
 }
 
 export const sumarPuntosAwardQuery = `-- name: SumarPuntosAward :exec
 UPDATE usuarios SET
-    puntos = puntos + $2
-WHERE id = $1`;
+    puntos = puntos + $1
+WHERE id = $2`;
 
 export interface SumarPuntosAwardArgs {
-    id: string;
     puntos: number;
+    id: string;
 }
 
 export async function sumarPuntosAward(client: Client, args: SumarPuntosAwardArgs): Promise<void> {
     await client.query({
         text: sumarPuntosAwardQuery,
-        values: [args.id, args.puntos],
+        values: [args.puntos, args.id],
         rowMode: "array"
     });
 }
@@ -217,18 +211,21 @@ export async function verPrediccionesAwards(client: Client): Promise<VerPredicci
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        usuarioId: row[0],
-        campeonNombre: row[1],
-        campeonBandera: row[2],
-        goleadorNombre: row[3],
-        mejorJugadorNombre: row[4],
-        mejorArqueroNombre: row[5],
-        mejorJugadorJovenNombre: row[6],
-        mejorGolNombre: row[7],
-        seleccionDecepcionNombre: row[8],
-        seleccionDecepcionBandera: row[9],
-        seleccionSorpresaNombre: row[10],
-        seleccionSorpresaBandera: row[11],
-    }));
+    return result.rows.map(row => {
+        return {
+            usuarioId: row[0],
+            campeonNombre: row[1],
+            campeonBandera: row[2],
+            goleadorNombre: row[3],
+            mejorJugadorNombre: row[4],
+            mejorArqueroNombre: row[5],
+            mejorJugadorJovenNombre: row[6],
+            mejorGolNombre: row[7],
+            seleccionDecepcionNombre: row[8],
+            seleccionDecepcionBandera: row[9],
+            seleccionSorpresaNombre: row[10],
+            seleccionSorpresaBandera: row[11]
+        };
+    });
 }
+

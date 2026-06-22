@@ -20,6 +20,7 @@
 		"src/**/*.ts",
 		"support/**/*.ts",
 		"db/sqlcgen/**/*.ts",
-		"cmd/**/*.ts"
+		"cmd/**/*.ts",
+		"tests/**/*"
 	]
 }

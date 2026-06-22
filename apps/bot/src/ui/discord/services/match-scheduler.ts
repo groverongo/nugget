@@ -160,7 +160,7 @@ export async function enviarEstadisticasPrePartido(
 			`_⚔️ **Timba Times en juego** (${partido})_`,
 			...timbas.map(
 				(t) =>
-					`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
+					`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
 		await sendAlertsChannel(client, lineas.join("\n"));
@@ -290,7 +290,7 @@ export class MatchScheduler {
 				`_⚔️ **Timba Times en juego** (${partido})_`,
 				...timbasCerradas.map(
 					(t) =>
-						`• <@${t.jugador1Id}> 🆚 <@${t.jugador2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
+						`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 				),
 			];
 			await sendAlertsChannel(this.client, lineas.join("\n"));
@@ -306,7 +306,8 @@ export class MatchScheduler {
 		const lineas = [
 			`🚫 _**Timba Times canceladas** (${partido}):_`,
 			...timbasCanceladas.map(
-				(t) => `• <@${t.jugador1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
+				(t) =>
+					`• <@${t.jugador_1Id}> — **${t.puntos} 💠** — "${t.descripcion}"`,
 			),
 		];
 		await sendAnnouncementChannel(this.client, lineas.join("\n"));

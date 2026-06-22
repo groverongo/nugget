@@ -316,7 +316,7 @@ export async function handleMisTimbasDateSelectInteraction(
 	await interaction.deferUpdate();
 
 	const timbas = await appContext.services.timba.verMisTimbasPorFecha({
-		jugador1Id: interaction.user.id,
+		jugador_1Id: interaction.user.id,
 		date: selectedDate,
 	});
 
@@ -463,13 +463,12 @@ export async function handlePrediccionAdminModalSubmitInteraction(
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		const resultado =
-			await appContext.services.predicciones.guardarPrediccionAdmin({
-				usuarioId,
-				partidoId,
-				golesLocal: golesLocalParsed.data,
-				golesVisitante: golesVisitanteParsed.data,
-			});
+		const resultado = await appContext.services.predicciones.guardarPrediccion({
+			usuarioId,
+			partidoId,
+			golesLocal: golesLocalParsed.data,
+			golesVisitante: golesVisitanteParsed.data,
+		});
 
 		await interaction.editReply(
 			resultado === "created"
@@ -1064,8 +1063,7 @@ export async function handleTimbaButtonInteraction(
 				components: buildTimbaResolucionComponents(
 					remaining.slice(0, 3),
 					partidoId,
-					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				) as any,
+				),
 				flags: MessageFlags.IsComponentsV2,
 			});
 		} else {

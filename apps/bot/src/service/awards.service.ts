@@ -39,14 +39,14 @@ export class AwardsService implements IAwardsService {
 
 		await this.awardsRepo.guardarAwards({
 			id: input.usuarioId,
-			award_campeon: input.campeon,
-			award_goleador: input.goleador,
-			award_mejor_jugador: input.mejorJugador,
-			award_mejor_arquero: input.mejorArquero,
-			award_mejor_jugador_joven: input.mejorJugadorJoven,
-			award_mejor_gol: input.mejorGol,
-			award_seleccion_decepcion: input.seleccionDecepcion,
-			award_seleccion_sorpresa: input.seleccionSorpresa,
+			awardCampeon: input.campeon,
+			awardGoleador: input.goleador,
+			awardMejorJugador: input.mejorJugador,
+			awardMejorArquero: input.mejorArquero,
+			awardMejorJugadorJoven: input.mejorJugadorJoven,
+			awardMejorGol: input.mejorGol,
+			awardSeleccionDecepcion: input.seleccionDecepcion,
+			awardSeleccionSorpresa: input.seleccionSorpresa,
 		});
 
 		return eraVacio ? "created" : "updated";
@@ -63,14 +63,14 @@ export class AwardsService implements IAwardsService {
 
 		await this.awardsRepo.guardarAwards({
 			id: input.usuarioId,
-			award_campeon: input.campeon,
-			award_goleador: input.goleador,
-			award_mejor_jugador: input.mejorJugador,
-			award_mejor_arquero: input.mejorArquero,
-			award_mejor_jugador_joven: input.mejorJugadorJoven,
-			award_mejor_gol: input.mejorGol,
-			award_seleccion_decepcion: input.seleccionDecepcion,
-			award_seleccion_sorpresa: input.seleccionSorpresa,
+			awardCampeon: input.campeon,
+			awardGoleador: input.goleador,
+			awardMejorJugador: input.mejorJugador,
+			awardMejorArquero: input.mejorArquero,
+			awardMejorJugadorJoven: input.mejorJugadorJoven,
+			awardMejorGol: input.mejorGol,
+			awardSeleccionDecepcion: input.seleccionDecepcion,
+			awardSeleccionSorpresa: input.seleccionSorpresa,
 		});
 
 		return eraVacio ? "created" : "updated";
@@ -89,11 +89,11 @@ export class AwardsService implements IAwardsService {
 		const equipoMap = new Map(equipos.map((e) => [e.id, e.nombre]));
 
 		const playerIds = [
-			raw.award_goleador,
-			raw.award_mejor_jugador,
-			raw.award_mejor_arquero,
-			raw.award_mejor_jugador_joven,
-			raw.award_mejor_gol,
+			raw.awardGoleador,
+			raw.awardMejorJugador,
+			raw.awardMejorArquero,
+			raw.awardMejorJugadorJoven,
+			raw.awardMejorGol,
 		].filter((id): id is number => id !== null);
 
 		const jugadores =
@@ -105,23 +105,23 @@ export class AwardsService implements IAwardsService {
 		const resolveJugador = (id: number | null): string | null => {
 			if (id === null) return null;
 			const j = jugadorMap.get(id);
-			return j ? `${j.nombre} (${j.equipo_nombre})` : null;
+			return j ? `${j.nombre} (${j.equipoNombre})` : null;
 		};
 
 		return {
-			campeon: raw.award_campeon
-				? (equipoMap.get(raw.award_campeon) ?? null)
+			campeon: raw.awardCampeon
+				? (equipoMap.get(raw.awardCampeon) ?? null)
 				: null,
-			goleador: resolveJugador(raw.award_goleador),
-			mejorJugador: resolveJugador(raw.award_mejor_jugador),
-			mejorArquero: resolveJugador(raw.award_mejor_arquero),
-			mejorJugadorJoven: resolveJugador(raw.award_mejor_jugador_joven),
-			mejorGol: resolveJugador(raw.award_mejor_gol),
-			seleccionDecepcion: raw.award_seleccion_decepcion
-				? (equipoMap.get(raw.award_seleccion_decepcion) ?? null)
+			goleador: resolveJugador(raw.awardGoleador),
+			mejorJugador: resolveJugador(raw.awardMejorJugador),
+			mejorArquero: resolveJugador(raw.awardMejorArquero),
+			mejorJugadorJoven: resolveJugador(raw.awardMejorJugadorJoven),
+			mejorGol: resolveJugador(raw.awardMejorGol),
+			seleccionDecepcion: raw.awardSeleccionDecepcion
+				? (equipoMap.get(raw.awardSeleccionDecepcion) ?? null)
 				: null,
-			seleccionSorpresa: raw.award_seleccion_sorpresa
-				? (equipoMap.get(raw.award_seleccion_sorpresa) ?? null)
+			seleccionSorpresa: raw.awardSeleccionSorpresa
+				? (equipoMap.get(raw.awardSeleccionSorpresa) ?? null)
 				: null,
 		};
 	}
@@ -147,38 +147,38 @@ export class AwardsService implements IAwardsService {
 				let puntosGanados = 0;
 				const aciertos: string[] = [];
 
-				if (u.award_campeon === resultados.campeon) {
+				if (u.awardCampeon === resultados.campeon) {
 					puntosGanados += 10;
 					aciertos.push("Campeón +10");
 				}
-				if (u.award_goleador === resultados.goleador) {
+				if (u.awardGoleador === resultados.goleador) {
 					puntosGanados += 5;
 					aciertos.push("Goleador +5");
 				}
-				if (u.award_mejor_jugador === resultados.mejorJugador) {
+				if (u.awardMejorJugador === resultados.mejorJugador) {
 					puntosGanados += 5;
 					aciertos.push("Mejor jugador +5");
 				}
-				if (u.award_mejor_arquero === resultados.mejorArquero) {
+				if (u.awardMejorArquero === resultados.mejorArquero) {
 					puntosGanados += 3;
 					aciertos.push("Mejor arquero +3");
 				}
-				if (u.award_mejor_jugador_joven === resultados.mejorJugadorJoven) {
+				if (u.awardMejorJugadorJoven === resultados.mejorJugadorJoven) {
 					puntosGanados += 3;
 					aciertos.push("Mejor jugador joven +3");
 				}
 				if (
-					u.award_mejor_gol === resultados.mejorGolJugadorId &&
+					u.awardMejorGol === resultados.mejorGolJugadorId &&
 					puntosMejorGol > 0
 				) {
 					puntosGanados += puntosMejorGol;
 					aciertos.push(`Mejor gol +${puntosMejorGol}`);
 				}
-				if (u.award_seleccion_decepcion === resultados.seleccionDecepcion) {
+				if (u.awardSeleccionDecepcion === resultados.seleccionDecepcion) {
 					puntosGanados += 5;
 					aciertos.push("Selección Decepción +5");
 				}
-				if (u.award_seleccion_sorpresa === resultados.seleccionSorpresa) {
+				if (u.awardSeleccionSorpresa === resultados.seleccionSorpresa) {
 					puntosGanados += 5;
 					aciertos.push("Selección Sorpresa +5");
 				}
@@ -216,7 +216,7 @@ export class AwardsService implements IAwardsService {
 	}
 
 	verJugadoresPorEquipo(equipoId: number): Promise<VerJugadoresPorEquipoRow[]> {
-		return this.estaticoRepo.verJugadoresPorEquipo({ equipo_id: equipoId });
+		return this.estaticoRepo.verJugadoresPorEquipo({ equipoId: equipoId });
 	}
 
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {

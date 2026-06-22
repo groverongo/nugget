@@ -5,19 +5,28 @@ interface Client {
 }
 
 export const listUsuariosQuery = `-- name: ListUsuarios :many
-SELECT id, username, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado, participante FROM usuarios`;
+SELECT id, username, award_campeon, award_goleador, award_mejor_jugador, award_mejor_arquero, award_mejor_jugador_joven, award_mejor_gol, award_seleccion_decepcion, award_seleccion_sorpresa, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado, participante, racha_maxima FROM usuarios`;
 
 export interface ListUsuariosRow {
     id: string;
     username: string;
+    awardCampeon: number | null;
+    awardGoleador: number | null;
+    awardMejorJugador: number | null;
+    awardMejorArquero: number | null;
+    awardMejorJugadorJoven: number | null;
+    awardMejorGol: number | null;
+    awardSeleccionDecepcion: number | null;
+    awardSeleccionSorpresa: number | null;
     partidosApostados: number;
     partidosGanados: number;
     partidosPerdidos: number;
     puntos: number;
     racha: number;
     winRate: string;
-    premioAsociado: string | null;
+    premioAsociado: number | null;
     participante: boolean;
+    rachaMaxima: number;
 }
 
 export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
@@ -30,14 +39,23 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
         return {
             id: row[0],
             username: row[1],
-            partidosApostados: row[2],
-            partidosGanados: row[3],
-            partidosPerdidos: row[4],
-            puntos: row[5],
-            racha: row[6],
-            winRate: row[7],
-            premioAsociado: row[8],
-            participante: row[9]
+            awardCampeon: row[2],
+            awardGoleador: row[3],
+            awardMejorJugador: row[4],
+            awardMejorArquero: row[5],
+            awardMejorJugadorJoven: row[6],
+            awardMejorGol: row[7],
+            awardSeleccionDecepcion: row[8],
+            awardSeleccionSorpresa: row[9],
+            partidosApostados: row[10],
+            partidosGanados: row[11],
+            partidosPerdidos: row[12],
+            puntos: row[13],
+            racha: row[14],
+            winRate: row[15],
+            premioAsociado: row[16],
+            participante: row[17],
+            rachaMaxima: row[18]
         };
     });
 }
@@ -66,7 +84,7 @@ UPDATE usuarios SET
 WHERE id = $2`;
 
 export interface UpdateUsuarioPremioArgs {
-    premioAsociado: string | null;
+    premioAsociado: number | null;
     id: string;
 }
 
@@ -204,45 +222,6 @@ export async function countParticipantes(client: Client): Promise<CountParticipa
     };
 }
 
-export const obtenerPuntosUsuarioQuery = `-- name: ObtenerPuntosUsuario :one
-SELECT id, puntos FROM usuarios WHERE id = $1`;
-
-export interface ObtenerPuntosUsuarioArgs {
-    id: string;
-}
-
-export interface ObtenerPuntosUsuarioRow {
-    id: string;
-    puntos: number;
-}
-
-export async function obtenerPuntosUsuario(client: Client, args: ObtenerPuntosUsuarioArgs): Promise<ObtenerPuntosUsuarioRow | null> {
-    const result = await client.query({
-        text: obtenerPuntosUsuarioQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) return null;
-    const row = result.rows[0];
-    return { id: row[0], puntos: row[1] };
-}
-
-export const ajustarPuntosTimbaQuery = `-- name: AjustarPuntosTimba :exec
-UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1`;
-
-export interface AjustarPuntosTimbaArgs {
-    id: string;
-    delta: number;
-}
-
-export async function ajustarPuntosTimba(client: Client, args: AjustarPuntosTimbaArgs): Promise<void> {
-    await client.query({
-        text: ajustarPuntosTimbaQuery,
-        values: [args.id, args.delta],
-        rowMode: "array"
-    });
-}
-
 export const limpiezaDistribucionPremiosQuery = `-- name: LimpiezaDistribucionPremios :exec
 DELETE FROM estatico_premios`;
 
@@ -271,6 +250,50 @@ export async function agregarPuestoPremio(client: Client, args: AgregarPuestoPre
     });
 }
 
+export const obtenerPuntosUsuarioQuery = `-- name: ObtenerPuntosUsuario :one
+SELECT id, puntos FROM usuarios WHERE id = $1`;
+
+export interface ObtenerPuntosUsuarioArgs {
+    id: string;
+}
+
+export interface ObtenerPuntosUsuarioRow {
+    id: string;
+    puntos: number;
+}
+
+export async function obtenerPuntosUsuario(client: Client, args: ObtenerPuntosUsuarioArgs): Promise<ObtenerPuntosUsuarioRow | null> {
+    const result = await client.query({
+        text: obtenerPuntosUsuarioQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        puntos: row[1]
+    };
+}
+
+export const ajustarPuntosTimbaQuery = `-- name: AjustarPuntosTimba :exec
+UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1`;
+
+export interface AjustarPuntosTimbaArgs {
+    id: string;
+    delta: number;
+}
+
+export async function ajustarPuntosTimba(client: Client, args: AjustarPuntosTimbaArgs): Promise<void> {
+    await client.query({
+        text: ajustarPuntosTimbaQuery,
+        values: [args.id, args.delta],
+        rowMode: "array"
+    });
+}
+
 export const verGanadoresMayorWinRateQuery = `-- name: VerGanadoresMayorWinRate :many
 SELECT id, username, win_rate::NUMERIC AS win_rate
 FROM usuarios
@@ -289,11 +312,13 @@ export async function verGanadoresMayorWinRate(client: Client): Promise<VerGanad
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        winRate: row[2],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            winRate: row[2]
+        };
+    });
 }
 
 export const verGanadoresRachaMaximaQuery = `-- name: VerGanadoresRachaMaxima :many
@@ -314,10 +339,12 @@ export async function verGanadoresRachaMaxima(client: Client): Promise<VerGanado
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        rachaMaxima: row[2],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            rachaMaxima: row[2]
+        };
+    });
 }
 

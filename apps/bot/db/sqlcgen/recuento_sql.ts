@@ -36,7 +36,7 @@ export interface VerRankingCompletoRow {
     partidosApostados: number;
     partidosGanados: number;
     partidosPerdidos: number;
-    partidosBuenIntento: number;
+    partidosBuenIntento: string;
     premioAsociado: number | null;
 }
 
@@ -46,19 +46,21 @@ export async function verRankingCompleto(client: Client): Promise<VerRankingComp
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        puntos: row[2],
-        racha: row[3],
-        rachaMaxima: row[4],
-        winRate: row[5],
-        partidosApostados: row[6],
-        partidosGanados: row[7],
-        partidosPerdidos: row[8],
-        partidosBuenIntento: row[9],
-        premioAsociado: row[10]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            puntos: row[2],
+            racha: row[3],
+            rachaMaxima: row[4],
+            winRate: row[5],
+            partidosApostados: row[6],
+            partidosGanados: row[7],
+            partidosPerdidos: row[8],
+            partidosBuenIntento: row[9],
+            premioAsociado: row[10]
+        };
+    });
 }
 
 export const verEstadisticasTorneoQuery = `-- name: VerEstadisticasTorneo :one
@@ -78,7 +80,9 @@ export async function verEstadisticasTorneo(client: Client): Promise<VerEstadist
         values: [],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
     return {
         partidosFinalizados: row[0],
@@ -105,7 +109,9 @@ export async function verWinRateGlobal(client: Client): Promise<VerWinRateGlobal
         values: [],
         rowMode: "array"
     });
-    if (result.rows.length !== 1) return null;
+    if (result.rows.length !== 1) {
+        return null;
+    }
     const row = result.rows[0];
     return {
         exactos: row[0],
@@ -131,11 +137,13 @@ export async function verRankingWinRate(client: Client): Promise<VerRankingWinRa
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        winRate: row[2]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            winRate: row[2]
+        };
+    });
 }
 
 export const verRankingRachaMaximaQuery = `-- name: VerRankingRachaMaxima :many
@@ -156,11 +164,13 @@ export async function verRankingRachaMaxima(client: Client): Promise<VerRankingR
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        username: row[1],
-        rachaMaxima: row[2]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            rachaMaxima: row[2]
+        };
+    });
 }
 
 export const verEquiposEliminadosQuery = `-- name: VerEquiposEliminados :many
@@ -182,12 +192,14 @@ export async function verEquiposEliminados(client: Client): Promise<VerEquiposEl
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        nombre: row[1],
-        siglas: row[2],
-        bandera: row[3]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            nombre: row[1],
+            siglas: row[2],
+            bandera: row[3]
+        };
+    });
 }
 
 export const marcarEquipoEliminadoQuery = `-- name: MarcarEquipoEliminado :exec
@@ -279,24 +291,27 @@ export async function verAwardsParaRecuento(client: Client): Promise<VerAwardsPa
         values: [],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        usuarioId: row[0],
-        username: row[1],
-        campeonId: row[2],
-        campeonBandera: row[3],
-        goleadorId: row[4],
-        goleadorEquipoId: row[5],
-        mejorJugadorId: row[6],
-        mejorJugadorEquipoId: row[7],
-        mejorArqueroId: row[8],
-        mejorArqueroEquipoId: row[9],
-        mejorJugadorJovenId: row[10],
-        mejorJugadorJovenEquipoId: row[11],
-        mejorGolId: row[12],
-        mejorGolEquipoId: row[13],
-        seleccionDecepcionId: row[14],
-        seleccionDecepcionBandera: row[15],
-        seleccionSorpresaId: row[16],
-        seleccionSorpresaBandera: row[17]
-    }));
+    return result.rows.map(row => {
+        return {
+            usuarioId: row[0],
+            username: row[1],
+            campeonId: row[2],
+            campeonBandera: row[3],
+            goleadorId: row[4],
+            goleadorEquipoId: row[5],
+            mejorJugadorId: row[6],
+            mejorJugadorEquipoId: row[7],
+            mejorArqueroId: row[8],
+            mejorArqueroEquipoId: row[9],
+            mejorJugadorJovenId: row[10],
+            mejorJugadorJovenEquipoId: row[11],
+            mejorGolId: row[12],
+            mejorGolEquipoId: row[13],
+            seleccionDecepcionId: row[14],
+            seleccionDecepcionBandera: row[15],
+            seleccionSorpresaId: row[16],
+            seleccionSorpresaBandera: row[17]
+        };
+    });
 }
+

@@ -776,11 +776,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						for (let i = 0; i < timbas.length; i += 3) {
 							const batch = timbas.slice(i, i + 3);
 							await interaction.followUp({
-								components: buildTimbaResolucionComponents(
-									batch,
-									partidoId,
-									// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-								) as any,
+								components: buildTimbaResolucionComponents(batch, partidoId),
 								flags: MessageFlags.IsComponentsV2,
 								ephemeral: true,
 							});
@@ -1099,7 +1095,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					? hoy
 					: fechas[fechas.length - 1];
 				const timbas = await appContext.services.timba.verMisTimbasPorFecha({
-					jugador1Id: interaction.user.id,
+					jugador_1Id: interaction.user.id,
 					date: fechaSeleccionada,
 				});
 
@@ -1190,7 +1186,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const jugadores =
 						await appContext.services.awards.buscarJugadores(query);
 					const opciones = jugadores.slice(0, 25).map((j) => ({
-						name: `${j.nombre} (${j.equipo_nombre})`,
+						name: `${j.nombre} (${j.equipoNombre})`,
 						value: String(j.id),
 					}));
 					await interaction.respond(opciones);
@@ -1384,7 +1380,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const jugadores =
 						await appContext.services.awards.buscarJugadores(query);
 					const opciones = jugadores.slice(0, 25).map((j) => ({
-						name: `${j.nombre} (${j.equipo_nombre})`,
+						name: `${j.nombre} (${j.equipoNombre})`,
 						value: String(j.id),
 					}));
 					await interaction.respond(opciones);
@@ -1531,7 +1527,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const jugadores =
 						await appContext.services.awards.buscarJugadores(query);
 					const opciones = jugadores.slice(0, 25).map((j) => ({
-						name: `${j.nombre} (${j.equipo_nombre})`,
+						name: `${j.nombre} (${j.equipoNombre})`,
 						value: String(j.id),
 					}));
 					await interaction.respond(opciones);
@@ -2049,7 +2045,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const partido = `${cancelada.equipoLocalNombre} ${cancelada.equipoLocalBandera} vs. ${cancelada.equipoVisitanteNombre} ${cancelada.equipoVisitanteBandera}`;
 					await sendAnnouncementChannel(
 						interaction.client,
-						`🚫 _¡<@${cancelada.jugador1Id}> canceló una timba para **${partido}**!_`,
+						`🚫 _¡<@${cancelada.jugador_1Id}> canceló una timba para **${partido}**!_`,
 					);
 				} catch (error) {
 					await interaction.editReply({

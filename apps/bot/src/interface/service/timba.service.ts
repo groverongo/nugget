@@ -56,7 +56,7 @@ export interface CancelarTimbaInput {
 
 export type CancelarTimbaResult = Pick<
 	VerTimbaRow,
-	| "jugador1Id"
+	| "jugador_1Id"
 	| "equipoLocalNombre"
 	| "equipoLocalBandera"
 	| "equipoLocalSiglas"

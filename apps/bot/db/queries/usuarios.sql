@@ -56,7 +56,7 @@ VALUES ($1, $2);
 SELECT id, puntos FROM usuarios WHERE id = $1;
 
 -- name: AjustarPuntosTimba :exec
-UPDATE usuarios SET puntos = puntos + $2 WHERE id = $1;
+UPDATE usuarios SET puntos = puntos + sqlc.arg('delta') WHERE id = $1;
 
 -- name: VerGanadoresMayorWinRate :many
 SELECT id, username, win_rate::NUMERIC AS win_rate

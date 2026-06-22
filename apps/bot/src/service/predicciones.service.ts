@@ -25,7 +25,6 @@ export class PrediccionesService implements IPrediccionesService {
 	constructor(
 		private readonly prediccionesRepo: IPrediccionesRepository,
 		private readonly partidosRepo: IPartidosRepository,
-		// biome-ignore lint/correctness/noUnusedPrivateClassMembers: <Es el estandar para la capa de servicios>
 		private readonly txManager: TxManager,
 	) {}
 
@@ -43,25 +42,16 @@ export class PrediccionesService implements IPrediccionesService {
 			});
 
 		if (prediccionExistente) {
-			await this.prediccionesRepo.actualizarPrediccion(args);
-			return "updated";
-		}
-
-		await this.prediccionesRepo.agregarPrediccion(args);
-		return "created";
-	}
-
-	async guardarPrediccionAdmin(
-		args: AgregarPrediccionArgs,
-	): Promise<"created" | "updated"> {
-		const prediccionExistente =
-			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
-				usuarioId: args.usuarioId,
-				partidoId: args.partidoId,
+			this.txManager.runInTx(async (tx) => {
+				const prediccionRepo = this.prediccionesRepo.withTx(tx);
+				await prediccionRepo.actualizarPrediccion(args);
+				await prediccionRepo.agregarHistoriaPrediccion({
+					golesLocal: prediccionExistente.golesLocal,
+					golesVisitante: prediccionExistente.golesVisitante,
+					partidoId: args.partidoId,
+					usuarioId: args.usuarioId,
+				});
 			});
-
-		if (prediccionExistente) {
-			await this.prediccionesRepo.actualizarPrediccion(args);
 			return "updated";
 		}
 

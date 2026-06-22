@@ -205,11 +205,11 @@ async function buildResumenDia(
 		if (timbas.length > 0) {
 			lineas.push("🎰 Timba Times:");
 			for (const t of timbas) {
-				const ganadorMencion = `<@${t.ganadorId}>`;
 				const perdedorId =
-					t.ganadorId === t.jugador1Id ? t.jugador2Id : t.jugador1Id;
+					t.ganadorId === t.jugador_1Id ? t.jugador_2Id : t.jugador_1Id;
+				if (t.ganadorId === null || perdedorId === null) continue;
 				lineas.push(
-					`• ${ganadorMencion} 👑 le robó **${t.puntos} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
+					`• <@${t.ganadorId}> 👑 le robó **${t.puntos} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
 				);
 
 				const existingGanador = ganadores.get(t.ganadorId);

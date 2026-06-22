@@ -12,28 +12,30 @@ WHERE j.equipo_id = $1
 ORDER BY j.posicion, j.nombre ASC`;
 
 export interface VerJugadoresPorEquipoArgs {
-    equipo_id: number;
+    equipoId: number;
 }
 
 export interface VerJugadoresPorEquipoRow {
     id: number;
     nombre: string;
     posicion: string;
-    equipo_nombre: string;
+    equipoNombre: string;
 }
 
 export async function verJugadoresPorEquipo(client: Client, args: VerJugadoresPorEquipoArgs): Promise<VerJugadoresPorEquipoRow[]> {
     const result = await client.query({
         text: verJugadoresPorEquipoQuery,
-        values: [args.equipo_id],
+        values: [args.equipoId],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        nombre: row[1],
-        posicion: row[2],
-        equipo_nombre: row[3],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            nombre: row[1],
+            posicion: row[2],
+            equipoNombre: row[3]
+        };
+    });
 }
 
 export const buscarJugadoresQuery = `-- name: BuscarJugadores :many
@@ -45,14 +47,14 @@ ORDER BY e.nombre, j.nombre ASC
 LIMIT 25`;
 
 export interface BuscarJugadoresArgs {
-    query: string;
+    query: string | null;
 }
 
 export interface BuscarJugadoresRow {
     id: number;
     nombre: string;
     posicion: string;
-    equipo_nombre: string;
+    equipoNombre: string;
 }
 
 export async function buscarJugadores(client: Client, args: BuscarJugadoresArgs): Promise<BuscarJugadoresRow[]> {
@@ -61,12 +63,14 @@ export async function buscarJugadores(client: Client, args: BuscarJugadoresArgs)
         values: [args.query],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        nombre: row[1],
-        posicion: row[2],
-        equipo_nombre: row[3],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            nombre: row[1],
+            posicion: row[2],
+            equipoNombre: row[3]
+        };
+    });
 }
 
 export const verJugadoresPorIdsQuery = `-- name: VerJugadoresPorIds :many
@@ -84,7 +88,7 @@ export interface VerJugadoresPorIdsRow {
     id: number;
     nombre: string;
     posicion: string;
-    equipo_nombre: string;
+    equipoNombre: string;
 }
 
 export async function verJugadoresPorIds(client: Client, args: VerJugadoresPorIdsArgs): Promise<VerJugadoresPorIdsRow[]> {
@@ -93,10 +97,13 @@ export async function verJugadoresPorIds(client: Client, args: VerJugadoresPorId
         values: [args.ids],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        nombre: row[1],
-        posicion: row[2],
-        equipo_nombre: row[3],
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            nombre: row[1],
+            posicion: row[2],
+            equipoNombre: row[3]
+        };
+    });
 }
+

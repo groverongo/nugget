@@ -67,13 +67,13 @@ export class TimbaRepository implements ITimbaRepository {
 		return verTimbasPorPartido(this.pool, { partidoId });
 	}
 
-	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {
-		return verMisTimbas(this.pool, { jugador1Id });
+	verMisTimbas(jugador_1Id: string): Promise<VerMisTimbasRow[]> {
+		return verMisTimbas(this.pool, { jugador_1Id });
 	}
 
-	async verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]> {
+	async verFechasDeTimbasPorUsuario(jugador_1Id: string): Promise<string[]> {
 		const filas = await verFechasDeTimbasPorUsuario(this.pool, {
-			jugador1Id,
+			jugador_1Id,
 		});
 		return filas.map((fila) => fila.fecha);
 	}

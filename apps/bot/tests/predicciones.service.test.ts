@@ -20,6 +20,7 @@ function createTxManagerMock(
 function createPrediccionesRepositoryMock(): jest.Mocked<IPrediccionesRepository> {
 	const repo = {
 		agregarPrediccion: jest.fn().mockResolvedValue(undefined),
+		agregarHistoriaPrediccion: jest.fn().mockResolvedValue(undefined),
 		actualizarPrediccion: jest.fn().mockResolvedValue(undefined),
 		verPrediccionPorUsuarioYPartido: jest.fn().mockResolvedValue(null),
 		verPrediccionesPorPartido: jest.fn().mockResolvedValue([]),
@@ -91,6 +92,8 @@ describe("PrediccionesService", () => {
 		prediccionesRepo.verPrediccionPorUsuarioYPartido.mockResolvedValue({
 			usuarioId: "user-1",
 			partidoId: 42,
+			golesLocal: 1,
+			golesVisitante: 3,
 		});
 		const partidosRepo = createPartidosRepositoryMock({
 			id: 42,
