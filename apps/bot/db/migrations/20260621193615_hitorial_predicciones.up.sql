@@ -8,3 +8,5 @@ CREATE TABLE
     );
 
 ALTER TABLE monitoreo_prediccion ADD CONSTRAINT fk_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuarios (id);
+
+ALTER TABLE monitoreo_prediccion ADD CONSTRAINT fk_partido_id FOREIGN KEY (partido_id) REFERENCES partidos (id);
