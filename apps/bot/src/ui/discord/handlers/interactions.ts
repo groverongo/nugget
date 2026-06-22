@@ -1061,10 +1061,10 @@ export async function handleTimbaButtonInteraction(
 
 		if (remaining.length > 0) {
 			await interaction.editReply({
-				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				components: buildTimbaResolucionComponents(
 					remaining.slice(0, 3),
 					partidoId,
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 				) as any,
 				flags: MessageFlags.IsComponentsV2,
 			});
@@ -1083,7 +1083,7 @@ export async function handleTimbaButtonInteraction(
 						},
 						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 					] as any,
-					flags: MessageFlags.IsComponentsV2,
+					flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
 				}),
 				sendAlertsChannel(
 					interaction.client,
