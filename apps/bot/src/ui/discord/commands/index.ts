@@ -2047,6 +2047,21 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.client,
 						`🚫 _¡<@${cancelada.jugador_1Id}> canceló una timba para **${partido}**!_`,
 					);
+					if (cancelada.discordMessageId) {
+						const channelId = config.discord.announcements.channel.id;
+						try {
+							const channel = (interaction.client.channels.cache.get(
+								channelId,
+							) ?? (await interaction.client.channels.fetch(channelId))) as
+								| import("discord.js").TextBasedChannel
+								| null;
+							if (channel && "messages" in channel) {
+								await channel.messages.delete(cancelada.discordMessageId);
+							}
+						} catch {
+							// mensaje ya eliminado o sin permisos
+						}
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,

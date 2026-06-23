@@ -736,9 +736,9 @@ export async function sendComponentsToAlertsChannel(
 export async function sendComponentsToAnnouncementChannel(
 	client: DiscordClient,
 	components: APIMessageTopLevelComponent[],
-): Promise<void> {
+): Promise<string | null> {
 	const channelId = config.discord.announcements.channel.id;
-	if (!channelId) return;
+	if (!channelId) return null;
 
 	try {
 		const channel =
@@ -747,11 +747,12 @@ export async function sendComponentsToAnnouncementChannel(
 			undefined;
 
 		if (channel && "send" in channel) {
-			await channel.send({
+			const message = await channel.send({
 				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch in discord.js
 				components: components as any,
 				flags: MessageFlags.IsComponentsV2,
 			});
+			return message.id;
 		}
 	} catch (error) {
 		logger.error(
@@ -759,6 +760,7 @@ export async function sendComponentsToAnnouncementChannel(
 			"Error enviando componentes al canal de anuncios",
 		);
 	}
+	return null;
 }
 
 export function buildTimbaModal(
@@ -864,10 +866,16 @@ export async function handleTimbaModalSubmitInteraction(
 			interaction.client,
 			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
 		);
-		await sendComponentsToAnnouncementChannel(
+		const messageId = await sendComponentsToAnnouncementChannel(
 			interaction.client,
 			buildTimbaCreacionComponent(result),
 		);
+		if (messageId) {
+			await appContext.services.timba.guardarMensajeTimba(
+				result.timbaId,
+				messageId,
+			);
+		}
 	} catch (error) {
 		await interaction.editReply({
 			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -964,10 +972,16 @@ export async function handleTimbaAdminModalSubmitInteraction(
 			interaction.client,
 			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
 		);
-		await sendComponentsToAnnouncementChannel(
+		const messageId = await sendComponentsToAnnouncementChannel(
 			interaction.client,
 			buildTimbaCreacionComponent(result),
 		);
+		if (messageId) {
+			await appContext.services.timba.guardarMensajeTimba(
+				result.timbaId,
+				messageId,
+			);
+		}
 	} catch (error) {
 		await interaction.editReply({
 			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,

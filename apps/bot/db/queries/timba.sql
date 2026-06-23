@@ -13,6 +13,7 @@ SELECT
     t.puntos,
     t.ganador_id,
     t.estado,
+    t.discord_message_id,
     u1.username AS jugador_1_nombre,
     COALESCE(u2.username, '') AS jugador_2_nombre,
     p.estado AS partido_estado,
@@ -170,6 +171,11 @@ WHERE id = $1;
 -- name: CancelarTimba :exec
 UPDATE timba_time
 SET estado = 'cancelada'
+WHERE id = $1;
+
+-- name: GuardarMensajeTimba :exec
+UPDATE timba_time
+SET discord_message_id = $2
 WHERE id = $1;
 
 -- name: AnularTimba :exec

@@ -198,6 +198,7 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
+			discordMessageId: timba.discordMessageId,
 		};
 	}
 
@@ -297,5 +298,12 @@ export class TimbaService implements ITimbaService {
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void> {
 		return this.timbaRepo.cancelarTimbasAbiertasPorPartido(partidoId);
+	}
+
+	guardarMensajeTimba(timbaId: number, messageId: string): Promise<void> {
+		return this.timbaRepo.guardarMensaje({
+			id: timbaId,
+			discordMessageId: messageId,
+		});
 	}
 }

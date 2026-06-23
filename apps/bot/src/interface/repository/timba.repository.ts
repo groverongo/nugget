@@ -5,6 +5,7 @@ import type {
 	CheckEmparejamientoTimbaArgs,
 	CrearTimbaArgs,
 	CrearTimbaRow,
+	GuardarMensajeTimbaArgs,
 	ResolverTimbaArgs,
 	VerMisTimbasPorFechaArgs,
 	VerMisTimbasPorFechaRow,
@@ -57,6 +58,8 @@ export interface ITimbaRepository {
 	sumarApuestasActivas(userId: string): Promise<number>;
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
+
+	guardarMensaje(args: GuardarMensajeTimbaArgs): Promise<void>;
 
 	withTx(tx: PoolClient): ITimbaRepository;
 }
