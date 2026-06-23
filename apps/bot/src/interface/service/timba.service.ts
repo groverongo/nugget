@@ -63,6 +63,7 @@ export type CancelarTimbaResult = Pick<
 	| "equipoVisitanteNombre"
 	| "equipoVisitanteBandera"
 	| "equipoVisitanteSiglas"
+	| "discordMessageId"
 >;
 
 export interface ResolverTimbaInput {
@@ -117,4 +118,6 @@ export interface ITimbaService {
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void>;
+
+	guardarMensajeTimba(timbaId: number, messageId: string): Promise<void>;
 }

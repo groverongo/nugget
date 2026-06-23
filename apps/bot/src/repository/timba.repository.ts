@@ -11,6 +11,8 @@ import {
 	cancelarTimbasAbiertasPorPartido,
 	checkEmparejamientoTimba,
 	crearTimba,
+	type GuardarMensajeTimbaArgs,
+	guardarMensajeTimba,
 	type ResolverTimbaArgs,
 	resolverTimba,
 	sumarApuestasActivas,
@@ -114,6 +116,10 @@ export class TimbaRepository implements ITimbaRepository {
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
 		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
+	}
+
+	guardarMensaje(args: GuardarMensajeTimbaArgs): Promise<void> {
+		return guardarMensajeTimba(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): TimbaRepository {

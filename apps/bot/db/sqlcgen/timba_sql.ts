@@ -45,6 +45,7 @@ SELECT
     t.puntos,
     t.ganador_id,
     t.estado,
+    t.discord_message_id,
     u1.username AS jugador_1_nombre,
     COALESCE(u2.username, '') AS jugador_2_nombre,
     p.estado AS partido_estado,
@@ -77,6 +78,7 @@ export interface VerTimbaRow {
     puntos: number;
     ganadorId: string | null;
     estado: string;
+    discordMessageId: string | null;
     jugador_1Nombre: string;
     jugador_2Nombre: string;
     partidoEstado: string;
@@ -108,16 +110,17 @@ export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerT
         puntos: row[5],
         ganadorId: row[6],
         estado: row[7],
-        jugador_1Nombre: row[8],
-        jugador_2Nombre: row[9],
-        partidoEstado: row[10],
-        fasePuntosBase: row[11],
-        equipoLocalNombre: row[12],
-        equipoLocalBandera: row[13],
-        equipoLocalSiglas: row[14],
-        equipoVisitanteNombre: row[15],
-        equipoVisitanteBandera: row[16],
-        equipoVisitanteSiglas: row[17]
+        discordMessageId: row[8],
+        jugador_1Nombre: row[9],
+        jugador_2Nombre: row[10],
+        partidoEstado: row[11],
+        fasePuntosBase: row[12],
+        equipoLocalNombre: row[13],
+        equipoLocalBandera: row[14],
+        equipoLocalSiglas: row[15],
+        equipoVisitanteNombre: row[16],
+        equipoVisitanteBandera: row[17],
+        equipoVisitanteSiglas: row[18]
     };
 }
 
@@ -564,6 +567,24 @@ export async function cancelarTimba(client: Client, args: CancelarTimbaArgs): Pr
     await client.query({
         text: cancelarTimbaQuery,
         values: [args.id],
+        rowMode: "array"
+    });
+}
+
+export const guardarMensajeTimbaQuery = `-- name: GuardarMensajeTimba :exec
+UPDATE timba_time
+SET discord_message_id = $2
+WHERE id = $1`;
+
+export interface GuardarMensajeTimbaArgs {
+    id: number;
+    discordMessageId: string | null;
+}
+
+export async function guardarMensajeTimba(client: Client, args: GuardarMensajeTimbaArgs): Promise<void> {
+    await client.query({
+        text: guardarMensajeTimbaQuery,
+        values: [args.id, args.discordMessageId],
         rowMode: "array"
     });
 }
