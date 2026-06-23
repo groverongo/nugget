@@ -14,7 +14,9 @@ import {
 	type GuardarMensajeTimbaArgs,
 	guardarMensajeTimba,
 	type ResolverTimbaArgs,
+	type RevertirTimbaArgs,
 	resolverTimba,
+	revertirTimba,
 	sumarApuestasActivas,
 	type VerMisTimbasPorFechaArgs,
 	type VerMisTimbasPorFechaRow,
@@ -22,6 +24,7 @@ import {
 	type VerPartidoParaTimbaRow,
 	type VerTimbaRow,
 	type VerTimbasCerradasPorPartidoRow,
+	type VerTimbasMedioTiempoPorPartidoRow,
 	type VerTimbasPorPartidoRow,
 	type VerTimbasResueltasPorPartidoRow,
 	verFechasDeTimbasPorUsuario,
@@ -30,6 +33,7 @@ import {
 	verPartidoParaTimba,
 	verTimba,
 	verTimbasCerradasPorPartido,
+	verTimbasMedioTiempoPorPartido,
 	verTimbasPorPartido,
 	verTimbasResueltasPorPartido,
 } from "@sqlc/timba_sql";
@@ -116,6 +120,16 @@ export class TimbaRepository implements ITimbaRepository {
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
 		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
+	}
+
+	verTimbasMedioTiempoPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasMedioTiempoPorPartidoRow[]> {
+		return verTimbasMedioTiempoPorPartido(this.pool, { partidoId });
+	}
+
+	revertir(args: RevertirTimbaArgs): Promise<void> {
+		return revertirTimba(this.pool, args);
 	}
 
 	guardarMensaje(args: GuardarMensajeTimbaArgs): Promise<void> {

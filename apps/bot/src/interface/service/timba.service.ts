@@ -5,6 +5,7 @@ import type {
 	VerPartidoParaTimbaRow,
 	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -13,12 +14,14 @@ export interface CrearTimbaInput {
 	jugador1Id: string;
 	partidoId: number;
 	descripcion: string;
-	puntos: number;
+	puntosPropuestos: number;
+	puntosArriesgados?: number;
 }
 
 export interface CrearTimbaResult {
 	timbaId: number;
-	puntos: number;
+	puntosPropuestos: number;
+	puntosArriesgados: number;
 	descripcion: string;
 	jugador1Id: string;
 	equipoLocalNombre: string;
@@ -36,7 +39,8 @@ export interface AceptarTimbaInput {
 
 export interface AceptarTimbaResult {
 	timbaId: number;
-	puntos: number;
+	puntosPropuestos: number;
+	puntosArriesgados: number;
 	descripcion: string;
 	jugador1Id: string;
 	jugador2Id: string;
@@ -66,6 +70,16 @@ export type CancelarTimbaResult = Pick<
 	| "discordMessageId"
 >;
 
+export type AnularTimbaResult = Pick<
+	VerTimbaRow,
+	| "jugador_1Id"
+	| "equipoLocalNombre"
+	| "equipoLocalBandera"
+	| "equipoVisitanteNombre"
+	| "equipoVisitanteBandera"
+	| "descripcion"
+>;
+
 export interface ResolverTimbaInput {
 	timbaId: number;
 	ganadorJugador: "j1" | "j2";
@@ -76,7 +90,7 @@ export interface ResolverTimbaResult {
 	ganadorNombre: string;
 	perdedorId: string;
 	perdedorNombre: string;
-	puntos: number;
+	puntosRobados: number;
 	descripcion: string;
 	equipoLocalSiglas: string;
 	equipoLocalBandera: string;
@@ -95,7 +109,7 @@ export interface ITimbaService {
 
 	cancelarTimba(args: CancelarTimbaInput): Promise<CancelarTimbaResult>;
 
-	anularTimba(timbaId: number): Promise<void>;
+	anularTimba(timbaId: number): Promise<AnularTimbaResult>;
 
 	resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult>;
 
@@ -118,6 +132,16 @@ export interface ITimbaService {
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void>;
+
+	verTimbasMedioTiempoPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasMedioTiempoPorPartidoRow[]>;
+
+	resolverTimbaMedioTiempo(
+		args: ResolverTimbaInput,
+	): Promise<ResolverTimbaResult>;
+
+	revertirTimba(timbaId: number): Promise<void>;
 
 	guardarMensajeTimba(timbaId: number, messageId: string): Promise<void>;
 }

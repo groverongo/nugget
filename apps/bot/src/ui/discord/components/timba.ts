@@ -1,6 +1,7 @@
 import type {
 	VerMisTimbasPorFechaRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
 import type { APIMessageTopLevelComponent } from "discord.js";
@@ -24,6 +25,9 @@ import { fechaADiscordTimestamp } from "../utils/fecha";
 export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
 export const TIMBA_RESOLVER_J1_PREFIX = "timba:resolver:j1:";
 export const TIMBA_RESOLVER_J2_PREFIX = "timba:resolver:j2:";
+export const TIMBA_MT_RESOLVER_J1_PREFIX = "timba:mt:resolver:j1:";
+export const TIMBA_MT_RESOLVER_J2_PREFIX = "timba:mt:resolver:j2:";
+export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
 
 function puntosStr(puntos: number): string {
@@ -33,6 +37,14 @@ function puntosStr(puntos: number): string {
 export function buildTimbaCreacionComponent(
 	result: CrearTimbaResult,
 ): APIMessageTopLevelComponent[] {
+	const simetrico = result.puntosPropuestos === result.puntosArriesgados;
+	const puntosLine = simetrico
+		? `💠 **${puntosStr(result.puntosPropuestos)}** en juego a: _"${result.descripcion}"_`
+		: [
+				`💠 Aposté **${puntosStr(result.puntosPropuestos)}** — el retador debe arriesgar **${puntosStr(result.puntosArriesgados)}**`,
+				`_"${result.descripcion}"_`,
+			].join("\n");
+
 	const container = new ContainerBuilder().addSectionComponents(
 		new SectionBuilder()
 			.addTextDisplayComponents(
@@ -40,7 +52,7 @@ export function buildTimbaCreacionComponent(
 					[
 						`🎰 **Timba Time** — <@${result.jugador1Id}>`,
 						`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
-						`💠 **${puntosStr(result.puntos)}** en juego a: _"${result.descripcion}"_`,
+						puntosLine,
 					].join("\n"),
 				),
 			)
@@ -58,12 +70,17 @@ export function buildTimbaCreacionComponent(
 export function buildTimbaAceptadaComponent(
 	result: AceptarTimbaResult,
 ): APIMessageTopLevelComponent[] {
+	const simetrico = result.puntosPropuestos === result.puntosArriesgados;
+	const puntosLine = simetrico
+		? `💠 **${puntosStr(result.puntosPropuestos)}** en juego a: _"${result.descripcion}"_`
+		: `💠 <@${result.jugador1Id}> arriesga **${puntosStr(result.puntosPropuestos)}** — <@${result.jugador2Id}> arriesga **${puntosStr(result.puntosArriesgados)}** — _"${result.descripcion}"_`;
+
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
 			[
 				`🎰 **Timba Time** — <@${result.jugador1Id}> vs <@${result.jugador2Id}>`,
 				`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
-				`💠 **${puntosStr(result.puntos)}** en juego a: _"${result.descripcion}"_`,
+				puntosLine,
 				`✅ ¡Aceptada! Pendiente de resolución.`,
 			].join("\n"),
 		),
@@ -88,16 +105,20 @@ export function buildTimbaResolucionComponents(
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
 		);
+		const simetricoRes = timba.puntosPropuestos === timba.puntosArriesgados;
+		const puntosResLine = simetricoRes
+			? `**${timba.puntosPropuestos} 💠**`
+			: `J1 arriesga **${timba.puntosPropuestos} 💠** / J2 arriesga **${timba.puntosArriesgados} 💠**`;
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
-				`**#${timba.id}** — **${timba.puntos} 💠** — _"${timba.descripcion}"_`,
+				`**#${timba.id}** — ${puntosResLine} — _"${timba.descripcion}"_`,
 			),
 		);
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre})`,
+						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
 					),
 				)
 				.setButtonAccessory(
@@ -111,7 +132,7 @@ export function buildTimbaResolucionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre})`,
+						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
 					),
 				)
 				.setButtonAccessory(
@@ -150,11 +171,15 @@ export function buildVerTimbasComponent(
 			? `<@${timba.jugador_2Id}>`
 			: "_Sin aceptar_";
 
+		const puntosLineVer =
+			timba.puntosPropuestos === timba.puntosArriesgados
+				? `💠 **${puntosStr(timba.puntosPropuestos)}** en juego a: _"${timba.descripcion}"_`
+				: `💠 J1 arriesga **${puntosStr(timba.puntosPropuestos)}** / retador arriesga **${puntosStr(timba.puntosArriesgados)}** — _"${timba.descripcion}"_`;
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
 				[
 					estadoBadge,
-					`💠 **${puntosStr(timba.puntos)}** en juego a: _"${timba.descripcion}"_`,
+					puntosLineVer,
 					`<@${timba.jugador_1Id}> 🆚 ${j2Line}`,
 				].join("\n"),
 			),
@@ -196,7 +221,9 @@ function formatMiTimbaLine(timba: MiTimbaPorFecha, usuarioId: string): string {
 
 	return [
 		`### ${timba.equipoLocalNombre} ${timba.equipoLocalBandera} vs. ${timba.equipoVisitanteNombre} ${timba.equipoVisitanteBandera}`,
-		`**${timba.puntos} 💠** en juego a: _"${timba.descripcion}"_`,
+		timba.puntosPropuestos === timba.puntosArriesgados
+			? `**${timba.puntosPropuestos} 💠** en juego a: _"${timba.descripcion}"_`
+			: `J1 arriesga **${timba.puntosPropuestos} 💠** / J2 arriesga **${timba.puntosArriesgados} 💠** — _"${timba.descripcion}"_`,
 		`Rival: ${oponenteNombre}`,
 		getMiTimbaEstadoBadge(timba, usuarioId),
 		fechaPartido,
@@ -251,4 +278,83 @@ export function buildMisTimbasComponents(
 	);
 
 	return [container.toJSON()];
+}
+
+export function buildTimbaResolucionMedioTiempoComponents(
+	timbas: VerTimbasMedioTiempoPorPartidoRow[],
+	partidoId: number,
+): APIMessageTopLevelComponent[] {
+	if (timbas.length === 0) return [];
+
+	const container = new ContainerBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(
+			"⏸️ **Timba Times — Revisión de Medio Tiempo**",
+		),
+	);
+
+	for (const timba of timbas) {
+		container.addSeparatorComponents(
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+		);
+		const simetricoMt = timba.puntosPropuestos === timba.puntosArriesgados;
+		const puntosMtLine = simetricoMt
+			? `**${timba.puntosPropuestos} 💠**`
+			: `J1 arriesga **${timba.puntosPropuestos} 💠** / J2 arriesga **${timba.puntosArriesgados} 💠**`;
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				`**#${timba.id}** — ${puntosMtLine} — _"${timba.descripcion}"_${timba.estado === "resuelta" ? ` ✅ Ganador actual: <@${timba.ganadorId}> (${timba.ganadorNombre})` : ""}`,
+			),
+		);
+		container.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
+					),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${TIMBA_MT_RESOLVER_J1_PREFIX}${timba.id}:${partidoId}`,
+						)
+						.setLabel("J1 ganó ✅")
+						.setStyle(ButtonStyle.Primary),
+				),
+		);
+		container.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
+					),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${TIMBA_MT_RESOLVER_J2_PREFIX}${timba.id}:${partidoId}`,
+						)
+						.setLabel("J2 ganó ✅")
+						.setStyle(ButtonStyle.Primary),
+				),
+		);
+		if (timba.estado === "resuelta") {
+			container.addSectionComponents(
+				new SectionBuilder()
+					.addTextDisplayComponents(
+						new TextDisplayBuilder().setContent("Revertir resultado"),
+					)
+					.setButtonAccessory(
+						new ButtonBuilder()
+							.setCustomId(
+								`${TIMBA_MT_REVERTIR_PREFIX}${timba.id}:${partidoId}`,
+							)
+							.setLabel("🔄 No resuelta aún")
+							.setStyle(ButtonStyle.Secondary),
+					),
+			);
+		}
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+	return [container.toJSON() as any];
 }
