@@ -23,6 +23,7 @@ import {
 	resolverTimba,
 	revertirTimba,
 	sumarApuestasActivas,
+	type VerContraofertasMensajesPorTimbaRow,
 	type VerMisTimbasPorFechaArgs,
 	type VerMisTimbasPorFechaRow,
 	type VerMisTimbasRow,
@@ -32,6 +33,7 @@ import {
 	type VerTimbasMedioTiempoPorPartidoRow,
 	type VerTimbasPorPartidoRow,
 	type VerTimbasResueltasPorPartidoRow,
+	verContraofertasMensajesPorTimba,
 	verFechasDeTimbasPorUsuario,
 	verMisTimbas,
 	verMisTimbasPorFecha,
@@ -125,6 +127,12 @@ export class TimbaRepository implements ITimbaRepository {
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
 		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
+	}
+
+	verContraofertasMensajesPorTimba(
+		timbaOriginalId: number,
+	): Promise<VerContraofertasMensajesPorTimbaRow[]> {
+		return verContraofertasMensajesPorTimba(this.pool, { timbaOriginalId });
 	}
 
 	crearContraoferta(
