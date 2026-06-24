@@ -197,9 +197,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 	if (eliminados.length === 0) {
 		lineas.push("_🙅 Ningún equipo eliminado aún._");
 	} else {
-		const equiposStr = eliminados
-			.map((e) => `${e.siglas} ${e.bandera}`)
-			.join(" / ");
+		const equiposStr = eliminados.map((e) => e.bandera).join(" ");
 		lineas.push(`_Equipos eliminados: ${equiposStr}_`);
 	}
 
@@ -208,12 +206,31 @@ export function buildRecuento(datos: DatosRecuento): string {
 	if (awardsLineas.length > 0) {
 		lineas.push("");
 		if (eliminados.length > 0) {
-			const eliminadosStr = eliminados
-				.map((e) => `**${e.siglas} ${e.bandera}**`)
-				.join(" / ");
-			lineas.push(
-				`_***Awards*** resueltas tras la eliminación de ${eliminadosStr}:_`,
+			const equiposQueAfectanAward = eliminados.filter((e) =>
+				awards.some(
+					(r) =>
+						(r.campeonId !== null && r.campeonId === e.id) ||
+						(r.goleadorEquipoId !== null && r.goleadorEquipoId === e.id) ||
+						(r.mejorJugadorEquipoId !== null &&
+							r.mejorJugadorEquipoId === e.id) ||
+						(r.mejorArqueroEquipoId !== null &&
+							r.mejorArqueroEquipoId === e.id) ||
+						(r.mejorJugadorJovenEquipoId !== null &&
+							r.mejorJugadorJovenEquipoId === e.id) ||
+						(r.mejorGolEquipoId !== null && r.mejorGolEquipoId === e.id) ||
+						(r.seleccionDecepcionId !== null &&
+							r.seleccionDecepcionId === e.id) ||
+						(r.seleccionSorpresaId !== null && r.seleccionSorpresaId === e.id),
+				),
 			);
+			if (equiposQueAfectanAward.length > 0) {
+				const eliminadosStr = equiposQueAfectanAward
+					.map((e) => `**${e.siglas} ${e.bandera}**`)
+					.join(" / ");
+				lineas.push(
+					`_***Awards*** resueltas tras la eliminación de ${eliminadosStr}:_`,
+				);
+			}
 		}
 		lineas.push(...awardsLineas);
 	}
@@ -272,7 +289,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 		const ganadores = hitMasGoles.usuarios
 			.map((u) => `<@${u.usuarioId}>`)
 			.join("/");
-		const partidosStr = hitMasGoles.partidos.join(", ");
+		const partidosStr = hitMasGoles.partidos.join(" / ");
 		lineas.push(
 			`${ganadores} — ${hitMasGoles.totalGoles} goles (${partidosStr})`,
 		);

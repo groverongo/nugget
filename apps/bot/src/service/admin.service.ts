@@ -20,7 +20,7 @@ export class AdminService implements IAdminService {
 		partidoId: number;
 		golesLocal: number;
 		golesVisitante: number;
-		milagro: boolean;
+		milagro: number;
 	}): Promise<ResumenActualizacion> {
 		return this.txManager.runInTx(async (tx) => {
 			const partidoRepo = this.partidosRepo.withTx(tx);
@@ -68,7 +68,7 @@ export class AdminService implements IAdminService {
 				id: args.partidoId,
 				golesLocal: args.golesLocal,
 				golesVisitante: args.golesVisitante,
-				extraMilagro: args.milagro,
+				extraMilagro: args.milagro > 0,
 				extraPartidazo,
 				extraBatacazo: puntosBatacazo > 0,
 				extraElElegido: puntosElegido > 0,
@@ -104,7 +104,7 @@ export class AdminService implements IAdminService {
 
 					const puntosBase = info.puntosBase;
 					const puntosPartidazo = extraPartidazo ? 1 : 0;
-					const puntosMilagro = args.milagro ? 1 : 0;
+					const puntosMilagro = args.milagro;
 					const subTotal =
 						puntosBase +
 						puntosEnRacha +
