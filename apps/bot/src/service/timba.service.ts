@@ -4,6 +4,7 @@ import type {
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -13,6 +14,7 @@ import type { IUsuariosRepository } from "../interface/repository/usuarios.repos
 import type {
 	AceptarTimbaInput,
 	AceptarTimbaResult,
+	AnularTimbaResult,
 	CancelarTimbaInput,
 	CancelarTimbaResult,
 	CrearTimbaInput,
@@ -36,7 +38,9 @@ export class TimbaService implements ITimbaService {
 	}
 
 	async crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult> {
-		if (args.puntos <= 0) {
+		const puntosArriesgados = args.puntosArriesgados ?? args.puntosPropuestos;
+
+		if (args.puntosPropuestos <= 0 || puntosArriesgados <= 0) {
 			throw new Error("Los puntos deben ser mayores a 0.");
 		}
 
@@ -47,8 +51,10 @@ export class TimbaService implements ITimbaService {
 		]);
 
 		if (!partido) throw new Error("Partido no encontrado.");
-		if (partido.estado !== "programado") {
-			throw new Error("Solo puedes crear timbas para partidos programados.");
+		if (partido.estado !== "programado" && partido.estado !== "medio_tiempo") {
+			throw new Error(
+				"Solo puedes crear timbas para partidos programados o en medio tiempo.",
+			);
 		}
 
 		const prediccion =
@@ -62,15 +68,20 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
-		if (args.puntos > partido.puntosBase) {
-			throw new Error(`Máximo ${partido.puntosBase} 💠 en esta fase.`);
+		if (
+			args.puntosPropuestos > partido.puntosBase ||
+			puntosArriesgados > partido.puntosBase
+		) {
+			throw new Error(
+				`Máximo ${partido.puntosBase} 💠 por jugador en esta fase.`,
+			);
 		}
 		const cap = Math.floor(jugadorPuntos * 0.1);
 		if (cap === 0) {
 			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
 		}
 		const disponible = cap - apuestasActivas;
-		if (args.puntos > disponible) {
+		if (args.puntosPropuestos > disponible) {
 			throw new Error(
 				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
 			);
@@ -80,7 +91,8 @@ export class TimbaService implements ITimbaService {
 			partidoId: args.partidoId,
 			descripcion: args.descripcion,
 			jugador_1Id: args.jugador1Id,
-			puntos: args.puntos,
+			puntosPropuestos: args.puntosPropuestos,
+			puntosArriesgados,
 		});
 		if (!created) throw new Error("Error creando la timba.");
 
@@ -89,7 +101,8 @@ export class TimbaService implements ITimbaService {
 
 		return {
 			timbaId: created.id,
-			puntos: timba.puntos,
+			puntosPropuestos: timba.puntosPropuestos,
+			puntosArriesgados: timba.puntosArriesgados,
 			descripcion: timba.descripcion,
 			jugador1Id: timba.jugador_1Id,
 			equipoLocalNombre: timba.equipoLocalNombre,
@@ -148,7 +161,7 @@ export class TimbaService implements ITimbaService {
 			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
 		}
 		const disponible = cap - apuestasActivas;
-		if (timba.puntos > disponible) {
+		if (timba.puntosArriesgados > disponible) {
 			throw new Error(
 				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugador2Puntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
 			);
@@ -161,7 +174,8 @@ export class TimbaService implements ITimbaService {
 
 		return {
 			timbaId: args.timbaId,
-			puntos: timba.puntos,
+			puntosPropuestos: timba.puntosPropuestos,
+			puntosArriesgados: timba.puntosArriesgados,
 			descripcion: timba.descripcion,
 			jugador1Id: timba.jugador_1Id,
 			jugador2Id: args.jugador2Id,
@@ -202,8 +216,18 @@ export class TimbaService implements ITimbaService {
 		};
 	}
 
-	async anularTimba(timbaId: number): Promise<void> {
+	async anularTimba(timbaId: number): Promise<AnularTimbaResult> {
+		const timba = await this.timbaRepo.verTimba(timbaId);
+		if (!timba) throw new Error("Timba no encontrada.");
 		await this.timbaRepo.anular({ id: timbaId });
+		return {
+			jugador_1Id: timba.jugador_1Id,
+			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			descripcion: timba.descripcion,
+		};
 	}
 
 	async resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult> {
@@ -228,10 +252,16 @@ export class TimbaService implements ITimbaService {
 				? timba.jugador_2Nombre
 				: timba.jugador_1Nombre;
 
+		// J1 gana → le roba puntosArriesgados a J2; J2 gana → le roba puntosPropuestos a J1
+		const puntosRobados =
+			args.ganadorJugador === "j1"
+				? timba.puntosArriesgados
+				: timba.puntosPropuestos;
+
 		await Promise.all([
 			this.timbaRepo.resolver({ id: args.timbaId, ganadorId }),
-			this.usuariosRepo.ajustarPuntos(ganadorId, timba.puntos),
-			this.usuariosRepo.ajustarPuntos(perdedorId, -timba.puntos),
+			this.usuariosRepo.ajustarPuntos(ganadorId, puntosRobados),
+			this.usuariosRepo.ajustarPuntos(perdedorId, -puntosRobados),
 		]);
 
 		const [puntosGanador, puntosPerdedor] = await Promise.all([
@@ -257,7 +287,7 @@ export class TimbaService implements ITimbaService {
 			ganadorNombre,
 			perdedorId,
 			perdedorNombre,
-			puntos: timba.puntos,
+			puntosRobados,
 			descripcion: timba.descripcion,
 			equipoLocalSiglas: timba.equipoLocalSiglas,
 			equipoLocalBandera: timba.equipoLocalBandera,
@@ -298,6 +328,61 @@ export class TimbaService implements ITimbaService {
 
 	cancelarTimbasAbiertas(partidoId: number): Promise<void> {
 		return this.timbaRepo.cancelarTimbasAbiertasPorPartido(partidoId);
+	}
+
+	verTimbasMedioTiempoPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasMedioTiempoPorPartidoRow[]> {
+		return this.timbaRepo.verTimbasMedioTiempoPorPartido(partidoId);
+	}
+
+	async resolverTimbaMedioTiempo(
+		args: ResolverTimbaInput,
+	): Promise<ResolverTimbaResult> {
+		const timba = await this.timbaRepo.verTimba(args.timbaId);
+		if (!timba) throw new Error("Timba no encontrada.");
+		if (timba.estado !== "cerrada" && timba.estado !== "resuelta")
+			throw new Error("La timba no está en estado válido para resolver.");
+
+		if (timba.estado === "resuelta" && timba.ganadorId) {
+			const prevPerdedorId =
+				timba.jugador_1Id === timba.ganadorId
+					? timba.jugador_2Id!
+					: timba.jugador_1Id;
+			const prevPuntosRobados =
+				timba.ganadorId === timba.jugador_1Id
+					? timba.puntosArriesgados
+					: timba.puntosPropuestos;
+			await Promise.all([
+				this.timbaRepo.revertir({ id: args.timbaId }),
+				this.usuariosRepo.ajustarPuntos(timba.ganadorId, -prevPuntosRobados),
+				this.usuariosRepo.ajustarPuntos(prevPerdedorId, prevPuntosRobados),
+			]);
+		}
+
+		return this.resolverTimba(args);
+	}
+
+	async revertirTimba(timbaId: number): Promise<void> {
+		const timba = await this.timbaRepo.verTimba(timbaId);
+		if (!timba) throw new Error("Timba no encontrada.");
+		if (timba.estado !== "resuelta" || !timba.ganadorId)
+			throw new Error("La timba no está resuelta.");
+
+		const perdedorId =
+			timba.jugador_1Id === timba.ganadorId
+				? timba.jugador_2Id!
+				: timba.jugador_1Id;
+		const puntosRobados =
+			timba.ganadorId === timba.jugador_1Id
+				? timba.puntosArriesgados
+				: timba.puntosPropuestos;
+
+		await Promise.all([
+			this.timbaRepo.revertir({ id: timbaId }),
+			this.usuariosRepo.ajustarPuntos(timba.ganadorId, -puntosRobados),
+			this.usuariosRepo.ajustarPuntos(perdedorId, puntosRobados),
+		]);
 	}
 
 	guardarMensajeTimba(timbaId: number, messageId: string): Promise<void> {

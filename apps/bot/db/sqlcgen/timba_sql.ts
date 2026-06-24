@@ -5,15 +5,16 @@ interface Client {
 }
 
 export const crearTimbaQuery = `-- name: CrearTimba :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos)
-VALUES ($1, $2, $3, $4)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id`;
 
 export interface CrearTimbaArgs {
     partidoId: number;
     descripcion: string;
     jugador_1Id: string;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
 }
 
 export interface CrearTimbaRow {
@@ -23,7 +24,7 @@ export interface CrearTimbaRow {
 export async function crearTimba(client: Client, args: CrearTimbaArgs): Promise<CrearTimbaRow | null> {
     const result = await client.query({
         text: crearTimbaQuery,
-        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntos],
+        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -42,7 +43,8 @@ SELECT
     t.descripcion,
     t.jugador_1_id,
     t.jugador_2_id,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.ganador_id,
     t.estado,
     t.discord_message_id,
@@ -75,7 +77,8 @@ export interface VerTimbaRow {
     descripcion: string;
     jugador_1Id: string;
     jugador_2Id: string | null;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     ganadorId: string | null;
     estado: string;
     discordMessageId: string | null;
@@ -107,20 +110,21 @@ export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerT
         descripcion: row[2],
         jugador_1Id: row[3],
         jugador_2Id: row[4],
-        puntos: row[5],
-        ganadorId: row[6],
-        estado: row[7],
-        discordMessageId: row[8],
-        jugador_1Nombre: row[9],
-        jugador_2Nombre: row[10],
-        partidoEstado: row[11],
-        fasePuntosBase: row[12],
-        equipoLocalNombre: row[13],
-        equipoLocalBandera: row[14],
-        equipoLocalSiglas: row[15],
-        equipoVisitanteNombre: row[16],
-        equipoVisitanteBandera: row[17],
-        equipoVisitanteSiglas: row[18]
+        puntosPropuestos: row[5],
+        puntosArriesgados: row[6],
+        ganadorId: row[7],
+        estado: row[8],
+        discordMessageId: row[9],
+        jugador_1Nombre: row[10],
+        jugador_2Nombre: row[11],
+        partidoEstado: row[12],
+        fasePuntosBase: row[13],
+        equipoLocalNombre: row[14],
+        equipoLocalBandera: row[15],
+        equipoLocalSiglas: row[16],
+        equipoVisitanteNombre: row[17],
+        equipoVisitanteBandera: row[18],
+        equipoVisitanteSiglas: row[19]
     };
 }
 
@@ -165,7 +169,8 @@ SELECT
     t.id,
     t.estado,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.jugador_1_id,
     COALESCE(u2.id, '') AS jugador_2_id,
     u1.username AS jugador_1_nombre,
@@ -181,6 +186,8 @@ JOIN partidos p ON p.id = t.partido_id
 JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
 WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+AND u1.participante = TRUE
+AND (t.jugador_2_id IS NULL OR u2.participante = TRUE)
 ORDER BY t.created_at ASC`;
 
 export interface VerTimbasPorPartidoArgs {
@@ -191,7 +198,8 @@ export interface VerTimbasPorPartidoRow {
     id: number;
     estado: string;
     descripcion: string;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     jugador_1Id: string;
     jugador_2Id: string;
     jugador_1Nombre: string;
@@ -213,15 +221,16 @@ export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPart
             id: row[0],
             estado: row[1],
             descripcion: row[2],
-            puntos: row[3],
-            jugador_1Id: row[4],
-            jugador_2Id: row[5],
-            jugador_1Nombre: row[6],
-            jugador_2Nombre: row[7],
-            equipoLocalSiglas: row[8],
-            equipoLocalBandera: row[9],
-            equipoVisitanteSiglas: row[10],
-            equipoVisitanteBandera: row[11]
+            puntosPropuestos: row[3],
+            puntosArriesgados: row[4],
+            jugador_1Id: row[5],
+            jugador_2Id: row[6],
+            jugador_1Nombre: row[7],
+            jugador_2Nombre: row[8],
+            equipoLocalSiglas: row[9],
+            equipoLocalBandera: row[10],
+            equipoVisitanteSiglas: row[11],
+            equipoVisitanteBandera: row[12]
         };
     });
 }
@@ -232,13 +241,15 @@ SELECT
     t.descripcion,
     t.jugador_1_id,
     t.jugador_2_id,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     u1.username AS jugador_1_nombre,
     u2.username AS jugador_2_nombre
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 JOIN usuarios u2 ON u2.id = t.jugador_2_id
 WHERE t.partido_id = $1 AND t.estado = 'cerrada'
+AND u1.participante = TRUE AND u2.participante = TRUE
 ORDER BY t.created_at ASC`;
 
 export interface VerTimbasCerradasPorPartidoArgs {
@@ -250,7 +261,8 @@ export interface VerTimbasCerradasPorPartidoRow {
     descripcion: string;
     jugador_1Id: string;
     jugador_2Id: string | null;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     jugador_1Nombre: string;
     jugador_2Nombre: string;
 }
@@ -267,9 +279,10 @@ export async function verTimbasCerradasPorPartido(client: Client, args: VerTimba
             descripcion: row[1],
             jugador_1Id: row[2],
             jugador_2Id: row[3],
-            puntos: row[4],
-            jugador_1Nombre: row[5],
-            jugador_2Nombre: row[6]
+            puntosPropuestos: row[4],
+            puntosArriesgados: row[5],
+            jugador_1Nombre: row[6],
+            jugador_2Nombre: row[7]
         };
     });
 }
@@ -279,7 +292,8 @@ SELECT
     t.id,
     t.partido_id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     el.nombre AS equipo_local_nombre,
     ev.nombre AS equipo_visitante_nombre
 FROM timba_time t
@@ -297,7 +311,8 @@ export interface VerMisTimbasRow {
     id: number;
     partidoId: number;
     descripcion: string;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     equipoLocalNombre: string;
     equipoVisitanteNombre: string;
 }
@@ -313,9 +328,10 @@ export async function verMisTimbas(client: Client, args: VerMisTimbasArgs): Prom
             id: row[0],
             partidoId: row[1],
             descripcion: row[2],
-            puntos: row[3],
-            equipoLocalNombre: row[4],
-            equipoVisitanteNombre: row[5]
+            puntosPropuestos: row[3],
+            puntosArriesgados: row[4],
+            equipoLocalNombre: row[5],
+            equipoVisitanteNombre: row[6]
         };
     });
 }
@@ -353,7 +369,8 @@ SELECT
     t.id,
     t.partido_id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.estado,
     t.jugador_1_id,
     t.jugador_2_id,
@@ -385,7 +402,8 @@ export interface VerMisTimbasPorFechaRow {
     id: number;
     partidoId: number;
     descripcion: string;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     estado: string;
     jugador_1Id: string;
     jugador_2Id: string | null;
@@ -411,19 +429,20 @@ export async function verMisTimbasPorFecha(client: Client, args: VerMisTimbasPor
             id: row[0],
             partidoId: row[1],
             descripcion: row[2],
-            puntos: row[3],
-            estado: row[4],
-            jugador_1Id: row[5],
-            jugador_2Id: row[6],
-            ganadorId: row[7],
-            jugador_1Nombre: row[8],
-            jugador_2Nombre: row[9],
-            partidoEstado: row[10],
-            fechaPartido: row[11],
-            equipoLocalNombre: row[12],
-            equipoLocalBandera: row[13],
-            equipoVisitanteNombre: row[14],
-            equipoVisitanteBandera: row[15]
+            puntosPropuestos: row[3],
+            puntosArriesgados: row[4],
+            estado: row[5],
+            jugador_1Id: row[6],
+            jugador_2Id: row[7],
+            ganadorId: row[8],
+            jugador_1Nombre: row[9],
+            jugador_2Nombre: row[10],
+            partidoEstado: row[11],
+            fechaPartido: row[12],
+            equipoLocalNombre: row[13],
+            equipoLocalBandera: row[14],
+            equipoVisitanteNombre: row[15],
+            equipoVisitanteBandera: row[16]
         };
     });
 }
@@ -485,7 +504,8 @@ export const verTimbasResueltasPorPartidoQuery = `-- name: VerTimbasResueltasPor
 SELECT
     t.id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.jugador_1_id,
     t.jugador_2_id,
     t.ganador_id,
@@ -506,7 +526,8 @@ export interface VerTimbasResueltasPorPartidoArgs {
 export interface VerTimbasResueltasPorPartidoRow {
     id: number;
     descripcion: string;
-    puntos: number;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
     jugador_1Id: string;
     jugador_2Id: string | null;
     ganadorId: string | null;
@@ -525,13 +546,14 @@ export async function verTimbasResueltasPorPartido(client: Client, args: VerTimb
         return {
             id: row[0],
             descripcion: row[1],
-            puntos: row[2],
-            jugador_1Id: row[3],
-            jugador_2Id: row[4],
-            ganadorId: row[5],
-            jugador_1Nombre: row[6],
-            jugador_2Nombre: row[7],
-            ganadorNombre: row[8]
+            puntosPropuestos: row[2],
+            puntosArriesgados: row[3],
+            jugador_1Id: row[4],
+            jugador_2Id: row[5],
+            ganadorId: row[6],
+            jugador_1Nombre: row[7],
+            jugador_2Nombre: row[8],
+            ganadorNombre: row[9]
         };
     });
 }
@@ -621,8 +643,91 @@ export async function cancelarTimbasAbiertasPorPartido(client: Client, args: Can
     });
 }
 
+export const verTimbasMedioTiempoPorPartidoQuery = `-- name: VerTimbasMedioTiempoPorPartido :many
+SELECT
+    t.id,
+    t.descripcion,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    t.estado,
+    u1.username AS jugador_1_nombre,
+    u2.username AS jugador_2_nombre,
+    COALESCE(ug.username, '') AS ganador_nombre
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+JOIN usuarios u2 ON u2.id = t.jugador_2_id
+LEFT JOIN usuarios ug ON ug.id = t.ganador_id
+WHERE t.partido_id = $1 AND t.estado IN ('cerrada', 'resuelta')
+AND u1.participante = TRUE AND u2.participante = TRUE
+ORDER BY t.created_at ASC`;
+
+export interface VerTimbasMedioTiempoPorPartidoArgs {
+    partidoId: number;
+}
+
+export interface VerTimbasMedioTiempoPorPartidoRow {
+    id: number;
+    descripcion: string;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
+    jugador_1Id: string;
+    jugador_2Id: string;
+    ganadorId: string | null;
+    estado: string;
+    jugador_1Nombre: string;
+    jugador_2Nombre: string;
+    ganadorNombre: string;
+}
+
+export async function verTimbasMedioTiempoPorPartido(client: Client, args: VerTimbasMedioTiempoPorPartidoArgs): Promise<VerTimbasMedioTiempoPorPartidoRow[]> {
+    const result = await client.query({
+        text: verTimbasMedioTiempoPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            descripcion: row[1],
+            puntosPropuestos: row[2],
+            puntosArriesgados: row[3],
+            jugador_1Id: row[4],
+            jugador_2Id: row[5],
+            ganadorId: row[6],
+            estado: row[7],
+            jugador_1Nombre: row[8],
+            jugador_2Nombre: row[9],
+            ganadorNombre: row[10]
+        };
+    });
+}
+
+export const revertirTimbaQuery = `-- name: RevertirTimba :exec
+UPDATE timba_time
+SET ganador_id = NULL, estado = 'cerrada'
+WHERE id = $1`;
+
+export interface RevertirTimbaArgs {
+    id: number;
+}
+
+export async function revertirTimba(client: Client, args: RevertirTimbaArgs): Promise<void> {
+    await client.query({
+        text: revertirTimbaQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+}
+
 export const sumarApuestasActivasQuery = `-- name: SumarApuestasActivas :one
-SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
+SELECT COALESCE(SUM(
+    CASE WHEN jugador_1_id = $1 THEN puntos_propuestos
+         ELSE puntos_arriesgados
+    END
+), 0)::INTEGER AS total
 FROM timba_time
 WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
 AND estado IN ('abierta', 'cerrada')`;

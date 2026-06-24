@@ -34,8 +34,12 @@ import {
 	buildTimbaAceptadaComponent,
 	buildTimbaCreacionComponent,
 	buildTimbaResolucionComponents,
+	buildTimbaResolucionMedioTiempoComponents,
 	MIS_TIMBAS_DATE_SELECT_CUSTOM_ID,
 	TIMBA_ACEPTAR_PREFIX,
+	TIMBA_MT_RESOLVER_J1_PREFIX,
+	TIMBA_MT_RESOLVER_J2_PREFIX,
+	TIMBA_MT_REVERTIR_PREFIX,
 	TIMBA_RESOLVER_J1_PREFIX,
 	TIMBA_RESOLVER_J2_PREFIX,
 } from "../components/timba";
@@ -49,6 +53,7 @@ const TIMBA_MODAL_CUSTOM_ID = "timba:create";
 const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
 const TIMBA_DESCRIPCION_FIELD_ID = "descripcion";
 const TIMBA_PUNTOS_FIELD_ID = "puntos";
+const TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID = "puntos-arriesgados";
 
 function buildPrediccionModal(
 	partidoId: number,
@@ -784,12 +789,22 @@ export function buildTimbaModal(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(TIMBA_PUNTOS_FIELD_ID)
-					.setLabel("Puntos a apostar")
+					.setLabel("Mis puntos en juego (si pierdo)")
 					.setPlaceholder(
 						`Mínimo 1 — máximo ${puntosMaximoFase} (también tope: 10% de tus puntos)`,
 					)
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+					.setLabel("Puntos que debe arriesgar el retador (opcional)")
+					.setPlaceholder("Por defecto: igual a mis puntos en juego")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(false)
 					.setMinLength(1)
 					.setMaxLength(6),
 			),
@@ -837,8 +852,18 @@ export async function handleTimbaModalSubmitInteraction(
 	const puntosParsed = puntosApuestaSchema.safeParse(
 		interaction.fields.getTextInputValue(TIMBA_PUNTOS_FIELD_ID),
 	);
+	const puntosArriesgadosRaw = interaction.fields
+		.getTextInputValue(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+		.trim();
+	const puntosArriesgadosParsed = puntosArriesgadosRaw
+		? puntosApuestaSchema.safeParse(puntosArriesgadosRaw)
+		: null;
 
-	if (!descripcion || !puntosParsed.success) {
+	if (
+		!descripcion ||
+		!puntosParsed.success ||
+		(puntosArriesgadosParsed !== null && !puntosArriesgadosParsed.success)
+	) {
 		await interaction.reply({
 			content:
 				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
@@ -847,6 +872,8 @@ export async function handleTimbaModalSubmitInteraction(
 		return;
 	}
 
+	const puntosArriesgados = puntosArriesgadosParsed?.data ?? puntosParsed.data;
+
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
@@ -854,11 +881,16 @@ export async function handleTimbaModalSubmitInteraction(
 			jugador1Id: interaction.user.id,
 			partidoId,
 			descripcion,
-			puntos: puntosParsed.data,
+			puntosPropuestos: puntosParsed.data,
+			puntosArriesgados,
 		});
 
+		const resumen =
+			puntosArriesgados === puntosParsed.data
+				? `**${puntosParsed.data} 💠** en juego`
+				: `yo arriesgo **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgados} 💠**`;
 		await interaction.editReply({
-			content: `✅ Timba creada. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
+			content: `✅ Timba creada. ${resumen} — _"${descripcion}"_`,
 		});
 
 		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
@@ -905,10 +937,20 @@ export function buildTimbaAdminModal(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(TIMBA_PUNTOS_FIELD_ID)
-					.setLabel("Puntos a apostar")
+					.setLabel("Puntos propuestos (J1 arriesga si pierde)")
 					.setPlaceholder(`Mínimo 1 — máximo ${puntosMaximoFase}`)
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+					.setLabel("Puntos arriesgados por el retador (opcional)")
+					.setPlaceholder("Por defecto: igual a puntos propuestos")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(false)
 					.setMinLength(1)
 					.setMaxLength(6),
 			),
@@ -943,8 +985,19 @@ export async function handleTimbaAdminModalSubmitInteraction(
 	const puntosParsed = puntosApuestaSchema.safeParse(
 		interaction.fields.getTextInputValue(TIMBA_PUNTOS_FIELD_ID),
 	);
+	const puntosArriesgadosRawAdmin = interaction.fields
+		.getTextInputValue(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+		.trim();
+	const puntosArriesgadosParsedAdmin = puntosArriesgadosRawAdmin
+		? puntosApuestaSchema.safeParse(puntosArriesgadosRawAdmin)
+		: null;
 
-	if (!descripcion || !puntosParsed.success) {
+	if (
+		!descripcion ||
+		!puntosParsed.success ||
+		(puntosArriesgadosParsedAdmin !== null &&
+			!puntosArriesgadosParsedAdmin.success)
+	) {
 		await interaction.reply({
 			content:
 				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
@@ -953,6 +1006,9 @@ export async function handleTimbaAdminModalSubmitInteraction(
 		return;
 	}
 
+	const puntosArriesgadosAdmin =
+		puntosArriesgadosParsedAdmin?.data ?? puntosParsed.data;
+
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
@@ -960,11 +1016,16 @@ export async function handleTimbaAdminModalSubmitInteraction(
 			jugador1Id: usuarioId,
 			partidoId,
 			descripcion,
-			puntos: puntosParsed.data,
+			puntosPropuestos: puntosParsed.data,
+			puntosArriesgados: puntosArriesgadosAdmin,
 		});
 
+		const resumenAdmin =
+			puntosArriesgadosAdmin === puntosParsed.data
+				? `**${puntosParsed.data} 💠** en juego`
+				: `J1 arriesga **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgadosAdmin} 💠**`;
 		await interaction.editReply({
-			content: `✅ Timba creada para <@${usuarioId}>. **${puntosParsed.data} 💠** en juego — _"${descripcion}"_`,
+			content: `✅ Timba creada para <@${usuarioId}>. ${resumenAdmin} — _"${descripcion}"_`,
 		});
 
 		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
@@ -1028,7 +1089,9 @@ export async function handleTimbaButtonInteraction(
 				interaction.client,
 				[
 					`_🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
-					`<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntos} 💠** en juego`,
+					result.puntosPropuestos === result.puntosArriesgados
+						? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
+						: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
 					`"${result.descripcion}"`,
 				].join("\n"),
 			);
@@ -1038,6 +1101,15 @@ export async function handleTimbaButtonInteraction(
 				ephemeral: true,
 			});
 		}
+		return;
+	}
+
+	if (
+		customId.startsWith(TIMBA_MT_RESOLVER_J1_PREFIX) ||
+		customId.startsWith(TIMBA_MT_RESOLVER_J2_PREFIX) ||
+		customId.startsWith(TIMBA_MT_REVERTIR_PREFIX)
+	) {
+		await handleTimbaResolucionMedioTiempo(interaction, appContext, customId);
 		return;
 	}
 
@@ -1066,7 +1138,7 @@ export async function handleTimbaButtonInteraction(
 
 		await sendAlertsChannel(
 			interaction.client,
-			`* <@${result.ganadorId}> le robó **${result.puntos} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
+			`* <@${result.ganadorId}> le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 		);
 
 		const remaining =
@@ -1106,6 +1178,81 @@ export async function handleTimbaButtonInteraction(
 	} catch (error) {
 		await interaction.followUp({
 			content: `❌ ${error instanceof Error ? error.message : "No se pudo resolver la timba."}`,
+			ephemeral: true,
+		});
+	}
+}
+
+async function handleTimbaResolucionMedioTiempo(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+	customId: string,
+) {
+	const isMtJ1 = customId.startsWith(TIMBA_MT_RESOLVER_J1_PREFIX);
+	const isMtJ2 = customId.startsWith(TIMBA_MT_RESOLVER_J2_PREFIX);
+	const isMtRevertir = customId.startsWith(TIMBA_MT_REVERTIR_PREFIX);
+
+	const prefix = isMtJ1
+		? TIMBA_MT_RESOLVER_J1_PREFIX
+		: isMtJ2
+			? TIMBA_MT_RESOLVER_J2_PREFIX
+			: TIMBA_MT_REVERTIR_PREFIX;
+
+	const suffix = customId.slice(prefix.length);
+	const colonIdx = suffix.lastIndexOf(":");
+	if (colonIdx === -1) return;
+
+	const timbaId = Number(suffix.slice(0, colonIdx));
+	const partidoId = Number(suffix.slice(colonIdx + 1));
+	if (Number.isNaN(timbaId) || Number.isNaN(partidoId)) return;
+
+	await interaction.deferUpdate();
+
+	try {
+		if (isMtRevertir) {
+			await appContext.services.timba.revertirTimba(timbaId);
+		} else {
+			const result = await appContext.services.timba.resolverTimbaMedioTiempo({
+				timbaId,
+				ganadorJugador: isMtJ1 ? "j1" : "j2",
+			});
+			await sendAlertsChannel(
+				interaction.client,
+				`* <@${result.ganadorId}> le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
+			);
+		}
+
+		const timbas =
+			await appContext.services.timba.verTimbasMedioTiempoPorPartido(partidoId);
+
+		if (timbas.length > 0) {
+			await interaction.editReply({
+				components: buildTimbaResolucionMedioTiempoComponents(
+					timbas.slice(0, 3),
+					partidoId,
+				),
+				flags: MessageFlags.IsComponentsV2,
+			});
+		} else {
+			await interaction.editReply({
+				components: [
+					{
+						type: 17,
+						components: [
+							{
+								type: 10,
+								content: "✅ Sin Timba Times pendientes en este medio tiempo.",
+							},
+						],
+					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				] as any,
+				flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+			});
+		}
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "No se pudo procesar la timba."}`,
 			ephemeral: true,
 		});
 	}

@@ -7,12 +7,14 @@ import type {
 	CrearTimbaRow,
 	GuardarMensajeTimbaArgs,
 	ResolverTimbaArgs,
+	RevertirTimbaArgs,
 	VerMisTimbasPorFechaArgs,
 	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
 	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
+	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
 } from "@sqlc/timba_sql";
@@ -58,6 +60,12 @@ export interface ITimbaRepository {
 	sumarApuestasActivas(userId: string): Promise<number>;
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
+
+	verTimbasMedioTiempoPorPartido(
+		partidoId: number,
+	): Promise<VerTimbasMedioTiempoPorPartidoRow[]>;
+
+	revertir(args: RevertirTimbaArgs): Promise<void>;
 
 	guardarMensaje(args: GuardarMensajeTimbaArgs): Promise<void>;
 

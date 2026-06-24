@@ -1,6 +1,6 @@
 -- name: CrearTimba :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos)
-VALUES ($1, $2, $3, $4)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
 -- name: VerTimba :one
@@ -10,7 +10,8 @@ SELECT
     t.descripcion,
     t.jugador_1_id,
     t.jugador_2_id,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.ganador_id,
     t.estado,
     t.discord_message_id,
@@ -47,7 +48,8 @@ SELECT
     t.id,
     t.estado,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.jugador_1_id,
     COALESCE(u2.id, '') AS jugador_2_id,
     u1.username AS jugador_1_nombre,
@@ -63,6 +65,8 @@ JOIN partidos p ON p.id = t.partido_id
 JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
 WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+AND u1.participante = TRUE
+AND (t.jugador_2_id IS NULL OR u2.participante = TRUE)
 ORDER BY t.created_at ASC;
 
 -- name: VerTimbasCerradasPorPartido :many
@@ -71,13 +75,15 @@ SELECT
     t.descripcion,
     t.jugador_1_id,
     t.jugador_2_id,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     u1.username AS jugador_1_nombre,
     u2.username AS jugador_2_nombre
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 JOIN usuarios u2 ON u2.id = t.jugador_2_id
 WHERE t.partido_id = $1 AND t.estado = 'cerrada'
+AND u1.participante = TRUE AND u2.participante = TRUE
 ORDER BY t.created_at ASC;
 
 -- name: VerMisTimbas :many
@@ -85,7 +91,8 @@ SELECT
     t.id,
     t.partido_id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     el.nombre AS equipo_local_nombre,
     ev.nombre AS equipo_visitante_nombre
 FROM timba_time t
@@ -107,7 +114,8 @@ SELECT
     t.id,
     t.partido_id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.estado,
     t.jugador_1_id,
     t.jugador_2_id,
@@ -149,7 +157,8 @@ WHERE id = $1;
 SELECT
     t.id,
     t.descripcion,
-    t.puntos,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
     t.jugador_1_id,
     t.jugador_2_id,
     t.ganador_id,
@@ -186,8 +195,38 @@ UPDATE timba_time
 SET estado = 'cancelada'
 WHERE partido_id = $1 AND estado = 'abierta';
 
+-- name: VerTimbasMedioTiempoPorPartido :many
+SELECT
+    t.id,
+    t.descripcion,
+    t.puntos_propuestos,
+    t.puntos_arriesgados,
+    t.jugador_1_id,
+    t.jugador_2_id,
+    t.ganador_id,
+    t.estado,
+    u1.username AS jugador_1_nombre,
+    u2.username AS jugador_2_nombre,
+    COALESCE(ug.username, '') AS ganador_nombre
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+JOIN usuarios u2 ON u2.id = t.jugador_2_id
+LEFT JOIN usuarios ug ON ug.id = t.ganador_id
+WHERE t.partido_id = $1 AND t.estado IN ('cerrada', 'resuelta')
+AND u1.participante = TRUE AND u2.participante = TRUE
+ORDER BY t.created_at ASC;
+
+-- name: RevertirTimba :exec
+UPDATE timba_time
+SET ganador_id = NULL, estado = 'cerrada'
+WHERE id = $1;
+
 -- name: SumarApuestasActivas :one
-SELECT COALESCE(SUM(puntos), 0)::INTEGER AS total
+SELECT COALESCE(SUM(
+    CASE WHEN jugador_1_id = sqlc.arg('user_id') THEN puntos_propuestos
+         ELSE puntos_arriesgados
+    END
+), 0)::INTEGER AS total
 FROM timba_time
 WHERE (jugador_1_id = sqlc.arg('user_id') OR jugador_2_id = sqlc.arg('user_id'))
 AND estado IN ('abierta', 'cerrada');

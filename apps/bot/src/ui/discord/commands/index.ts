@@ -15,6 +15,7 @@ import { buildMisPrediccionesComponents } from "../components/predicciones";
 import {
 	buildMisTimbasComponents,
 	buildTimbaResolucionComponents,
+	buildTimbaResolucionMedioTiempoComponents,
 	buildVerTimbasComponent,
 } from "../components/timba";
 import {
@@ -277,6 +278,21 @@ const actualizarPartidoMtCommand = new SlashCommandBuilder()
 			.setDescription("Goles del equipo visitante al medio tiempo")
 			.setRequired(true)
 			.setMinValue(0),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const reanudarPartidoCommand = new SlashCommandBuilder()
+	.setName("reanudar-partido")
+	.setDescription(
+		"[ADMIN] Reanuda un partido de medio tiempo a en vivo (cancela timbas abiertas)",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido en medio tiempo")
+			.setRequired(true)
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -885,12 +901,81 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						}),
 					]);
 
+					const timbas =
+						await appContext.services.timba.verTimbasMedioTiempoPorPartido(
+							partidoId,
+						);
+
 					if (info) {
 						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaMedioTiempo(info, predicciones, sinPrediccion),
 						);
 					}
+
+					if (timbas.length > 0) {
+						await interaction.followUp({
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							components: buildTimbaResolucionMedioTiempoComponents(
+								timbas.slice(0, 3),
+								partidoId,
+							) as any,
+							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+						});
+					}
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"reanudar-partido",
+		{
+			definition: reanudarPartidoCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter(
+						(p) =>
+							p.estado === "medio_tiempo" &&
+							`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+								.toLowerCase()
+								.includes(focusedValue),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await Promise.all([
+						appContext.services.partidos.actualizarPartidoEnVivo(partidoId),
+						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
+					]);
+
+					await interaction.editReply({
+						content: `▶️ **Partido #${partidoId}** reanudado. Timbas abiertas canceladas.`,
+					});
+
+					await sendAlertsChannel(
+						interaction.client,
+						`▶️ _¡El partido #${partidoId} se reanudó! Las Timba Times vuelven a estar cerradas._`,
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2019,7 +2104,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					)
 					.slice(0, 25)
 					.map((t) => {
-						const label = `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntos}pts) — "${t.descripcion}"`;
+						const label = `#${t.id} — ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} (${t.puntosPropuestos}pts) — "${t.descripcion}"`;
 						return {
 							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
 							value: t.id,
@@ -2080,10 +2165,15 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					await appContext.services.timba.anularTimba(timbaId);
+					const anulada = await appContext.services.timba.anularTimba(timbaId);
 					await interaction.editReply({
 						content: `✅ Timba #${timbaId} anulada y eliminada.`,
 					});
+					const partido = `${anulada.equipoLocalNombre} ${anulada.equipoLocalBandera} vs. ${anulada.equipoVisitanteNombre} ${anulada.equipoVisitanteBandera}`;
+					await sendAnnouncementChannel(
+						interaction.client,
+						`🚫 *¡Se canceló una timba de <@${anulada.jugador_1Id}> para el partido ${partido}! - "${anulada.descripcion}"*`,
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,

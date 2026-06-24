@@ -259,7 +259,8 @@ describe("Discord interaction handlers", () => {
 				timba: {
 					crearTimba: jest.fn().mockResolvedValue({
 						timbaId: 7,
-						puntos: 10,
+						puntosPropuestos: 10,
+						puntosArriesgados: 10,
 						descripcion: "Brasil gana",
 						jugador1Id: "discord-user-1",
 						equipoLocalNombre: "Peru",
@@ -287,7 +288,8 @@ describe("Discord interaction handlers", () => {
 			jugador1Id: "discord-user-1",
 			partidoId: 42,
 			descripcion: "Brasil gana",
-			puntos: 10,
+			puntosPropuestos: 10,
+			puntosArriesgados: 10,
 		});
 		expect(editReply).toHaveBeenCalledWith({
 			content: '✅ Timba creada. **10 💠** en juego — _"Brasil gana"_',

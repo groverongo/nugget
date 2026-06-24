@@ -208,26 +208,30 @@ async function buildResumenDia(
 				const perdedorId =
 					t.ganadorId === t.jugador_1Id ? t.jugador_2Id : t.jugador_1Id;
 				if (t.ganadorId === null || perdedorId === null) continue;
+				const puntosRobados =
+					t.ganadorId === t.jugador_1Id
+						? t.puntosArriesgados
+						: t.puntosPropuestos;
 				lineas.push(
-					`• <@${t.ganadorId}> 👑 le robó **${t.puntos} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
+					`• <@${t.ganadorId}> 👑 le robó **${puntosRobados} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
 				);
 
 				const existingGanador = ganadores.get(t.ganadorId);
 				if (existingGanador) {
-					existingGanador.hoy += t.puntos;
+					existingGanador.hoy += puntosRobados;
 				} else {
 					ganadores.set(t.ganadorId, {
-						hoy: t.puntos,
+						hoy: puntosRobados,
 						total: puntosActuales.get(t.ganadorId) ?? 0,
 					});
 				}
 
 				const existingPerdedor = ganadores.get(perdedorId);
 				if (existingPerdedor) {
-					existingPerdedor.hoy -= t.puntos;
+					existingPerdedor.hoy -= puntosRobados;
 				} else {
 					ganadores.set(perdedorId, {
-						hoy: -t.puntos,
+						hoy: -puntosRobados,
 						total: puntosActuales.get(perdedorId) ?? 0,
 					});
 				}
