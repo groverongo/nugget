@@ -126,7 +126,7 @@ export class TimbaService implements ITimbaService {
 		if (timba.jugador_1Id === args.jugador2Id) {
 			throw new Error("No puedes aceptar tu propio reto.");
 		}
-		if (timba.partidoEstado !== "programado") {
+		if (timba.partidoEstado !== "programado" && timba.partidoEstado !== "medio_tiempo") {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
 
@@ -431,7 +431,7 @@ export class TimbaService implements ITimbaService {
 		if (timbaOriginal.jugador_1Id === args.jugador1Id) {
 			throw new Error("No puedes hacerle contraoferta a tu propia timba.");
 		}
-		if (timbaOriginal.partidoEstado !== "programado") {
+		if (timbaOriginal.partidoEstado !== "programado" && timbaOriginal.partidoEstado !== "medio_tiempo") {
 			throw new Error(
 				"El partido ya comenzó, no se puede crear una contraoferta.",
 			);
@@ -523,7 +523,7 @@ export class TimbaService implements ITimbaService {
 				"Solo el creador de la timba original puede aceptar contraofertas.",
 			);
 		}
-		if (timbaOriginal.partidoEstado !== "programado") {
+		if (timbaOriginal.partidoEstado !== "programado" && timbaOriginal.partidoEstado !== "medio_tiempo") {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
 
