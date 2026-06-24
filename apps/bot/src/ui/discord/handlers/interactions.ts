@@ -44,6 +44,7 @@ import {
 	TIMBA_MT_RESOLVER_J1_PREFIX,
 	TIMBA_MT_RESOLVER_J2_PREFIX,
 	TIMBA_MT_REVERTIR_PREFIX,
+	TIMBA_MT_SKIP_PREFIX,
 	TIMBA_RESOLVER_J1_PREFIX,
 	TIMBA_RESOLVER_J2_PREFIX,
 } from "../components/timba";
@@ -1384,6 +1385,52 @@ export async function handleTimbaButtonInteraction(
 			await interaction.followUp({
 				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la timba."}`,
 				ephemeral: true,
+			});
+		}
+		return;
+	}
+
+	if (customId.startsWith(TIMBA_MT_SKIP_PREFIX)) {
+		const rest = customId.slice(TIMBA_MT_SKIP_PREFIX.length);
+		const colonIdx = rest.indexOf(":");
+		if (colonIdx === -1) return;
+		const partidoId = Number(rest.slice(0, colonIdx));
+		const skippedIds = rest
+			.slice(colonIdx + 1)
+			.split(",")
+			.map(Number)
+			.filter((n) => !Number.isNaN(n));
+		if (Number.isNaN(partidoId)) return;
+
+		await interaction.deferUpdate();
+		const timbas =
+			await appContext.services.timba.verTimbasMedioTiempoPorPartido(partidoId);
+		const components = buildTimbaResolucionMedioTiempoComponents(
+			timbas,
+			partidoId,
+			skippedIds,
+		);
+		if (components.length > 0) {
+			await interaction.editReply({
+				components,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		} else {
+			await interaction.editReply({
+				components: [
+					{
+						type: 17,
+						components: [
+							{
+								type: 10,
+								content:
+									"✅ No hay más timbas para mostrar. Las saltadas siguen pendientes.",
+							},
+						],
+					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				] as any,
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 		return;
