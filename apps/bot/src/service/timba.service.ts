@@ -214,7 +214,13 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
-		await this.timbaRepo.cancelar({ id: args.timbaId });
+		const contraofertasPendientes =
+			await this.timbaRepo.verContraofertasMensajesPorTimba(args.timbaId);
+
+		await Promise.all([
+			this.timbaRepo.cancelar({ id: args.timbaId }),
+			this.timbaRepo.cancelarContraofertasPorTimba(args.timbaId),
+		]);
 
 		return {
 			jugador_1Id: timba.jugador_1Id,
@@ -225,6 +231,9 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
 			discordMessageId: timba.discordMessageId,
+			cancelledContraofertaMessageIds: contraofertasPendientes
+				.map((c) => c.discordMessageId)
+				.filter((id): id is string => id !== null),
 		};
 	}
 
@@ -538,7 +547,9 @@ export class TimbaService implements ITimbaService {
 		if (cap === 0) {
 			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
 		}
-		const disponible = cap - apuestasActivas;
+		// La timba original se cancelará al aceptar, descontarla de las apuestas activas
+		const apuestasEfectivas = apuestasActivas - timbaOriginal.puntosPropuestos;
+		const disponible = cap - apuestasEfectivas;
 		// jugador1OriginalId paga puntosArriesgados de la contraoferta (J2 de la contraoferta)
 		if (contraoferta.puntosArriesgados > disponible) {
 			throw new Error(
@@ -604,6 +615,11 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
+		const subContraofertasPendientes =
+			await this.timbaRepo.verContraofertasMensajesPorTimba(
+				args.contraofertaId,
+			);
+
 		// Cancel contraoferta and its own sub-contraofertas
 		await Promise.all([
 			this.timbaRepo.cancelar({ id: args.contraofertaId }),
@@ -619,6 +635,9 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteBandera: contraoferta.equipoVisitanteBandera,
 			equipoVisitanteSiglas: contraoferta.equipoVisitanteSiglas,
 			discordMessageId: contraoferta.discordMessageId,
+			cancelledContraofertaMessageIds: subContraofertasPendientes
+				.map((c) => c.discordMessageId)
+				.filter((id): id is string => id !== null),
 		};
 	}
 }

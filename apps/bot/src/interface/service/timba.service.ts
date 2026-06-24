@@ -69,7 +69,7 @@ export type CancelarTimbaResult = Pick<
 	| "equipoVisitanteBandera"
 	| "equipoVisitanteSiglas"
 	| "discordMessageId"
->;
+> & { cancelledContraofertaMessageIds: string[] };
 
 export type AnularTimbaResult = Pick<
 	VerTimbaRow,

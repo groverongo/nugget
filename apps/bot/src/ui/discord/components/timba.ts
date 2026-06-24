@@ -93,16 +93,13 @@ export function buildContraofertaComponent(
 	const simetrico = result.puntosPropuestos === result.puntosArriesgados;
 	const puntosLine = simetrico
 		? `💠 **${puntosStr(result.puntosPropuestos)}** en juego a: _"${result.descripcion}"_`
-		: [
-				`💠 Propone **${puntosStr(result.puntosPropuestos)}** — el retador (tú, <@${timbaOriginalJugador1Id}>) debe arriesgar **${puntosStr(result.puntosArriesgados)}**`,
-				`_"${result.descripcion}"_`,
-			].join("\n");
+		: `💠 Propone **${puntosStr(result.puntosPropuestos)}** — el retador (<@${timbaOriginalJugador1Id}>) debe arriesgar **${puntosStr(result.puntosArriesgados)}** a: _"${result.descripcion}"_`;
 
 	const container = new ContainerBuilder()
 		.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
 				[
-					`🔄 **Contraoferta** de <@${result.jugador1Id}>`,
+					`🔄 **Contraoferta** de <@${result.jugador1Id}> para <@${timbaOriginalJugador1Id}>`,
 					`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
 					puntosLine,
 				].join("\n"),

@@ -21,6 +21,7 @@ import {
 import {
 	buildTimbaAdminModal,
 	buildTimbaModal,
+	deleteAnnouncementMessages,
 	sendAlertsChannel,
 	sendAnnouncementChannel,
 } from "../handlers/interactions";
@@ -2133,20 +2134,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.client,
 						`🚫 _¡<@${cancelada.jugador_1Id}> canceló una timba para **${partido}**!_`,
 					);
-					if (cancelada.discordMessageId) {
-						const channelId = config.discord.announcements.channel.id;
-						try {
-							const channel = (interaction.client.channels.cache.get(
-								channelId,
-							) ?? (await interaction.client.channels.fetch(channelId))) as
-								| import("discord.js").TextBasedChannel
-								| null;
-							if (channel && "messages" in channel) {
-								await channel.messages.delete(cancelada.discordMessageId);
-							}
-						} catch {
-							// mensaje ya eliminado o sin permisos
-						}
+					const toDelete = [
+						cancelada.discordMessageId,
+						...cancelada.cancelledContraofertaMessageIds,
+					].filter((id): id is string => id !== null);
+					if (toDelete.length > 0) {
+						await deleteAnnouncementMessages(interaction.client, toDelete);
 					}
 				} catch (error) {
 					await interaction.editReply({
