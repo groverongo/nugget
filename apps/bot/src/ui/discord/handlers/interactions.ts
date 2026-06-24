@@ -30,6 +30,7 @@ import {
 	PREDICCIONES_DATE_SELECT_CUSTOM_ID,
 } from "../components/predicciones";
 import {
+	buildContraofertaComponent,
 	buildMisTimbasComponents,
 	buildTimbaAceptadaComponent,
 	buildTimbaCreacionComponent,
@@ -37,6 +38,9 @@ import {
 	buildTimbaResolucionMedioTiempoComponents,
 	MIS_TIMBAS_DATE_SELECT_CUSTOM_ID,
 	TIMBA_ACEPTAR_PREFIX,
+	TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX,
+	TIMBA_CONTRAOFERTA_PREFIX,
+	TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX,
 	TIMBA_MT_RESOLVER_J1_PREFIX,
 	TIMBA_MT_RESOLVER_J2_PREFIX,
 	TIMBA_MT_REVERTIR_PREFIX,
@@ -51,6 +55,7 @@ const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
 const TIMBA_MODAL_CUSTOM_ID = "timba:create";
 const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
+const TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID = "timba:contraoferta:create";
 const TIMBA_DESCRIPCION_FIELD_ID = "descripcion";
 const TIMBA_PUNTOS_FIELD_ID = "puntos";
 const TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID = "puntos-arriesgados";
@@ -1050,11 +1055,248 @@ export async function handleTimbaAdminModalSubmitInteraction(
 	}
 }
 
+function buildContraofertaModal(
+	timbaOriginalId: number,
+	puntosMaximoFase: number,
+): ModalBuilder {
+	return new ModalBuilder()
+		.setCustomId(`${TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID}:${timbaOriginalId}`)
+		.setTitle("🔄 Contraoferta")
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_DESCRIPCION_FIELD_ID)
+					.setLabel("Descripción del reto")
+					.setPlaceholder("Ej: 'Brasil gana' (1 a 200 caracteres)")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(200),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_FIELD_ID)
+					.setLabel("Mis puntos en juego (si pierdo)")
+					.setPlaceholder(
+						`Mínimo 1 — máximo ${puntosMaximoFase} (también tope: 10% de tus puntos)`,
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+					.setLabel("Puntos a arriesgar por el retador")
+					.setPlaceholder("Por defecto: igual a mis puntos en juego")
+					.setStyle(TextInputStyle.Short)
+					.setRequired(false)
+					.setMinLength(1)
+					.setMaxLength(6),
+			),
+		);
+}
+
+export async function handleContraofertaModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (
+		!interaction.customId.startsWith(`${TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID}:`)
+	)
+		return;
+
+	const timbaOriginalId = Number(
+		interaction.customId.slice(TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID.length + 1),
+	);
+	if (Number.isNaN(timbaOriginalId)) return;
+
+	const member =
+		interaction.guild?.members.cache.get(interaction.user.id) ??
+		(await interaction.guild?.members.fetch(interaction.user.id));
+	if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+		await interaction.reply({
+			content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const descripcion = interaction.fields
+		.getTextInputValue(TIMBA_DESCRIPCION_FIELD_ID)
+		.trim();
+	const puntosParsed = puntosApuestaSchema.safeParse(
+		interaction.fields.getTextInputValue(TIMBA_PUNTOS_FIELD_ID),
+	);
+	const puntosArriesgadosRaw = interaction.fields
+		.getTextInputValue(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
+		.trim();
+	const puntosArriesgadosParsed = puntosArriesgadosRaw
+		? puntosApuestaSchema.safeParse(puntosArriesgadosRaw)
+		: null;
+
+	if (
+		!descripcion ||
+		!puntosParsed.success ||
+		(puntosArriesgadosParsed !== null && !puntosArriesgadosParsed.success)
+	) {
+		await interaction.reply({
+			content:
+				"❌ Revisa los datos: la descripción no puede estar vacía y los puntos deben ser un número entero mayor a 0.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const puntosArriesgados = puntosArriesgadosParsed?.data ?? puntosParsed.data;
+
+	await interaction.deferReply({ ephemeral: true });
+
+	try {
+		const result = await appContext.services.timba.crearContraoferta({
+			jugador1Id: interaction.user.id,
+			timbaOriginalId,
+			descripcion,
+			puntosPropuestos: puntosParsed.data,
+			puntosArriesgados,
+		});
+
+		await interaction.editReply({
+			content: `✅ Contraoferta enviada. _"${descripcion}"_`,
+		});
+
+		const messageId = await sendComponentsToAnnouncementChannel(
+			interaction.client,
+			buildContraofertaComponent(result, result.timbaOriginalJugador1Id),
+		);
+		if (messageId) {
+			await appContext.services.timba.guardarMensajeTimba(
+				result.contraofertaId,
+				messageId,
+			);
+		}
+	} catch (error) {
+		await interaction.editReply({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+		});
+	}
+}
+
 export async function handleTimbaButtonInteraction(
 	interaction: ButtonInteraction,
 	appContext: AppContext,
 ): Promise<void> {
 	const { customId } = interaction;
+
+	if (customId.startsWith(TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX)) {
+		const contraofertaId = Number(
+			customId.slice(TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX.length),
+		);
+		if (Number.isNaN(contraofertaId)) return;
+
+		const member =
+			interaction.guild?.members.cache.get(interaction.user.id) ??
+			(await interaction.guild?.members.fetch(interaction.user.id));
+		if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+			await interaction.reply({
+				content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+				ephemeral: true,
+			});
+			return;
+		}
+
+		await interaction.deferUpdate();
+
+		try {
+			const result = await appContext.services.timba.aceptarContraoferta({
+				contraofertaId,
+				jugador1OriginalId: interaction.user.id,
+			});
+
+			await interaction.editReply({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				components: buildTimbaAceptadaComponent(result) as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+
+			await sendAnnouncementChannel(
+				interaction.client,
+				[
+					`_🤝 **¡Contraoferta aceptada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
+					result.puntosPropuestos === result.puntosArriesgados
+						? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
+						: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
+					`"${result.descripcion}"`,
+				].join("\n"),
+			);
+		} catch (error) {
+			await interaction.followUp({
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la contraoferta."}`,
+				ephemeral: true,
+			});
+		}
+		return;
+	}
+
+	if (customId.startsWith(TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX)) {
+		const contraofertaId = Number(
+			customId.slice(TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX.length),
+		);
+		if (Number.isNaN(contraofertaId)) return;
+
+		await interaction.deferUpdate();
+
+		try {
+			await appContext.services.timba.rechazarContraoferta({
+				contraofertaId,
+				jugador1OriginalId: interaction.user.id,
+			});
+
+			await interaction.editReply({
+				components: [
+					{
+						type: 17,
+						components: [
+							{
+								type: 10,
+								content: "❌ Contraoferta rechazada.",
+							},
+						],
+					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				] as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		} catch (error) {
+			await interaction.followUp({
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo rechazar la contraoferta."}`,
+				ephemeral: true,
+			});
+		}
+		return;
+	}
+
+	if (customId.startsWith(TIMBA_CONTRAOFERTA_PREFIX)) {
+		const timbaOriginalId = Number(
+			customId.slice(TIMBA_CONTRAOFERTA_PREFIX.length),
+		);
+		if (Number.isNaN(timbaOriginalId)) return;
+
+		const member =
+			interaction.guild?.members.cache.get(interaction.user.id) ??
+			(await interaction.guild?.members.fetch(interaction.user.id));
+		if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+			await interaction.reply({
+				content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+				ephemeral: true,
+			});
+			return;
+		}
+
+		await interaction.showModal(buildContraofertaModal(timbaOriginalId, 99));
+		return;
+	}
 
 	if (customId.startsWith(TIMBA_ACEPTAR_PREFIX)) {
 		const timbaId = Number(customId.slice(TIMBA_ACEPTAR_PREFIX.length));

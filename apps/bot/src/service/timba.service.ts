@@ -12,11 +12,14 @@ import type { IPrediccionesRepository } from "../interface/repository/prediccion
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
 import type { IUsuariosRepository } from "../interface/repository/usuarios.repository";
 import type {
+	AceptarContraofertaInput,
 	AceptarTimbaInput,
 	AceptarTimbaResult,
 	AnularTimbaResult,
 	CancelarTimbaInput,
 	CancelarTimbaResult,
+	CrearContraofertaInput,
+	CrearContraofertaResult,
 	CrearTimbaInput,
 	CrearTimbaResult,
 	ITimbaService,
@@ -390,5 +393,222 @@ export class TimbaService implements ITimbaService {
 			id: timbaId,
 			discordMessageId: messageId,
 		});
+	}
+
+	async crearContraoferta(
+		args: CrearContraofertaInput,
+	): Promise<CrearContraofertaResult> {
+		if (args.puntosPropuestos <= 0 || args.puntosArriesgados <= 0) {
+			throw new Error("Los puntos deben ser mayores a 0.");
+		}
+
+		const timbaOriginal = await this.timbaRepo.verTimba(args.timbaOriginalId);
+		if (!timbaOriginal) throw new Error("Timba no encontrada.");
+		if (
+			timbaOriginal.estado !== "abierta" &&
+			timbaOriginal.estado !== "contraoferta"
+		) {
+			throw new Error("La timba ya no acepta contraofertas.");
+		}
+		if (timbaOriginal.jugador_1Id === args.jugador1Id) {
+			throw new Error("No puedes hacerle contraoferta a tu propia timba.");
+		}
+		if (timbaOriginal.partidoEstado !== "programado") {
+			throw new Error(
+				"El partido ya comenzó, no se puede crear una contraoferta.",
+			);
+		}
+
+		const [partido, jugadorPuntos, apuestasActivas] = await Promise.all([
+			this.timbaRepo.verPartidoParaTimba(timbaOriginal.partidoId),
+			this.usuariosRepo.obtenerPuntos(args.jugador1Id),
+			this.timbaRepo.sumarApuestasActivas(args.jugador1Id),
+		]);
+
+		if (!partido) throw new Error("Partido no encontrado.");
+
+		const prediccion =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.jugador1Id,
+				partidoId: timbaOriginal.partidoId,
+			});
+		if (!prediccion) {
+			throw new Error(
+				"Debes tener una predicción para este partido antes de hacer una contraoferta.",
+			);
+		}
+
+		if (
+			args.puntosPropuestos > partido.puntosBase ||
+			args.puntosArriesgados > partido.puntosBase
+		) {
+			throw new Error(
+				`Máximo ${partido.puntosBase} 💠 por jugador en esta fase.`,
+			);
+		}
+		const cap = Math.floor(jugadorPuntos * 0.1);
+		if (cap === 0) {
+			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
+		}
+		const disponible = cap - apuestasActivas;
+		if (args.puntosPropuestos > disponible) {
+			throw new Error(
+				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
+			);
+		}
+
+		const created = await this.timbaRepo.crearContraoferta({
+			partidoId: timbaOriginal.partidoId,
+			descripcion: args.descripcion,
+			jugador_1Id: args.jugador1Id,
+			puntosPropuestos: args.puntosPropuestos,
+			puntosArriesgados: args.puntosArriesgados,
+			timbaOriginalId: args.timbaOriginalId,
+		});
+		if (!created) throw new Error("Error creando la contraoferta.");
+
+		return {
+			contraofertaId: created.id,
+			puntosPropuestos: args.puntosPropuestos,
+			puntosArriesgados: args.puntosArriesgados,
+			descripcion: args.descripcion,
+			jugador1Id: args.jugador1Id,
+			equipoLocalNombre: timbaOriginal.equipoLocalNombre,
+			equipoLocalBandera: timbaOriginal.equipoLocalBandera,
+			equipoLocalSiglas: timbaOriginal.equipoLocalSiglas,
+			equipoVisitanteNombre: timbaOriginal.equipoVisitanteNombre,
+			equipoVisitanteBandera: timbaOriginal.equipoVisitanteBandera,
+			equipoVisitanteSiglas: timbaOriginal.equipoVisitanteSiglas,
+			timbaOriginalId: args.timbaOriginalId,
+			timbaOriginalJugador1Id: timbaOriginal.jugador_1Id,
+		};
+	}
+
+	async aceptarContraoferta(
+		args: AceptarContraofertaInput,
+	): Promise<AceptarTimbaResult> {
+		const contraoferta = await this.timbaRepo.verTimba(args.contraofertaId);
+		if (!contraoferta) throw new Error("Contraoferta no encontrada.");
+		if (contraoferta.estado !== "contraoferta") {
+			throw new Error("Esta contraoferta ya no está disponible.");
+		}
+		if (!contraoferta.timbaOriginalId) {
+			throw new Error("Contraoferta inválida: no tiene timba original.");
+		}
+
+		const timbaOriginal = await this.timbaRepo.verTimba(
+			contraoferta.timbaOriginalId,
+		);
+		if (!timbaOriginal) throw new Error("Timba original no encontrada.");
+		if (timbaOriginal.jugador_1Id !== args.jugador1OriginalId) {
+			throw new Error(
+				"Solo el creador de la timba original puede aceptar contraofertas.",
+			);
+		}
+		if (timbaOriginal.partidoEstado !== "programado") {
+			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
+		}
+
+		const prediccion =
+			await this.prediccionesRepo.verPrediccionPorUsuarioYPartido({
+				usuarioId: args.jugador1OriginalId,
+				partidoId: timbaOriginal.partidoId,
+			});
+		if (!prediccion) {
+			throw new Error(
+				"Debes tener una predicción para este partido antes de aceptar una contraoferta.",
+			);
+		}
+
+		const [jugadorPuntos, apuestasActivas] = await Promise.all([
+			this.usuariosRepo.obtenerPuntos(args.jugador1OriginalId),
+			this.timbaRepo.sumarApuestasActivas(args.jugador1OriginalId),
+		]);
+
+		const cap = Math.floor(jugadorPuntos * 0.1);
+		if (cap === 0) {
+			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
+		}
+		const disponible = cap - apuestasActivas;
+		// jugador1OriginalId paga puntosArriesgados de la contraoferta (J2 de la contraoferta)
+		if (contraoferta.puntosArriesgados > disponible) {
+			throw new Error(
+				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
+			);
+		}
+
+		// Cancel: parent timba, all its other contraofertas, and sub-contraofertas of accepted
+		await Promise.all([
+			this.timbaRepo.cancelar({ id: contraoferta.timbaOriginalId }),
+			this.timbaRepo.cancelarContraofertasPorTimba(
+				contraoferta.timbaOriginalId,
+			),
+			this.timbaRepo.cancelarContraofertasEnCascadaPorTimba(
+				contraoferta.timbaOriginalId,
+			),
+		]);
+
+		// Accept: jugador1OriginalId becomes J2 of the contraoferta
+		await this.timbaRepo.aceptar({
+			id: args.contraofertaId,
+			jugador_2Id: args.jugador1OriginalId,
+		});
+
+		return {
+			timbaId: args.contraofertaId,
+			puntosPropuestos: contraoferta.puntosPropuestos,
+			puntosArriesgados: contraoferta.puntosArriesgados,
+			descripcion: contraoferta.descripcion,
+			jugador1Id: contraoferta.jugador_1Id,
+			jugador2Id: args.jugador1OriginalId,
+			jugador1Nombre: contraoferta.jugador_1Nombre,
+			equipoLocalNombre: contraoferta.equipoLocalNombre,
+			equipoLocalBandera: contraoferta.equipoLocalBandera,
+			equipoLocalSiglas: contraoferta.equipoLocalSiglas,
+			equipoVisitanteNombre: contraoferta.equipoVisitanteNombre,
+			equipoVisitanteBandera: contraoferta.equipoVisitanteBandera,
+			equipoVisitanteSiglas: contraoferta.equipoVisitanteSiglas,
+		};
+	}
+
+	async rechazarContraoferta(args: {
+		contraofertaId: number;
+		jugador1OriginalId: string;
+	}): Promise<CancelarTimbaResult> {
+		const contraoferta = await this.timbaRepo.verTimba(args.contraofertaId);
+		if (!contraoferta) throw new Error("Contraoferta no encontrada.");
+		if (contraoferta.estado !== "contraoferta") {
+			throw new Error("Esta contraoferta ya no está disponible.");
+		}
+		if (!contraoferta.timbaOriginalId) {
+			throw new Error("Contraoferta inválida: no tiene timba original.");
+		}
+
+		const timbaOriginal = await this.timbaRepo.verTimba(
+			contraoferta.timbaOriginalId,
+		);
+		if (!timbaOriginal) throw new Error("Timba original no encontrada.");
+		if (timbaOriginal.jugador_1Id !== args.jugador1OriginalId) {
+			throw new Error(
+				"Solo el creador de la timba original puede rechazar contraofertas.",
+			);
+		}
+
+		// Cancel contraoferta and its own sub-contraofertas
+		await Promise.all([
+			this.timbaRepo.cancelar({ id: args.contraofertaId }),
+			this.timbaRepo.cancelarContraofertasPorTimba(args.contraofertaId),
+		]);
+
+		return {
+			jugador_1Id: contraoferta.jugador_1Id,
+			equipoLocalNombre: contraoferta.equipoLocalNombre,
+			equipoLocalBandera: contraoferta.equipoLocalBandera,
+			equipoLocalSiglas: contraoferta.equipoLocalSiglas,
+			equipoVisitanteNombre: contraoferta.equipoVisitanteNombre,
+			equipoVisitanteBandera: contraoferta.equipoVisitanteBandera,
+			equipoVisitanteSiglas: contraoferta.equipoVisitanteSiglas,
+			discordMessageId: contraoferta.discordMessageId,
+		};
 	}
 }

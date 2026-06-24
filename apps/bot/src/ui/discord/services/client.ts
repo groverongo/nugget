@@ -7,6 +7,7 @@ import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
 import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
+	handleContraofertaModalSubmitInteraction,
 	handleMisTimbasDateSelectInteraction,
 	handlePartidosAdminButtonInteraction,
 	handlePartidosAdminDateSelectInteraction,
@@ -96,6 +97,7 @@ export function registerDiscordEventHandlers(
 				);
 				await handleTimbaModalSubmitInteraction(interaction, appContext);
 				await handleTimbaAdminModalSubmitInteraction(interaction, appContext);
+				await handleContraofertaModalSubmitInteraction(interaction, appContext);
 				return;
 			}
 

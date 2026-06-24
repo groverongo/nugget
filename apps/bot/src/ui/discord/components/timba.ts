@@ -18,11 +18,16 @@ import {
 } from "discord.js";
 import type {
 	AceptarTimbaResult,
+	CrearContraofertaResult,
 	CrearTimbaResult,
 } from "../../../interface/service/timba.service";
 import { fechaADiscordTimestamp } from "../utils/fecha";
 
 export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
+export const TIMBA_CONTRAOFERTA_PREFIX = "timba:contraoferta:";
+export const TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX = "timba:contraoferta:aceptar:";
+export const TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX =
+	"timba:contraoferta:rechazar:";
 export const TIMBA_RESOLVER_J1_PREFIX = "timba:resolver:j1:";
 export const TIMBA_RESOLVER_J2_PREFIX = "timba:resolver:j2:";
 export const TIMBA_MT_RESOLVER_J1_PREFIX = "timba:mt:resolver:j1:";
@@ -63,6 +68,90 @@ export function buildTimbaCreacionComponent(
 					.setStyle(ButtonStyle.Success),
 			),
 	);
+	container.addSectionComponents(
+		new SectionBuilder()
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent(
+					"¿Quieres proponer condiciones distintas?",
+				),
+			)
+			.setButtonAccessory(
+				new ButtonBuilder()
+					.setCustomId(`${TIMBA_CONTRAOFERTA_PREFIX}${result.timbaId}`)
+					.setLabel("Contraoferta 🔄")
+					.setStyle(ButtonStyle.Secondary),
+			),
+	);
+	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+	return [container.toJSON() as any];
+}
+
+export function buildContraofertaComponent(
+	result: CrearContraofertaResult,
+	timbaOriginalJugador1Id: string,
+): APIMessageTopLevelComponent[] {
+	const simetrico = result.puntosPropuestos === result.puntosArriesgados;
+	const puntosLine = simetrico
+		? `💠 **${puntosStr(result.puntosPropuestos)}** en juego a: _"${result.descripcion}"_`
+		: [
+				`💠 Propone **${puntosStr(result.puntosPropuestos)}** — el retador (tú, <@${timbaOriginalJugador1Id}>) debe arriesgar **${puntosStr(result.puntosArriesgados)}**`,
+				`_"${result.descripcion}"_`,
+			].join("\n");
+
+	const container = new ContainerBuilder()
+		.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				[
+					`🔄 **Contraoferta** de <@${result.jugador1Id}>`,
+					`*${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}*`,
+					puntosLine,
+				].join("\n"),
+			),
+		)
+		.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						`<@${timbaOriginalJugador1Id}>, ¿aceptas esta contraoferta?`,
+					),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX}${result.contraofertaId}`,
+						)
+						.setLabel("Aceptar ✅")
+						.setStyle(ButtonStyle.Success),
+				),
+		)
+		.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent("O puedes rechazarla"),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(
+							`${TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX}${result.contraofertaId}`,
+						)
+						.setLabel("Rechazar ❌")
+						.setStyle(ButtonStyle.Danger),
+				),
+		)
+		.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						"¿Quieres proponer condiciones distintas?",
+					),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(`${TIMBA_CONTRAOFERTA_PREFIX}${result.contraofertaId}`)
+						.setLabel("Contraoferta 🔄")
+						.setStyle(ButtonStyle.Secondary),
+				),
+		);
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 	return [container.toJSON() as any];
 }
@@ -166,7 +255,11 @@ export function buildVerTimbasComponent(
 		);
 
 		const estadoBadge =
-			timba.estado === "abierta" ? "🟡 Abierta" : "🔒 Cerrada";
+			timba.estado === "abierta"
+				? "🟡 Abierta"
+				: timba.estado === "contraoferta"
+					? "🔄 Contraoferta"
+					: "🔒 Cerrada";
 		const j2Line = timba.jugador_2Id
 			? `<@${timba.jugador_2Id}>`
 			: "_Sin aceptar_";

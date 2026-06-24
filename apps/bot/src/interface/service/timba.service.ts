@@ -98,6 +98,35 @@ export interface ResolverTimbaResult {
 	equipoVisitanteBandera: string;
 }
 
+export interface CrearContraofertaInput {
+	jugador1Id: string;
+	timbaOriginalId: number;
+	descripcion: string;
+	puntosPropuestos: number;
+	puntosArriesgados: number;
+}
+
+export interface CrearContraofertaResult {
+	contraofertaId: number;
+	puntosPropuestos: number;
+	puntosArriesgados: number;
+	descripcion: string;
+	jugador1Id: string;
+	equipoLocalNombre: string;
+	equipoLocalBandera: string;
+	equipoLocalSiglas: string;
+	equipoVisitanteNombre: string;
+	equipoVisitanteBandera: string;
+	equipoVisitanteSiglas: string;
+	timbaOriginalId: number;
+	timbaOriginalJugador1Id: string;
+}
+
+export interface AceptarContraofertaInput {
+	contraofertaId: number;
+	jugador1OriginalId: string;
+}
+
 export interface ITimbaService {
 	verPartidoParaTimba(
 		partidoId: number,
@@ -144,4 +173,17 @@ export interface ITimbaService {
 	revertirTimba(timbaId: number): Promise<void>;
 
 	guardarMensajeTimba(timbaId: number, messageId: string): Promise<void>;
+
+	crearContraoferta(
+		args: CrearContraofertaInput,
+	): Promise<CrearContraofertaResult>;
+
+	aceptarContraoferta(
+		args: AceptarContraofertaInput,
+	): Promise<AceptarTimbaResult>;
+
+	rechazarContraoferta(args: {
+		contraofertaId: number;
+		jugador1OriginalId: string;
+	}): Promise<CancelarTimbaResult>;
 }
