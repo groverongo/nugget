@@ -48,6 +48,7 @@ SELECT
     t.ganador_id,
     t.estado,
     t.discord_message_id,
+    t.timba_original_id,
     u1.username AS jugador_1_nombre,
     COALESCE(u2.username, '') AS jugador_2_nombre,
     p.estado AS partido_estado,
@@ -82,6 +83,7 @@ export interface VerTimbaRow {
     ganadorId: string | null;
     estado: string;
     discordMessageId: string | null;
+    timbaOriginalId: number | null;
     jugador_1Nombre: string;
     jugador_2Nombre: string;
     partidoEstado: string;
@@ -115,16 +117,17 @@ export async function verTimba(client: Client, args: VerTimbaArgs): Promise<VerT
         ganadorId: row[7],
         estado: row[8],
         discordMessageId: row[9],
-        jugador_1Nombre: row[10],
-        jugador_2Nombre: row[11],
-        partidoEstado: row[12],
-        fasePuntosBase: row[13],
-        equipoLocalNombre: row[14],
-        equipoLocalBandera: row[15],
-        equipoLocalSiglas: row[16],
-        equipoVisitanteNombre: row[17],
-        equipoVisitanteBandera: row[18],
-        equipoVisitanteSiglas: row[19]
+        timbaOriginalId: row[10],
+        jugador_1Nombre: row[11],
+        jugador_2Nombre: row[12],
+        partidoEstado: row[13],
+        fasePuntosBase: row[14],
+        equipoLocalNombre: row[15],
+        equipoLocalBandera: row[16],
+        equipoLocalSiglas: row[17],
+        equipoVisitanteNombre: row[18],
+        equipoVisitanteBandera: row[19],
+        equipoVisitanteSiglas: row[20]
     };
 }
 
@@ -178,14 +181,15 @@ SELECT
     el.siglas AS equipo_local_siglas,
     el.bandera AS equipo_local_bandera,
     ev.siglas AS equipo_visitante_siglas,
-    ev.bandera AS equipo_visitante_bandera
+    ev.bandera AS equipo_visitante_bandera,
+    t.timba_original_id
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
 JOIN partidos p ON p.id = t.partido_id
 JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
-WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada', 'contraoferta')
 AND u1.participante = TRUE
 AND (t.jugador_2_id IS NULL OR u2.participante = TRUE)
 ORDER BY t.created_at ASC`;
@@ -208,6 +212,7 @@ export interface VerTimbasPorPartidoRow {
     equipoLocalBandera: string;
     equipoVisitanteSiglas: string;
     equipoVisitanteBandera: string;
+    timbaOriginalId: number | null;
 }
 
 export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPartidoArgs): Promise<VerTimbasPorPartidoRow[]> {
@@ -230,7 +235,8 @@ export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPart
             equipoLocalSiglas: row[9],
             equipoLocalBandera: row[10],
             equipoVisitanteSiglas: row[11],
-            equipoVisitanteBandera: row[12]
+            equipoVisitanteBandera: row[12],
+            timbaOriginalId: row[13]
         };
     });
 }
@@ -626,10 +632,10 @@ export async function anularTimba(client: Client, args: AnularTimbaArgs): Promis
     });
 }
 
-export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec
+export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
 UPDATE timba_time
 SET estado = 'cancelada'
-WHERE partido_id = $1 AND estado = 'abierta'`;
+WHERE partido_id = $1 AND estado IN ('abierta', 'contraoferta')`;
 
 export interface CancelarTimbasAbiertasPorPartidoArgs {
     partidoId: number;
@@ -730,7 +736,7 @@ SELECT COALESCE(SUM(
 ), 0)::INTEGER AS total
 FROM timba_time
 WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
-AND estado IN ('abierta', 'cerrada')`;
+AND estado IN ('abierta', 'cerrada', 'contraoferta')`;
 
 export interface SumarApuestasActivasArgs {
     userId: string;
@@ -755,3 +761,71 @@ export async function sumarApuestasActivas(client: Client, args: SumarApuestasAc
     };
 }
 
+export const crearContraofertaQuery = `-- name: CrearContraoferta :one
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
+VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)
+RETURNING id`;
+
+export interface CrearContraofertaArgs {
+    partidoId: number;
+    descripcion: string;
+    jugador_1Id: string;
+    puntosPropuestos: number;
+    puntosArriesgados: number;
+    timbaOriginalId: number;
+}
+
+export interface CrearContraofertaRow {
+    id: number;
+}
+
+export async function crearContraoferta(client: Client, args: CrearContraofertaArgs): Promise<CrearContraofertaRow | null> {
+    const result = await client.query({
+        text: crearContraofertaQuery,
+        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados, args.timbaOriginalId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+
+export const cancelarContraofertasPorTimbaQuery = `-- name: CancelarContraofertasPorTimba :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE timba_original_id = $1 AND estado = 'contraoferta'`;
+
+export interface CancelarContraofertasPorTimbaArgs {
+    timbaOriginalId: number;
+}
+
+export async function cancelarContraofertasPorTimba(client: Client, args: CancelarContraofertasPorTimbaArgs): Promise<void> {
+    await client.query({
+        text: cancelarContraofertasPorTimbaQuery,
+        values: [args.timbaOriginalId],
+        rowMode: "array"
+    });
+}
+
+export const cancelarContraofertasEnCascadaPorTimbaQuery = `-- name: CancelarContraofertasEnCascadaPorTimba :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE timba_original_id IN (
+    SELECT id FROM timba_time WHERE timba_original_id = $1
+) AND estado = 'contraoferta'`;
+
+export interface CancelarContraofertasEnCascadaPorTimbaArgs {
+    timbaOriginalId: number;
+}
+
+export async function cancelarContraofertasEnCascadaPorTimba(client: Client, args: CancelarContraofertasEnCascadaPorTimbaArgs): Promise<void> {
+    await client.query({
+        text: cancelarContraofertasEnCascadaPorTimbaQuery,
+        values: [args.timbaOriginalId],
+        rowMode: "array"
+    });
+}

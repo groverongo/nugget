@@ -3,6 +3,8 @@ import type {
 	AnularTimbaArgs,
 	CancelarTimbaArgs,
 	CheckEmparejamientoTimbaArgs,
+	CrearContraofertaArgs,
+	CrearContraofertaRow,
 	CrearTimbaArgs,
 	CrearTimbaRow,
 	GuardarMensajeTimbaArgs,
@@ -60,6 +62,16 @@ export interface ITimbaRepository {
 	sumarApuestasActivas(userId: string): Promise<number>;
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
+
+	crearContraoferta(
+		args: CrearContraofertaArgs,
+	): Promise<CrearContraofertaRow | null>;
+
+	cancelarContraofertasPorTimba(timbaOriginalId: number): Promise<void>;
+
+	cancelarContraofertasEnCascadaPorTimba(
+		timbaOriginalId: number,
+	): Promise<void>;
 
 	verTimbasMedioTiempoPorPartido(
 		partidoId: number,

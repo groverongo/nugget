@@ -5,11 +5,16 @@ import {
 	anularTimba,
 	type CancelarTimbaArgs,
 	type CheckEmparejamientoTimbaArgs,
+	type CrearContraofertaArgs,
+	type CrearContraofertaRow,
 	type CrearTimbaArgs,
 	type CrearTimbaRow,
+	cancelarContraofertasEnCascadaPorTimba,
+	cancelarContraofertasPorTimba,
 	cancelarTimba,
 	cancelarTimbasAbiertasPorPartido,
 	checkEmparejamientoTimba,
+	crearContraoferta,
 	crearTimba,
 	type GuardarMensajeTimbaArgs,
 	guardarMensajeTimba,
@@ -120,6 +125,24 @@ export class TimbaRepository implements ITimbaRepository {
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
 		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
+	}
+
+	crearContraoferta(
+		args: CrearContraofertaArgs,
+	): Promise<CrearContraofertaRow | null> {
+		return crearContraoferta(this.pool, args);
+	}
+
+	cancelarContraofertasPorTimba(timbaOriginalId: number): Promise<void> {
+		return cancelarContraofertasPorTimba(this.pool, { timbaOriginalId });
+	}
+
+	cancelarContraofertasEnCascadaPorTimba(
+		timbaOriginalId: number,
+	): Promise<void> {
+		return cancelarContraofertasEnCascadaPorTimba(this.pool, {
+			timbaOriginalId,
+		});
 	}
 
 	verTimbasMedioTiempoPorPartido(

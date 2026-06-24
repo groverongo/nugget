@@ -15,6 +15,7 @@ SELECT
     t.ganador_id,
     t.estado,
     t.discord_message_id,
+    t.timba_original_id,
     u1.username AS jugador_1_nombre,
     COALESCE(u2.username, '') AS jugador_2_nombre,
     p.estado AS partido_estado,
@@ -57,14 +58,15 @@ SELECT
     el.siglas AS equipo_local_siglas,
     el.bandera AS equipo_local_bandera,
     ev.siglas AS equipo_visitante_siglas,
-    ev.bandera AS equipo_visitante_bandera
+    ev.bandera AS equipo_visitante_bandera,
+    t.timba_original_id
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
 JOIN partidos p ON p.id = t.partido_id
 JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
-WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada')
+WHERE t.partido_id = $1 AND t.estado IN ('abierta', 'cerrada', 'contraoferta')
 AND u1.participante = TRUE
 AND (t.jugador_2_id IS NULL OR u2.participante = TRUE)
 ORDER BY t.created_at ASC;
@@ -229,4 +231,26 @@ SELECT COALESCE(SUM(
 ), 0)::INTEGER AS total
 FROM timba_time
 WHERE (jugador_1_id = sqlc.arg('user_id') OR jugador_2_id = sqlc.arg('user_id'))
-AND estado IN ('abierta', 'cerrada');
+AND estado IN ('abierta', 'cerrada', 'contraoferta');
+
+-- name: CrearContraoferta :one
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
+VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)
+RETURNING id;
+
+-- name: CancelarContraofertasPorTimba :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE timba_original_id = $1 AND estado = 'contraoferta';
+
+-- name: CancelarContraofertasEnCascadaPorTimba :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE timba_original_id IN (
+    SELECT id FROM timba_time WHERE timba_original_id = $1
+) AND estado = 'contraoferta';
+
+-- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE partido_id = $1 AND estado IN ('abierta', 'contraoferta');
