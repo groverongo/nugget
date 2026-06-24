@@ -19,7 +19,7 @@ def diagrama_predicciones(
         raise ValueError("coordinates cannot be empty")
 
     coordinates_arr = np.array(coordinates, dtype=float)
-    margin = 1
+    margin = 0
     x_min, x_max = coordinates_arr[:, 0].min() - margin, coordinates_arr[:, 0].max() + margin
     y_min, y_max = coordinates_arr[:, 1].min() - margin, coordinates_arr[:, 1].max() + margin
 
