@@ -801,7 +801,7 @@ export function buildTimbaModal(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID)
-					.setLabel("Puntos que debe arriesgar el retador (opcional)")
+					.setLabel("Puntos a arriesgar por el retador (opcional)")
 					.setPlaceholder("Por defecto: igual a mis puntos en juego")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(false)
