@@ -1279,10 +1279,16 @@ export async function handleTimbaButtonInteraction(
 		await interaction.deferUpdate();
 
 		try {
-			await appContext.services.timba.rechazarContraoferta({
+			const rechazada = await appContext.services.timba.rechazarContraoferta({
 				contraofertaId,
 				jugador1OriginalId: interaction.user.id,
 			});
+
+			const toDelete = [
+				rechazada.discordMessageId,
+				...rechazada.cancelledContraofertaMessageIds,
+			].filter((id): id is string => id !== null);
+			await deleteAnnouncementMessages(interaction.client, toDelete);
 
 			await interaction.editReply({
 				components: [
