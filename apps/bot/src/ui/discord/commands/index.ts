@@ -965,18 +965,24 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					await Promise.all([
+					const [partidos] = await Promise.all([
+						appContext.services.partidos.verPartidosNoFinalizados(),
 						appContext.services.partidos.actualizarPartidoEnVivo(partidoId),
 						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
 					]);
 
+					const partido = partidos.find((p) => p.partidoId === partidoId);
+					const nombrePartido = partido
+						? `**${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}**`
+						: `**Partido #${partidoId}**`;
+
 					await interaction.editReply({
-						content: `▶️ **Partido #${partidoId}** reanudado. Timbas abiertas canceladas.`,
+						content: `▶️ ${nombrePartido} reanudado. Timbas abiertas canceladas.`,
 					});
 
 					await sendAlertsChannel(
 						interaction.client,
-						`▶️ _¡El partido #${partidoId} se reanudó! Las Timba Times vuelven a estar cerradas._`,
+						`▶️ _¡${nombrePartido} se reanudó! Las Timba Times vuelven a estar cerradas._`,
 					);
 				} catch (error) {
 					await interaction.editReply({
@@ -1988,7 +1994,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.value.toString()
 					.toLowerCase();
 				const opciones = partidos
-					.filter((p) => p.estado === "programado")
+					.filter(
+						(p) => p.estado === "programado" || p.estado === "medio_tiempo",
+					)
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
@@ -2017,9 +2025,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					return;
 				}
 
-				if (partido.estado !== "programado") {
+				if (
+					partido.estado !== "programado" &&
+					partido.estado !== "medio_tiempo"
+				) {
 					await interaction.reply({
-						content: "❌ Solo puedes crear timbas para partidos programados.",
+						content:
+							"❌ Solo puedes crear timbas para partidos programados o en medio tiempo.",
 						ephemeral: true,
 					});
 					return;
@@ -2043,7 +2055,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.value.toString()
 					.toLowerCase();
 				const opciones = partidos
-					.filter((p) => p.estado === "programado")
+					.filter(
+						(p) => p.estado === "programado" || p.estado === "medio_tiempo",
+					)
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
@@ -2071,10 +2085,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					return;
 				}
 
-				if (partido.estado !== "programado") {
+				if (
+					partido.estado !== "programado" &&
+					partido.estado !== "medio_tiempo"
+				) {
 					await interaction.reply({
 						content:
-							"❌ Solo se pueden crear timbas para partidos programados.",
+							"❌ Solo se pueden crear timbas para partidos programados o en medio tiempo.",
 						ephemeral: true,
 					});
 					return;

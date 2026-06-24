@@ -33,6 +33,7 @@ export const TIMBA_RESOLVER_J2_PREFIX = "timba:resolver:j2:";
 export const TIMBA_MT_RESOLVER_J1_PREFIX = "timba:mt:resolver:j1:";
 export const TIMBA_MT_RESOLVER_J2_PREFIX = "timba:mt:resolver:j2:";
 export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
+export const TIMBA_MT_SKIP_PREFIX = "timba:mt:skip:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
 
 function puntosStr(puntos: number): string {
@@ -373,8 +374,10 @@ export function buildMisTimbasComponents(
 export function buildTimbaResolucionMedioTiempoComponents(
 	timbas: VerTimbasMedioTiempoPorPartidoRow[],
 	partidoId: number,
+	skippedIds: number[] = [],
 ): APIMessageTopLevelComponent[] {
-	if (timbas.length === 0) return [];
+	const visible = timbas.filter((t) => !skippedIds.includes(t.id)).slice(0, 3);
+	if (visible.length === 0) return [];
 
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
@@ -382,7 +385,7 @@ export function buildTimbaResolucionMedioTiempoComponents(
 		),
 	);
 
-	for (const timba of timbas) {
+	for (const timba of visible) {
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
 		);
@@ -439,6 +442,20 @@ export function buildTimbaResolucionMedioTiempoComponents(
 								`${TIMBA_MT_REVERTIR_PREFIX}${timba.id}:${partidoId}`,
 							)
 							.setLabel("🔄 No resuelta aún")
+							.setStyle(ButtonStyle.Secondary),
+					),
+			);
+		} else {
+			const nextSkipped = [...skippedIds, timba.id].join(",");
+			container.addSectionComponents(
+				new SectionBuilder()
+					.addTextDisplayComponents(
+						new TextDisplayBuilder().setContent("Resolver más tarde"),
+					)
+					.setButtonAccessory(
+						new ButtonBuilder()
+							.setCustomId(`${TIMBA_MT_SKIP_PREFIX}${partidoId}:${nextSkipped}`)
+							.setLabel("⏭️ Saltar")
 							.setStyle(ButtonStyle.Secondary),
 					),
 			);
