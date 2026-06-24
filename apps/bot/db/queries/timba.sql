@@ -101,7 +101,7 @@ FROM timba_time t
 JOIN partidos p ON p.id = t.partido_id
 JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
-WHERE t.jugador_1_id = $1 AND t.estado = 'abierta'
+WHERE t.jugador_1_id = $1 AND t.estado IN ('abierta', 'contraoferta')
 ORDER BY t.created_at ASC;
 
 -- name: VerFechasDeTimbasPorUsuario :many

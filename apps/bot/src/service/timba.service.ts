@@ -208,7 +208,7 @@ export class TimbaService implements ITimbaService {
 		if (timba.jugador_1Id !== args.jugador1Id) {
 			throw new Error("Solo puedes cancelar tus propias timbas.");
 		}
-		if (timba.estado !== "abierta") {
+		if (timba.estado !== "abierta" && timba.estado !== "contraoferta") {
 			throw new Error(
 				"Esta timba ya no puede cancelarse (ya fue aceptada o resuelta).",
 			);
