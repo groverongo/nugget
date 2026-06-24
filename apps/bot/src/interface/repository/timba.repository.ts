@@ -10,6 +10,7 @@ import type {
 	GuardarMensajeTimbaArgs,
 	ResolverTimbaArgs,
 	RevertirTimbaArgs,
+	VerContraofertasMensajesPorTimbaRow,
 	VerMisTimbasPorFechaArgs,
 	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
@@ -62,6 +63,10 @@ export interface ITimbaRepository {
 	sumarApuestasActivas(userId: string): Promise<number>;
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void>;
+
+	verContraofertasMensajesPorTimba(
+		timbaOriginalId: number,
+	): Promise<VerContraofertasMensajesPorTimbaRow[]>;
 
 	crearContraoferta(
 		args: CrearContraofertaArgs,

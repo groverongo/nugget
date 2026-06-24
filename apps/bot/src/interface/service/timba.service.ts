@@ -51,6 +51,7 @@ export interface AceptarTimbaResult {
 	equipoVisitanteNombre: string;
 	equipoVisitanteBandera: string;
 	equipoVisitanteSiglas: string;
+	cancelledContraofertaMessageIds: string[];
 }
 
 export interface CancelarTimbaInput {

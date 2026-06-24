@@ -170,10 +170,16 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
-		await this.timbaRepo.aceptar({
-			id: args.timbaId,
-			jugador_2Id: args.jugador2Id,
-		});
+		const contraofertasPendientes =
+			await this.timbaRepo.verContraofertasMensajesPorTimba(args.timbaId);
+
+		await Promise.all([
+			this.timbaRepo.aceptar({
+				id: args.timbaId,
+				jugador_2Id: args.jugador2Id,
+			}),
+			this.timbaRepo.cancelarContraofertasPorTimba(args.timbaId),
+		]);
 
 		return {
 			timbaId: args.timbaId,
@@ -189,6 +195,9 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 			equipoVisitanteSiglas: timba.equipoVisitanteSiglas,
+			cancelledContraofertaMessageIds: contraofertasPendientes
+				.map((c) => c.discordMessageId)
+				.filter((id): id is string => id !== null),
 		};
 	}
 
@@ -568,6 +577,7 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteNombre: contraoferta.equipoVisitanteNombre,
 			equipoVisitanteBandera: contraoferta.equipoVisitanteBandera,
 			equipoVisitanteSiglas: contraoferta.equipoVisitanteSiglas,
+			cancelledContraofertaMessageIds: [],
 		};
 	}
 

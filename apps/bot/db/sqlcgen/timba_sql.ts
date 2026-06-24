@@ -761,6 +761,32 @@ export async function sumarApuestasActivas(client: Client, args: SumarApuestasAc
     };
 }
 
+export const verContraofertasMensajesPorTimbaQuery = `-- name: VerContraofertasMensajesPorTimba :many
+SELECT id, discord_message_id
+FROM timba_time
+WHERE timba_original_id = $1 AND estado = 'contraoferta'`;
+
+export interface VerContraofertasMensajesPorTimbaArgs {
+    timbaOriginalId: number;
+}
+
+export interface VerContraofertasMensajesPorTimbaRow {
+    id: number;
+    discordMessageId: string | null;
+}
+
+export async function verContraofertasMensajesPorTimba(client: Client, args: VerContraofertasMensajesPorTimbaArgs): Promise<VerContraofertasMensajesPorTimbaRow[]> {
+    const result = await client.query({
+        text: verContraofertasMensajesPorTimbaQuery,
+        values: [args.timbaOriginalId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => ({
+        id: row[0],
+        discordMessageId: row[1]
+    }));
+}
+
 export const crearContraofertaQuery = `-- name: CrearContraoferta :one
 INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
 VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)

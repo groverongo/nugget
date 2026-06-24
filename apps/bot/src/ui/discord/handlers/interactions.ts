@@ -743,6 +743,37 @@ export async function sendComponentsToAlertsChannel(
 	}
 }
 
+export async function deleteAnnouncementMessages(
+	client: DiscordClient,
+	messageIds: string[],
+): Promise<void> {
+	if (messageIds.length === 0) return;
+	const channelId = config.discord.announcements.channel.id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "messages" in channel) {
+			await Promise.allSettled(
+				messageIds.map((id) =>
+					(channel as import("discord.js").TextChannel).messages
+						.fetch(id)
+						.then((msg) => msg.delete()),
+				),
+			);
+		}
+	} catch (error) {
+		logger.error(
+			{ err: error, channelId },
+			"Error borrando mensajes de contraofertas canceladas",
+		);
+	}
+}
+
 export async function sendComponentsToAnnouncementChannel(
 	client: DiscordClient,
 	components: APIMessageTopLevelComponent[],
@@ -1327,16 +1358,22 @@ export async function handleTimbaButtonInteraction(
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			await sendAnnouncementChannel(
-				interaction.client,
-				[
-					`_🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
-					result.puntosPropuestos === result.puntosArriesgados
-						? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
-						: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
-					`"${result.descripcion}"`,
-				].join("\n"),
-			);
+			await Promise.all([
+				sendAnnouncementChannel(
+					interaction.client,
+					[
+						`_🤝 **¡Timba Time cerrada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
+						result.puntosPropuestos === result.puntosArriesgados
+							? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
+							: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
+						`"${result.descripcion}"`,
+					].join("\n"),
+				),
+				deleteAnnouncementMessages(
+					interaction.client,
+					result.cancelledContraofertaMessageIds,
+				),
+			]);
 		} catch (error) {
 			await interaction.followUp({
 				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la timba."}`,

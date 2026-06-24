@@ -233,6 +233,11 @@ FROM timba_time
 WHERE (jugador_1_id = sqlc.arg('user_id') OR jugador_2_id = sqlc.arg('user_id'))
 AND estado IN ('abierta', 'cerrada', 'contraoferta');
 
+-- name: VerContraofertasMensajesPorTimba :many
+SELECT id, discord_message_id
+FROM timba_time
+WHERE timba_original_id = $1 AND estado = 'contraoferta';
+
 -- name: CrearContraoferta :one
 INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
 VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)
