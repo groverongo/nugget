@@ -964,18 +964,24 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					await Promise.all([
+					const [partidos] = await Promise.all([
+						appContext.services.partidos.verPartidosNoFinalizados(),
 						appContext.services.partidos.actualizarPartidoEnVivo(partidoId),
 						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
 					]);
 
+					const partido = partidos.find((p) => p.partidoId === partidoId);
+					const nombrePartido = partido
+						? `**${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}**`
+						: `**Partido #${partidoId}**`;
+
 					await interaction.editReply({
-						content: `▶️ **Partido #${partidoId}** reanudado. Timbas abiertas canceladas.`,
+						content: `▶️ ${nombrePartido} reanudado. Timbas abiertas canceladas.`,
 					});
 
 					await sendAlertsChannel(
 						interaction.client,
-						`▶️ _¡El partido #${partidoId} se reanudó! Las Timba Times vuelven a estar cerradas._`,
+						`▶️ _¡${nombrePartido} se reanudó! Las Timba Times vuelven a estar cerradas._`,
 					);
 				} catch (error) {
 					await interaction.editReply({
