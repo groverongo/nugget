@@ -126,7 +126,10 @@ export class TimbaService implements ITimbaService {
 		if (timba.jugador_1Id === args.jugador2Id) {
 			throw new Error("No puedes aceptar tu propio reto.");
 		}
-		if (timba.partidoEstado !== "programado") {
+		if (
+			timba.partidoEstado !== "programado" &&
+			timba.partidoEstado !== "medio_tiempo"
+		) {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
 
@@ -431,17 +434,24 @@ export class TimbaService implements ITimbaService {
 		if (timbaOriginal.jugador_1Id === args.jugador1Id) {
 			throw new Error("No puedes hacerle contraoferta a tu propia timba.");
 		}
-		if (timbaOriginal.partidoEstado !== "programado") {
+		if (
+			timbaOriginal.partidoEstado !== "programado" &&
+			timbaOriginal.partidoEstado !== "medio_tiempo"
+		) {
 			throw new Error(
 				"El partido ya comenzó, no se puede crear una contraoferta.",
 			);
 		}
 
-		const [partido, jugadorPuntos, apuestasActivas] = await Promise.all([
-			this.timbaRepo.verPartidoParaTimba(timbaOriginal.partidoId),
-			this.usuariosRepo.obtenerPuntos(args.jugador1Id),
-			this.timbaRepo.sumarApuestasActivas(args.jugador1Id),
-		]);
+		const [partido, jugadorPuntos, apuestasActivas, timbaRaiz] =
+			await Promise.all([
+				this.timbaRepo.verPartidoParaTimba(timbaOriginal.partidoId),
+				this.usuariosRepo.obtenerPuntos(args.jugador1Id),
+				this.timbaRepo.sumarApuestasActivas(args.jugador1Id),
+				timbaOriginal.timbaOriginalId
+					? this.timbaRepo.verTimba(timbaOriginal.timbaOriginalId)
+					: Promise.resolve(null),
+			]);
 
 		if (!partido) throw new Error("Partido no encontrado.");
 
@@ -468,10 +478,17 @@ export class TimbaService implements ITimbaService {
 		if (cap === 0) {
 			throw new Error("No tienes suficientes puntos para jugar Timba Time.");
 		}
-		const disponible = cap - apuestasActivas;
+		// Si J1 está contraofertando una contraoferta de su propia timba,
+		// su timba raíz será cancelada al aceptarse, así que no cuenta contra el cap.
+		const puntosRaizExcluir =
+			timbaRaiz?.jugador_1Id === args.jugador1Id
+				? timbaRaiz.puntosPropuestos
+				: 0;
+		const apuestasEfectivas = apuestasActivas - puntosRaizExcluir;
+		const disponible = cap - apuestasEfectivas;
 		if (args.puntosPropuestos > disponible) {
 			throw new Error(
-				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasActivas} en juego).`,
+				`No puedes apostar esa cantidad de puntos. Tu máximo es **${disponible} 💠** (10% de tus ${jugadorPuntos} pts, pero ya tienes ${apuestasEfectivas} en juego).`,
 			);
 		}
 
@@ -523,7 +540,10 @@ export class TimbaService implements ITimbaService {
 				"Solo el creador de la timba original puede aceptar contraofertas.",
 			);
 		}
-		if (timbaOriginal.partidoEstado !== "programado") {
+		if (
+			timbaOriginal.partidoEstado !== "programado" &&
+			timbaOriginal.partidoEstado !== "medio_tiempo"
+		) {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
 
