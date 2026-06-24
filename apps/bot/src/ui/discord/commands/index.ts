@@ -230,11 +230,12 @@ const actualizarPartidoCommand = new SlashCommandBuilder()
 			.setRequired(true)
 			.setMinValue(0),
 	)
-	.addBooleanOption((option) =>
+	.addIntegerOption((option) =>
 		option
 			.setName("milagro")
-			.setDescription("¿El gol decisivo fue al minuto 90 o más tarde?")
-			.setRequired(true),
+			.setDescription("Goles en descuentos (90' o más). 0 si no hubo.")
+			.setRequired(true)
+			.setMinValue(0),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -715,7 +716,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					"goles_visitante",
 					true,
 				);
-				const milagro = interaction.options.getBoolean("milagro", true);
+				const milagro = interaction.options.getInteger("milagro", true);
 
 				await interaction.deferReply({ ephemeral: true });
 
@@ -729,7 +730,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					const extras: string[] = [];
 					if (resumen.extraPartidazo) extras.push("Partidazo 💥");
-					if (milagro) extras.push("Milagro ✝️");
+					if (milagro > 0) extras.push(`Milagro ✝️ +${milagro}pts`);
 					if (resumen.puntosBatacazo > 0)
 						extras.push(`Batacazo +${resumen.puntosBatacazo}pts 🐴`);
 					if (resumen.puntosElegido > 0)

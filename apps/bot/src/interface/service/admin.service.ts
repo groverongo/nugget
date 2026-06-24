@@ -35,7 +35,7 @@ export interface IAdminService {
 		partidoId: number;
 		golesLocal: number;
 		golesVisitante: number;
-		milagro: boolean;
+		milagro: number;
 	}): Promise<ResumenActualizacion>;
 
 	actualizarPartidoMedioTiempo(args: {
