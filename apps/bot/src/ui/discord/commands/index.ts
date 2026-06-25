@@ -685,6 +685,51 @@ const registrarEliminadoCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const agregarPartidoCommand = new SlashCommandBuilder()
+	.setName("agregar-partido")
+	.setDescription(
+		"[ADMIN] Agregar un partido para la siguiente fase del torneo",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("fase_id")
+			.setDescription("Fase en la que se jugará el partido")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("equipo_local")
+			.setDescription("Equipo local")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("equipo_visitante")
+			.setDescription("Equipo visitante")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha_partido")
+			.setDescription(
+				"Fecha y hora del partido (formato ISO: YYYY-MM-DDTHH:mm:ss)",
+			)
+			.setRequired(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("utc_offset")
+			.setDescription("UTC offset en horas (ej: -5 para Perú, +1 para Europa)")
+			.setRequired(true)
+			.setMinValue(-12)
+			.setMaxValue(14),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 export const discordCommands = new Collection<string, DiscordCommand>([
 	[
 		"actualizar-partido",
@@ -984,6 +1029,124 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						interaction.client,
 						`▶️ _¡${nombrePartido} se reanudó! Las Timba Times vuelven a estar cerradas._`,
 					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"agregar-partido",
+		{
+			definition: agregarPartidoCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focusedOption = interaction.options.getFocused(true);
+				const query = focusedOption.value.toString().toLowerCase();
+
+				if (focusedOption.name === "fase_id") {
+					const { verFases } = await import("@sqlc/fases_sql");
+					const fases = await verFases(appContext.db);
+					const opciones = fases
+						.filter((f) => f.nombre.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((f) => ({
+							name: f.nombre,
+							value: f.id,
+						}));
+					await interaction.respond(opciones);
+				} else if (
+					focusedOption.name === "equipo_local" ||
+					focusedOption.name === "equipo_visitante"
+				) {
+					const equipos = await appContext.services.awards.verEquipos();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((e) => ({
+							name: e.nombre,
+							value: String(e.id),
+						}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				const faseId = interaction.options.getInteger("fase_id", true);
+				const equipoLocalIdStr = interaction.options.getString(
+					"equipo_local",
+					true,
+				);
+				const equipoVisitanteIdStr = interaction.options.getString(
+					"equipo_visitante",
+					true,
+				);
+				const fechaPartidoStr = interaction.options.getString(
+					"fecha_partido",
+					true,
+				);
+				const utcOffset = interaction.options.getInteger("utc_offset", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const equipoLocalId = parseInt(equipoLocalIdStr, 10);
+					const equipoVisitanteId = parseInt(equipoVisitanteIdStr, 10);
+
+					if (Number.isNaN(equipoLocalId) || Number.isNaN(equipoVisitanteId)) {
+						await interaction.editReply({
+							content:
+								"❌ Los equipos deben seleccionarse desde el autocompletado.",
+						});
+						return;
+					}
+
+					if (equipoLocalId === equipoVisitanteId) {
+						await interaction.editReply({
+							content: "❌ El equipo local y visitante no pueden ser el mismo.",
+						});
+						return;
+					}
+
+					let fechaPartido: Date;
+					try {
+						fechaPartido = new Date(fechaPartidoStr);
+						if (Number.isNaN(fechaPartido.getTime())) {
+							throw new Error("Invalid date");
+						}
+					} catch {
+						await interaction.editReply({
+							content:
+								"❌ Formato de fecha inválido. Usa: YYYY-MM-DDTHH:mm:ss (ej: 2026-06-21T19:00:00)",
+						});
+						return;
+					}
+
+					const fechaAjustada = new Date(
+						fechaPartido.getTime() - utcOffset * 60 * 60 * 1000,
+					);
+
+					await appContext.services.partidos.agregarPartidoSiguienteFase({
+						faseId,
+						equipoLocalId,
+						equipoVisitanteId,
+						fechaPartido: fechaAjustada,
+					});
+
+					const equipos = await appContext.services.awards.verEquipos();
+					const equipoLocal = equipos.find((e) => e.id === equipoLocalId);
+					const equipoVisitante = equipos.find(
+						(e) => e.id === equipoVisitanteId,
+					);
+
+					const nombrePartido =
+						equipoLocal && equipoVisitante
+							? `${equipoLocal.nombre} vs ${equipoVisitante.nombre}`
+							: `#${equipoLocalId} vs #${equipoVisitanteId}`;
+
+					await interaction.editReply({
+						content: `✅ Partido agregado: **${nombrePartido}** | Fase: ${faseId} | Fecha: ${fechaAjustada.toISOString()}`,
+					});
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
