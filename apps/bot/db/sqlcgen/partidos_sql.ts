@@ -430,3 +430,22 @@ export async function verPartidosNoFinalizados(client: Client): Promise<VerParti
     });
 }
 
+export const agregarPartidoQuery = `-- name: AgregarPartido :exec
+INSERT INTO partidos (fase_id, equipo_local_id, equipo_visitante_id, fecha_partido)
+VALUES ($1, $2, $3, $4)`;
+
+export interface AgregarPartidoArgs {
+    faseId: number;
+    equipoLocalId: number | null;
+    equipoVisitanteId: number | null;
+    fechaPartido: Date | null;
+}
+
+export async function agregarPartido(client: Client, args: AgregarPartidoArgs): Promise<void> {
+    await client.query({
+        text: agregarPartidoQuery,
+        values: [args.faseId, args.equipoLocalId, args.equipoVisitanteId, args.fechaPartido],
+        rowMode: "array"
+    });
+}
+

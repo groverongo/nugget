@@ -116,3 +116,7 @@ JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
 WHERE partidos.estado != 'finalizado'
 ORDER BY partidos.fecha_partido ASC;
+
+-- name: AgregarPartido :exec
+INSERT INTO partidos (fase_id, equipo_local_id, equipo_visitante_id, fecha_partido)
+VALUES ($1, $2, $3, $4);

@@ -1,4 +1,5 @@
 import type {
+	AgregarPartidoArgs,
 	VerInformacionPartidoArgs,
 	VerInformacionPartidoRow,
 	VerPartidosNoFinalizadosRow,
@@ -78,5 +79,9 @@ export class PartidosService implements IPartidosService {
 
 	verResumenDiaEnviado(fecha: string): Promise<boolean> {
 		return this.partidosRepo.verResumenDiaEnviado({ fecha });
+	}
+
+	async agregarPartidoSiguienteFase(args: AgregarPartidoArgs): Promise<void> {
+		return this.partidosRepo.agregarPartido(args);
 	}
 }

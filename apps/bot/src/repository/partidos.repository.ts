@@ -3,10 +3,12 @@ import {
 	type ActualizarPartidoEnVivoArgs,
 	type ActualizarPartidoFinalizadoArgs,
 	type ActualizarPartidoMedioTiempoArgs,
+	type AgregarPartidoArgs,
 	actualizarGolesPartido,
 	actualizarPartidoEnVivo,
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
+	agregarPartido,
 	type MarcarResumenDiaEnviadoArgs,
 	marcarResumenDiaEnviado,
 	type ObtenerPartidoArgs,
@@ -92,6 +94,10 @@ export class PartidosRepository implements IPartidosRepository {
 	async verResumenDiaEnviado(args: VerResumenDiaEnviadoArgs): Promise<boolean> {
 		const row = await verResumenDiaEnviado(this.pool, args);
 		return row?.enviado ?? false;
+	}
+
+	agregarPartido(args: AgregarPartidoArgs): Promise<void> {
+		return agregarPartido(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPartidosRepository {
