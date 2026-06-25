@@ -430,3 +430,51 @@ export async function verPartidosNoFinalizados(client: Client): Promise<VerParti
     });
 }
 
+export const agregarPartidoQuery = `-- name: AgregarPartido :exec
+INSERT INTO partidos (fase_id, equipo_local_id, equipo_visitante_id, fecha_partido)
+VALUES ($1, $3::INTEGER, $4::INTEGER, $2)`;
+
+export interface AgregarPartidoArgs {
+    faseId: number;
+    fechaPartido: Date | null;
+    equipoLocalId: number;
+    equipoVisitanteId: number;
+}
+
+export async function agregarPartido(client: Client, args: AgregarPartidoArgs): Promise<void> {
+    await client.query({
+        text: agregarPartidoQuery,
+        values: [args.faseId, args.fechaPartido, args.equipoLocalId, args.equipoVisitanteId],
+        rowMode: "array"
+    });
+}
+
+export const equipoJugoPartidoPorFaseQuery = `-- name: EquipoJugoPartidoPorFase :one
+SELECT COUNT(1)::INTEGER AS COUNT 
+FROM partidos 
+WHERE fase_id = $1 AND (equipo_local_id = $2::INTEGER OR equipo_visitante_id = $2::INTEGER)`;
+
+export interface EquipoJugoPartidoPorFaseArgs {
+    faseId: number;
+    equipoId: number;
+}
+
+export interface EquipoJugoPartidoPorFaseRow {
+    count: number;
+}
+
+export async function equipoJugoPartidoPorFase(client: Client, args: EquipoJugoPartidoPorFaseArgs): Promise<EquipoJugoPartidoPorFaseRow | null> {
+    const result = await client.query({
+        text: equipoJugoPartidoPorFaseQuery,
+        values: [args.faseId, args.equipoId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
+}
+

@@ -1,4 +1,5 @@
 import type {
+	AgregarPartidoArgs,
 	VerInformacionPartidoArgs,
 	VerInformacionPartidoRow,
 	VerPartidosNoFinalizadosRow,
@@ -28,4 +29,6 @@ export interface IPartidosService {
 	marcarResumenDiaEnviado(fecha: string): Promise<void>;
 
 	verResumenDiaEnviado(fecha: string): Promise<boolean>;
+
+	agregarPartidoSiguienteFase(args: AgregarPartidoArgs): Promise<void>;
 }

@@ -3,6 +3,8 @@ import type {
 	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
+	AgregarPartidoArgs,
+	EquipoJugoPartidoPorFaseArgs,
 	MarcarResumenDiaEnviadoArgs,
 	ObtenerPartidoArgs,
 	ObtenerPartidoRow,
@@ -49,6 +51,10 @@ export interface IPartidosRepository {
 	marcarResumenDiaEnviado(args: MarcarResumenDiaEnviadoArgs): Promise<void>;
 
 	verResumenDiaEnviado(args: VerResumenDiaEnviadoArgs): Promise<boolean>;
+
+	agregarPartido(args: AgregarPartidoArgs): Promise<void>;
+
+	existeEquipoPartidoFase(args: EquipoJugoPartidoPorFaseArgs): Promise<boolean>;
 
 	withTx(tx: PoolClient): IPartidosRepository;
 }
