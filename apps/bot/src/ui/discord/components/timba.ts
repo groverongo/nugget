@@ -430,36 +430,19 @@ export function buildTimbaResolucionMedioTiempoComponents(
 						.setStyle(ButtonStyle.Primary),
 				),
 		);
-		if (timba.estado === "resuelta") {
-			container.addSectionComponents(
-				new SectionBuilder()
-					.addTextDisplayComponents(
-						new TextDisplayBuilder().setContent("Revertir resultado"),
-					)
-					.setButtonAccessory(
-						new ButtonBuilder()
-							.setCustomId(
-								`${TIMBA_MT_REVERTIR_PREFIX}${timba.id}:${partidoId}`,
-							)
-							.setLabel("🔄 No resuelta aún")
-							.setStyle(ButtonStyle.Secondary),
-					),
-			);
-		} else {
-			const nextSkipped = [...skippedIds, timba.id].join(",");
-			container.addSectionComponents(
-				new SectionBuilder()
-					.addTextDisplayComponents(
-						new TextDisplayBuilder().setContent("Resolver más tarde"),
-					)
-					.setButtonAccessory(
-						new ButtonBuilder()
-							.setCustomId(`${TIMBA_MT_SKIP_PREFIX}${partidoId}:${nextSkipped}`)
-							.setLabel("⏭️ Saltar")
-							.setStyle(ButtonStyle.Secondary),
-					),
-			);
-		}
+		const nextSkipped = [...skippedIds, timba.id].join(",");
+		container.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent("Resolver más tarde"),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(`${TIMBA_MT_SKIP_PREFIX}${partidoId}:${nextSkipped}`)
+						.setLabel("⏭️ Saltar")
+						.setStyle(ButtonStyle.Secondary),
+				),
+		);
 	}
 
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch

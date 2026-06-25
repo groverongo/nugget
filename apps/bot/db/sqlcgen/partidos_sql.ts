@@ -390,7 +390,9 @@ export const verPartidosNoFinalizadosQuery = `-- name: VerPartidosNoFinalizados 
 SELECT
     partidos.id AS partido_id,
     el.nombre AS equipo_local_nombre,
+    el.bandera AS equipo_local_bandera,
     ev.nombre AS equipo_visitante_nombre,
+    ev.bandera AS equipo_visitante_bandera,
     partidos.estado,
     partidos.fecha_partido
 FROM partidos
@@ -402,7 +404,9 @@ ORDER BY partidos.fecha_partido ASC`;
 export interface VerPartidosNoFinalizadosRow {
     partidoId: number;
     equipoLocalNombre: string;
+    equipoLocalBandera: string;
     equipoVisitanteNombre: string;
+    equipoVisitanteBandera: string;
     estado: string;
     fechaPartido: Date | null;
 }
@@ -417,9 +421,11 @@ export async function verPartidosNoFinalizados(client: Client): Promise<VerParti
         return {
             partidoId: row[0],
             equipoLocalNombre: row[1],
-            equipoVisitanteNombre: row[2],
-            estado: row[3],
-            fechaPartido: row[4]
+            equipoLocalBandera: row[2],
+            equipoVisitanteNombre: row[3],
+            equipoVisitanteBandera: row[4],
+            estado: row[5],
+            fechaPartido: row[6]
         };
     });
 }

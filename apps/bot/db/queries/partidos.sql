@@ -106,7 +106,9 @@ SELECT EXISTS(SELECT 1 FROM resumen_dia WHERE fecha = $1)::BOOLEAN AS enviado;
 SELECT
     partidos.id AS partido_id,
     el.nombre AS equipo_local_nombre,
+    el.bandera AS equipo_local_bandera,
     ev.nombre AS equipo_visitante_nombre,
+    ev.bandera AS equipo_visitante_bandera,
     partidos.estado,
     partidos.fecha_partido
 FROM partidos
