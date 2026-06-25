@@ -1405,8 +1405,9 @@ export async function handleTimbaButtonInteraction(
 		await interaction.deferUpdate();
 		const timbas =
 			await appContext.services.timba.verTimbasMedioTiempoPorPartido(partidoId);
+		const pendientes = timbas.filter((t) => t.estado === "cerrada");
 		const components = buildTimbaResolucionMedioTiempoComponents(
-			timbas,
+			pendientes,
 			partidoId,
 			skippedIds,
 		);
@@ -1556,11 +1557,12 @@ async function handleTimbaResolucionMedioTiempo(
 
 		const timbas =
 			await appContext.services.timba.verTimbasMedioTiempoPorPartido(partidoId);
+		const pendientes = timbas.filter((t) => t.estado === "cerrada");
 
-		if (timbas.length > 0) {
+		if (pendientes.length > 0) {
 			await interaction.editReply({
 				components: buildTimbaResolucionMedioTiempoComponents(
-					timbas.slice(0, 3),
+					pendientes,
 					partidoId,
 				),
 				flags: MessageFlags.IsComponentsV2,
