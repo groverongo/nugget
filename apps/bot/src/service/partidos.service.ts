@@ -82,6 +82,28 @@ export class PartidosService implements IPartidosService {
 	}
 
 	async agregarPartidoSiguienteFase(args: AgregarPartidoArgs): Promise<void> {
+		const fasePreviaId = args.faseId - 1;
+
+		const equipoLocalJugoFasePrevia =
+			await this.partidosRepo.existeEquipoPartidoFase({
+				equipoId: args.equipoLocalId,
+				faseId: fasePreviaId,
+			});
+
+		if (!equipoLocalJugoFasePrevia) {
+			throw new Error("El equipo local no ha jugado la fase previa.");
+		}
+
+		const equipoVisitanteJugoFasePrevia =
+			await this.partidosRepo.existeEquipoPartidoFase({
+				equipoId: args.equipoVisitanteId,
+				faseId: fasePreviaId,
+			});
+
+		if (!equipoVisitanteJugoFasePrevia) {
+			throw new Error("El equipo visitante no ha jugado la fase previa.");
+		}
+
 		return this.partidosRepo.agregarPartido(args);
 	}
 }

@@ -119,4 +119,9 @@ ORDER BY partidos.fecha_partido ASC;
 
 -- name: AgregarPartido :exec
 INSERT INTO partidos (fase_id, equipo_local_id, equipo_visitante_id, fecha_partido)
-VALUES ($1, $2, $3, $4);
+VALUES ($1, sqlc.arg('equipo_local_id')::INTEGER, sqlc.arg('equipo_visitante_id')::INTEGER, $2);
+
+-- name: EquipoJugoPartidoPorFase :one
+SELECT COUNT(1)::INTEGER AS COUNT 
+FROM partidos 
+WHERE fase_id = $1 AND (equipo_local_id = sqlc.arg('equipo_id')::INTEGER OR equipo_visitante_id = sqlc.arg('equipo_id')::INTEGER);

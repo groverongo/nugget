@@ -9,6 +9,8 @@ import {
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
 	agregarPartido,
+	type EquipoJugoPartidoPorFaseArgs,
+	equipoJugoPartidoPorFase,
 	type MarcarResumenDiaEnviadoArgs,
 	marcarResumenDiaEnviado,
 	type ObtenerPartidoArgs,
@@ -98,6 +100,13 @@ export class PartidosRepository implements IPartidosRepository {
 
 	agregarPartido(args: AgregarPartidoArgs): Promise<void> {
 		return agregarPartido(this.pool, args);
+	}
+
+	async existeEquipoPartidoFase(
+		args: EquipoJugoPartidoPorFaseArgs,
+	): Promise<boolean> {
+		const resultado = await equipoJugoPartidoPorFase(this.pool, args);
+		return resultado ? resultado.count > 1 : false;
 	}
 
 	withTx(tx: PoolClient): IPartidosRepository {
