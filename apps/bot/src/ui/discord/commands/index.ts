@@ -972,7 +972,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					const partido = partidos.find((p) => p.partidoId === partidoId);
 					const nombrePartido = partido
-						? `**${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}**`
+						? `**${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}**`
 						: `**Partido #${partidoId}**`;
 
 					await interaction.editReply({
