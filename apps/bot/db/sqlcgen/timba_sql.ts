@@ -632,10 +632,10 @@ export async function anularTimba(client: Client, args: AnularTimbaArgs): Promis
     });
 }
 
-export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
+export const cancelarTimbasAbiertasPorPartidoQuery = `-- name: CancelarTimbasAbiertasPorPartido :exec
 UPDATE timba_time
 SET estado = 'cancelada'
-WHERE partido_id = $1 AND estado IN ('abierta', 'contraoferta')`;
+WHERE partido_id = $1 AND estado = 'abierta'`;
 
 export interface CancelarTimbasAbiertasPorPartidoArgs {
     partidoId: number;
@@ -680,7 +680,7 @@ export interface VerTimbasMedioTiempoPorPartidoRow {
     puntosPropuestos: number;
     puntosArriesgados: number;
     jugador_1Id: string;
-    jugador_2Id: string;
+    jugador_2Id: string | null;
     ganadorId: string | null;
     estado: string;
     jugador_1Nombre: string;
@@ -767,7 +767,7 @@ FROM timba_time
 WHERE timba_original_id = $1 AND estado = 'contraoferta'`;
 
 export interface VerContraofertasMensajesPorTimbaArgs {
-    timbaOriginalId: number;
+    timbaOriginalId: number | null;
 }
 
 export interface VerContraofertasMensajesPorTimbaRow {
@@ -781,10 +781,12 @@ export async function verContraofertasMensajesPorTimba(client: Client, args: Ver
         values: [args.timbaOriginalId],
         rowMode: "array"
     });
-    return result.rows.map(row => ({
-        id: row[0],
-        discordMessageId: row[1]
-    }));
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            discordMessageId: row[1]
+        };
+    });
 }
 
 export const crearContraofertaQuery = `-- name: CrearContraoferta :one
@@ -798,7 +800,7 @@ export interface CrearContraofertaArgs {
     jugador_1Id: string;
     puntosPropuestos: number;
     puntosArriesgados: number;
-    timbaOriginalId: number;
+    timbaOriginalId: number | null;
 }
 
 export interface CrearContraofertaRow {
@@ -826,7 +828,7 @@ SET estado = 'cancelada'
 WHERE timba_original_id = $1 AND estado = 'contraoferta'`;
 
 export interface CancelarContraofertasPorTimbaArgs {
-    timbaOriginalId: number;
+    timbaOriginalId: number | null;
 }
 
 export async function cancelarContraofertasPorTimba(client: Client, args: CancelarContraofertasPorTimbaArgs): Promise<void> {
@@ -841,11 +843,11 @@ export const cancelarContraofertasEnCascadaPorTimbaQuery = `-- name: CancelarCon
 UPDATE timba_time
 SET estado = 'cancelada'
 WHERE timba_original_id IN (
-    SELECT id FROM timba_time WHERE timba_original_id = $1
+    SELECT id FROM timba_time AS t WHERE t.timba_original_id = $1
 ) AND estado = 'contraoferta'`;
 
 export interface CancelarContraofertasEnCascadaPorTimbaArgs {
-    timbaOriginalId: number;
+    timbaOriginalId: number | null;
 }
 
 export async function cancelarContraofertasEnCascadaPorTimba(client: Client, args: CancelarContraofertasEnCascadaPorTimbaArgs): Promise<void> {
@@ -855,3 +857,21 @@ export async function cancelarContraofertasEnCascadaPorTimba(client: Client, arg
         rowMode: "array"
     });
 }
+
+export const cancelarTimbasContraofertaAbiertasPorPartidoQuery = `-- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE partido_id = $1 AND estado IN ('abierta', 'contraoferta')`;
+
+export interface CancelarTimbasContraofertaAbiertasPorPartidoArgs {
+    partidoId: number;
+}
+
+export async function cancelarTimbasContraofertaAbiertasPorPartido(client: Client, args: CancelarTimbasContraofertaAbiertasPorPartidoArgs): Promise<void> {
+    await client.query({
+        text: cancelarTimbasContraofertaAbiertasPorPartidoQuery,
+        values: [args.partidoId],
+        rowMode: "array"
+    });
+}
+

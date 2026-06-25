@@ -252,7 +252,7 @@ WHERE timba_original_id = $1 AND estado = 'contraoferta';
 UPDATE timba_time
 SET estado = 'cancelada'
 WHERE timba_original_id IN (
-    SELECT id FROM timba_time WHERE timba_original_id = $1
+    SELECT id FROM timba_time AS t WHERE t.timba_original_id = $1
 ) AND estado = 'contraoferta';
 
 -- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
