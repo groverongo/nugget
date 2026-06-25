@@ -714,10 +714,14 @@ const agregarPartidoCommand = new SlashCommandBuilder()
 	)
 	.addStringOption((option) =>
 		option
-			.setName("fecha_partido")
-			.setDescription(
-				"Fecha y hora del partido (formato ISO: YYYY-MM-DDTHH:mm:ss)",
-			)
+			.setName("fecha")
+			.setDescription("Fecha del partido (formato: YYYY-MM-DD, ej: 2026-06-21)")
+			.setRequired(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("hora")
+			.setDescription("Hora del partido (formato: HH:mm, ej: 19:00)")
 			.setRequired(true),
 	)
 	.addIntegerOption((option) =>
@@ -1081,10 +1085,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					"equipo_visitante",
 					true,
 				);
-				const fechaPartidoStr = interaction.options.getString(
-					"fecha_partido",
-					true,
-				);
+				const fecha = interaction.options.getString("fecha", true);
+				const hora = interaction.options.getString("hora", true);
 				const utcOffset = interaction.options.getInteger("utc_offset", true);
 
 				await interaction.deferReply({ ephemeral: true });
@@ -1108,23 +1110,32 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						return;
 					}
 
-					let fechaPartido: Date;
+					let fechaAjustada: Date;
 					try {
-						fechaPartido = new Date(fechaPartidoStr);
-						if (Number.isNaN(fechaPartido.getTime())) {
+						const fechaRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+						const horaRegex = /^(\d{2}):(\d{2})$/;
+
+						if (!fechaRegex.test(fecha)) {
+							throw new Error("Invalid date format");
+						}
+						if (!horaRegex.test(hora)) {
+							throw new Error("Invalid time format");
+						}
+
+						const offsetSign = utcOffset >= 0 ? "+" : "-";
+						const offsetHours = String(Math.abs(utcOffset)).padStart(2, "0");
+						const timestampzStr = `${fecha}T${hora}:00${offsetSign}${offsetHours}:00`;
+						fechaAjustada = new Date(timestampzStr);
+						if (Number.isNaN(fechaAjustada.getTime())) {
 							throw new Error("Invalid date");
 						}
 					} catch {
 						await interaction.editReply({
 							content:
-								"❌ Formato de fecha inválido. Usa: YYYY-MM-DDTHH:mm:ss (ej: 2026-06-21T19:00:00)",
+								"❌ Formato inválido. Usa fecha: YYYY-MM-DD (ej: 2026-06-21) y hora: HH:mm (ej: 19:00)",
 						});
 						return;
 					}
-
-					const fechaAjustada = new Date(
-						fechaPartido.getTime() - utcOffset * 60 * 60 * 1000,
-					);
 
 					await appContext.services.partidos.agregarPartidoSiguienteFase({
 						faseId,
