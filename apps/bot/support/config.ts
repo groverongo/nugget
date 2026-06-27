@@ -21,6 +21,11 @@ const ConfigSchema = z.object({
 				id: z.string().min(1),
 			}),
 		}),
+		general: z.object({
+			channel: z.object({
+				id: z.string().min(1),
+			}),
+		}),
 		alerts: z.object({
 			channel: z.object({
 				id: z.string().default(""),
@@ -59,6 +64,11 @@ const DEFAULT_CONFIG: Config = {
 			},
 		},
 		alerts: {
+			channel: {
+				id: "",
+			},
+		},
+		general: {
 			channel: {
 				id: "",
 			},

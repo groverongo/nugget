@@ -5,6 +5,7 @@ import type {
 } from "@sqlc/predicciones_sql";
 import { logger } from "@support/logger";
 import { AttachmentBuilder, type Client } from "discord.js";
+import { config } from "support/config";
 import type { AppContext } from "../../../app";
 import {
 	sendAlertsChannel,
@@ -169,7 +170,7 @@ export async function enviarEstadisticasPrePartido(
 
 	if (sinPrediccion.length > 0) {
 		const matchInfo = `${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
-		const dmMessage = `⚽ No hiciste tu predicción para **${matchInfo}**. ¡No seas idiota y mandala antes que se acabe el tiempo!`;
+		const dmMessage = `⚽ No hiciste tu predicción para **${matchInfo}**. ¡No seas idiota y mandala a <#${config.discord.general.channel.id}> antes de que se acabe el tiempo!`;
 		await Promise.allSettled(
 			sinPrediccion.map((user) => sendToUser(client, user.id, dmMessage)),
 		);
