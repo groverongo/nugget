@@ -774,13 +774,6 @@ const actualizarAwardsKOCommand = new SlashCommandBuilder()
 			.setRequired(true)
 			.setAutocomplete(true),
 	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_mas_goles")
-			.setDescription("Equipo con más goles en ese partido (omitir si empate)")
-			.setRequired(false)
-			.setAutocomplete(true),
-	)
 	.addIntegerOption((option) =>
 		option
 			.setName("num_suplementarios")
@@ -794,6 +787,13 @@ const actualizarAwardsKOCommand = new SlashCommandBuilder()
 			.setName("goleador_ko")
 			.setDescription("Jugador goleador de la fase KO (sin penales)")
 			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_mas_goles")
+			.setDescription("Equipo con más goles en ese partido (omitir si empate)")
+			.setRequired(false)
 			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
