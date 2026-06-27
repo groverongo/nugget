@@ -3,9 +3,9 @@ import type {
 	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorPartidoRow,
 } from "@sqlc/predicciones_sql";
+import { config } from "@support/config";
 import { logger } from "@support/logger";
 import { AttachmentBuilder, type Client } from "discord.js";
-import { config } from "support/config";
 import type { AppContext } from "../../../app";
 import {
 	sendAlertsChannel,
