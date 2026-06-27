@@ -3,12 +3,19 @@ import {
 	type ActualizarPartidoEnVivoArgs,
 	type ActualizarPartidoFinalizadoArgs,
 	type ActualizarPartidoMedioTiempoArgs,
+	type ActualizarPartidoPenalesArgs,
+	type ActualizarPartidoSuplementarioArgs,
 	type AgregarPartidoArgs,
 	actualizarGolesPartido,
 	actualizarPartidoEnVivo,
 	actualizarPartidoFinalizado,
 	actualizarPartidoMedioTiempo,
+	actualizarPartidoPenales,
+	actualizarPartidoSuplementario,
 	agregarPartido,
+	type CrearPartidoSuplementarioArgs,
+	type CrearPartidoSuplementarioRow,
+	crearPartidoSuplementario,
 	type EquipoJugoPartidoPorFaseArgs,
 	equipoJugoPartidoPorFase,
 	type MarcarResumenDiaEnviadoArgs,
@@ -20,6 +27,7 @@ import {
 	type VerInformacionPartidoRow,
 	type VerPartidoParaCalculoArgs,
 	type VerPartidoParaCalculoRow,
+	type VerPartidoSuplePorOriginalRow,
 	type VerPartidosNoFinalizadosRow,
 	type VerPartidosPorFechaArgs,
 	type VerPartidosPorFechaRow,
@@ -27,6 +35,7 @@ import {
 	verFechasDePartidos,
 	verInformacionPartido,
 	verPartidoParaCalculo,
+	verPartidoSuplePorOriginal,
 	verPartidosNoFinalizados,
 	verPartidosPorFecha,
 	verResumenDiaEnviado,
@@ -107,6 +116,30 @@ export class PartidosRepository implements IPartidosRepository {
 	): Promise<boolean> {
 		const resultado = await equipoJugoPartidoPorFase(this.pool, args);
 		return resultado ? resultado.count > 1 : false;
+	}
+
+	crearPartidoSuplementario(
+		args: CrearPartidoSuplementarioArgs,
+	): Promise<CrearPartidoSuplementarioRow | null> {
+		return crearPartidoSuplementario(this.pool, args);
+	}
+
+	verPartidoSuplePorOriginal(
+		partidoOriginalId: number,
+	): Promise<VerPartidoSuplePorOriginalRow | null> {
+		return verPartidoSuplePorOriginal(this.pool, {
+			partidoOriginalId: partidoOriginalId,
+		});
+	}
+
+	actualizarPartidoSuplementario(
+		args: ActualizarPartidoSuplementarioArgs,
+	): Promise<void> {
+		return actualizarPartidoSuplementario(this.pool, args);
+	}
+
+	actualizarPartidoPenales(args: ActualizarPartidoPenalesArgs): Promise<void> {
+		return actualizarPartidoPenales(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPartidosRepository {

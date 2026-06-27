@@ -1,6 +1,6 @@
 -- name: AgregarPrediccion :exec
-INSERT INTO prediccion (usuario_id, partido_id, goles_local, goles_visitante)
-VALUES ($1, $2, $3, $4);
+INSERT INTO prediccion (usuario_id, partido_id, goles_local, goles_visitante, penales_ganador_id)
+VALUES ($1, $2, $3, $4, $5);
 
 -- name: MonitorearAntiguaPrediccion :exec
 INSERT INTO monitoreo_prediccion (usuario_id, partido_id, goles_local, goles_visitante)
@@ -10,21 +10,23 @@ VALUES ($1, $2, $3, $4);
 UPDATE prediccion SET
 goles_local = $1,
 goles_visitante = $2,
+penales_ganador_id = $3,
 actualizado_en = NOW()
-WHERE usuario_id = $3 AND partido_id = $4;
+WHERE usuario_id = $4 AND partido_id = $5;
 
 -- name: VerPrediccionPorUsuarioYPartido :one
-SELECT usuario_id, partido_id, goles_local, goles_visitante
+SELECT usuario_id, partido_id, goles_local, goles_visitante, penales_ganador_id
 FROM prediccion
 WHERE usuario_id = $1 AND partido_id = $2;
 
 -- name: VerPrediccionesPorPartido :many
-SELECT 
+SELECT
     prediccion.partido_id AS partido_id,
     prediccion.usuario_id AS usuario_id,
     usuarios.username AS username,
     prediccion.goles_local AS prediccion_goles_local,
     prediccion.goles_visitante AS prediccion_goles_visitante,
+    prediccion.penales_ganador_id AS prediccion_penales_ganador_id,
     partidos.equipo_local_id,
     partidos.equipo_visitante_id,
     partidos.fecha_partido,

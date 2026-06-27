@@ -3,7 +3,11 @@ import type {
 	ActualizarPartidoEnVivoArgs,
 	ActualizarPartidoFinalizadoArgs,
 	ActualizarPartidoMedioTiempoArgs,
+	ActualizarPartidoPenalesArgs,
+	ActualizarPartidoSuplementarioArgs,
 	AgregarPartidoArgs,
+	CrearPartidoSuplementarioArgs,
+	CrearPartidoSuplementarioRow,
 	EquipoJugoPartidoPorFaseArgs,
 	MarcarResumenDiaEnviadoArgs,
 	ObtenerPartidoArgs,
@@ -12,6 +16,7 @@ import type {
 	VerInformacionPartidoRow,
 	VerPartidoParaCalculoArgs,
 	VerPartidoParaCalculoRow,
+	VerPartidoSuplePorOriginalRow,
 	VerPartidosNoFinalizadosRow,
 	VerPartidosPorFechaArgs,
 	VerPartidosPorFechaRow,
@@ -55,6 +60,20 @@ export interface IPartidosRepository {
 	agregarPartido(args: AgregarPartidoArgs): Promise<void>;
 
 	existeEquipoPartidoFase(args: EquipoJugoPartidoPorFaseArgs): Promise<boolean>;
+
+	crearPartidoSuplementario(
+		args: CrearPartidoSuplementarioArgs,
+	): Promise<CrearPartidoSuplementarioRow | null>;
+
+	verPartidoSuplePorOriginal(
+		partidoOriginalId: number,
+	): Promise<VerPartidoSuplePorOriginalRow | null>;
+
+	actualizarPartidoSuplementario(
+		args: ActualizarPartidoSuplementarioArgs,
+	): Promise<void>;
+
+	actualizarPartidoPenales(args: ActualizarPartidoPenalesArgs): Promise<void>;
 
 	withTx(tx: PoolClient): IPartidosRepository;
 }

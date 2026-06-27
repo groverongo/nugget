@@ -67,30 +67,44 @@ export function buildPartidosComponents(
 
 	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
 		const { estado } = partido;
+		const esSuple = partido.partidoOriginalId !== null;
+
 		const button =
-			estado === "en_vivo" || estado === "medio_tiempo"
+			estado === "en_vivo" ||
+			estado === "medio_tiempo" ||
+			estado === "suplementario"
 				? new ButtonBuilder()
 						.setCustomId(`noop:${partido.partidoId}`)
 						.setLabel("🔴 ¡En vivo!")
 						.setStyle(ButtonStyle.Danger)
 						.setDisabled(true)
-				: estado === "finalizado"
+				: estado === "penales"
 					? new ButtonBuilder()
 							.setCustomId(`noop:${partido.partidoId}`)
-							.setLabel("Finalizado")
-							.setStyle(ButtonStyle.Secondary)
+							.setLabel("⚽ Penales")
+							.setStyle(ButtonStyle.Danger)
 							.setDisabled(true)
-					: new ButtonBuilder()
-							.setCustomId(
-								`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
-							)
-							.setLabel("Predecir")
-							.setStyle(ButtonStyle.Primary);
+					: estado === "finalizado"
+						? new ButtonBuilder()
+								.setCustomId(`noop:${partido.partidoId}`)
+								.setLabel("Finalizado")
+								.setStyle(ButtonStyle.Secondary)
+								.setDisabled(true)
+						: new ButtonBuilder()
+								.setCustomId(
+									`${PARTIDOS_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+								)
+								.setLabel(esSuple ? "Predecir (Suple)" : "Predecir")
+								.setStyle(esSuple ? ButtonStyle.Success : ButtonStyle.Primary);
 
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
+					new TextDisplayBuilder().setContent(
+						esSuple
+							? `⏱️ **[SUPLEMENTARIO]** ${formatPartidoLine(partido)}`
+							: formatPartidoLine(partido),
+					),
 				)
 				.setButtonAccessory(button),
 		);

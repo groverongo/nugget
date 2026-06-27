@@ -21,6 +21,7 @@ export class AdminService implements IAdminService {
 		golesLocal: number;
 		golesVisitante: number;
 		milagro: number;
+		penalesGanadorId?: number | null;
 	}): Promise<ResumenActualizacion> {
 		return this.txManager.runInTx(async (tx) => {
 			const partidoRepo = this.partidosRepo.withTx(tx);
@@ -32,30 +33,67 @@ export class AdminService implements IAdminService {
 			});
 			if (!info) throw new Error("Partido no encontrado.");
 
+			const esSuple = info.partidoOriginalId !== null;
+			const golesMinimosLocal = Number(info.golesMinimosLocal ?? 0);
+			const golesMinimosVisitante = Number(info.golesMinimosVisitante ?? 0);
+
+			const puntosBase = esSuple
+				? Math.floor(info.puntosBase / 2)
+				: info.puntosBase;
+			const puntosBuenIntento = esSuple
+				? Math.max(1, Math.floor(info.puntosBuenIntento / 2))
+				: info.puntosBuenIntento;
+
 			const totalGoles = args.golesLocal + args.golesVisitante;
-			const extraPartidazo =
-				(args.golesLocal === 0 && args.golesVisitante === 0) ||
-				totalGoles > 3.5;
+			const golesAgregados =
+				totalGoles - golesMinimosLocal - golesMinimosVisitante;
+			const extraPartidazo = esSuple
+				? golesAgregados > 2.5
+				: (args.golesLocal === 0 && args.golesVisitante === 0) ||
+					totalGoles > 3.5;
 
 			const fifaLocal = Number(info.equipoLocalPuntosFifa ?? 0);
 			const fifaVisitante = Number(info.equipoVisitantePuntosFifa ?? 0);
 			const diffFifa = Math.abs(fifaLocal - fifaVisitante);
-			const localGana = args.golesLocal > args.golesVisitante;
-			const visitanteGana = args.golesVisitante > args.golesLocal;
 			const localEsFavorito = fifaLocal >= fifaVisitante;
-			const batacazoOcurrio =
-				(localGana && !localEsFavorito) || (visitanteGana && localEsFavorito);
-			const puntosBatacazo = batacazoOcurrio ? Math.floor(diffFifa / 100) : 0;
 
+			const penalesGanadorId = args.penalesGanadorId ?? null;
+			const hayEmpateGoles = args.golesLocal === args.golesVisitante;
+
+			// Fetch predicciones una sola vez
 			const predicciones = await predRepo.verPrediccionesPorPartido({
 				partidoId: args.partidoId,
 			});
 
+			// Para batacazo con penales necesitamos saber qué equipo es el local
+			const equipoLocalId = predicciones[0]?.equipoLocalId ?? null;
+			const equipoVisitanteId = predicciones[0]?.equipoVisitanteId ?? null;
+
+			let localGanaFinal = args.golesLocal > args.golesVisitante;
+			let visitanteGanaFinal = args.golesVisitante > args.golesLocal;
+			if (
+				esSuple &&
+				hayEmpateGoles &&
+				penalesGanadorId !== null &&
+				equipoLocalId
+			) {
+				localGanaFinal = penalesGanadorId === equipoLocalId;
+				visitanteGanaFinal = penalesGanadorId === equipoVisitanteId;
+			}
+
+			const batacazoOcurrio =
+				(localGanaFinal && !localEsFavorito) ||
+				(visitanteGanaFinal && localEsFavorito);
+			const puntosBatacazo = batacazoOcurrio ? Math.floor(diffFifa / 100) : 0;
+
 			const totalApostadores = predicciones.length;
-			const totalAcertadores = predicciones.filter(
-				(p) =>
-					p.prediccionGolesLocal === args.golesLocal &&
-					p.prediccionGolesVisitante === args.golesVisitante,
+			const totalAcertadores = predicciones.filter((p) =>
+				this.esExacto(
+					p,
+					args.golesLocal,
+					args.golesVisitante,
+					penalesGanadorId,
+				),
 			).length;
 
 			const elegidoOcurrio =
@@ -75,18 +113,22 @@ export class AdminService implements IAdminService {
 			});
 
 			for (const pred of predicciones) {
-				const esExacto =
-					pred.prediccionGolesLocal === args.golesLocal &&
-					pred.prediccionGolesVisitante === args.golesVisitante;
+				const esExacto = this.esExacto(
+					pred,
+					args.golesLocal,
+					args.golesVisitante,
+					penalesGanadorId,
+				);
 
 				const esBuenIntento =
 					!esExacto &&
-					Math.sign(
-						pred.prediccionGolesLocal - pred.prediccionGolesVisitante,
-					) === Math.sign(args.golesLocal - args.golesVisitante) &&
-					Math.abs(
-						pred.prediccionGolesLocal - pred.prediccionGolesVisitante,
-					) === Math.abs(args.golesLocal - args.golesVisitante);
+					this.esBuenIntento(
+						pred,
+						args.golesLocal,
+						args.golesVisitante,
+						penalesGanadorId,
+						esSuple,
+					);
 
 				if (esExacto) {
 					const resultadosPrevios =
@@ -100,9 +142,8 @@ export class AdminService implements IAdminService {
 						else break;
 					}
 					const nuevaRacha = racha + 1;
-					const puntosEnRacha = Math.min(racha, info.puntosBase);
+					const puntosEnRacha = Math.min(racha, puntosBase);
 
-					const puntosBase = info.puntosBase;
 					const puntosPartidazo = extraPartidazo ? 1 : 0;
 					const puntosMilagro = args.milagro;
 					const subTotal =
@@ -112,7 +153,8 @@ export class AdminService implements IAdminService {
 						puntosMilagro +
 						puntosBatacazo +
 						puntosElegido;
-					const puntosGranFinal = info.faseNombre === "final" ? subTotal : 0;
+					const puntosGranFinal =
+						!esSuple && info.faseNombre === "final" ? subTotal : 0;
 					const puntosTotal = subTotal + puntosGranFinal;
 
 					await predRepo.actualizarPuntajePrediccion({
@@ -145,26 +187,25 @@ export class AdminService implements IAdminService {
 						partidoId: args.partidoId,
 					});
 				} else if (esBuenIntento) {
-					const puntosBase = info.puntosBuenIntento;
 					await predRepo.actualizarPuntajePrediccion({
 						usuarioId: pred.usuarioId,
 						partidoId: args.partidoId,
 						resultado: "buen_intento",
-						puntosBase,
+						puntosBase: puntosBuenIntento,
 						puntosEnRacha: 0,
 						puntosPartidazo: 0,
 						puntosMilagro: 0,
 						puntosBatacazo: 0,
 						puntosElElegido: 0,
 						puntosGranFinal: 0,
-						puntosTotal: puntosBase,
+						puntosTotal: puntosBuenIntento,
 					});
 
 					await usuariosRepo.actualizarStats({
 						id: pred.usuarioId,
 						partidosGanados: 0,
 						partidosPerdidos: 0,
-						puntos: puntosBase,
+						puntos: puntosBuenIntento,
 						racha: 0,
 					});
 					const puntosActualesBuenIntento = await usuariosRepo.obtenerPuntos(
@@ -208,14 +249,85 @@ export class AdminService implements IAdminService {
 				}
 			}
 
+			// Si no es suple y terminó en empate en fase KO, crear suplementario
+			let supleCreado: { supleId: number } | null = null;
+			if (!esSuple && hayEmpateGoles && info.faseNombre !== "Fase de Grupos") {
+				if (equipoLocalId !== null && equipoVisitanteId !== null) {
+					const suple = await partidoRepo.crearPartidoSuplementario({
+						faseId: info.faseId,
+						equipoLocalId,
+						equipoVisitanteId,
+						partidoOriginalId: args.partidoId,
+						golesMinimosLocal: args.golesLocal,
+						golesMinimosVisitante: args.golesVisitante,
+					});
+					if (suple) {
+						supleCreado = { supleId: suple.id };
+					}
+				}
+			}
+
 			return {
 				totalApostadores,
 				totalAcertadores,
 				extraPartidazo,
 				puntosBatacazo,
 				puntosElegido,
+				supleCreado,
 			};
 		});
+	}
+
+	private esExacto(
+		pred: {
+			prediccionGolesLocal: number;
+			prediccionGolesVisitante: number;
+			prediccionPenalesGanadorId: number | null;
+		},
+		golesLocal: number,
+		golesVisitante: number,
+		penalesGanadorId: number | null,
+	): boolean {
+		if (
+			pred.prediccionGolesLocal !== golesLocal ||
+			pred.prediccionGolesVisitante !== golesVisitante
+		) {
+			return false;
+		}
+		// En empate, el ganador de penales debe coincidir
+		if (golesLocal === golesVisitante) {
+			return pred.prediccionPenalesGanadorId === penalesGanadorId;
+		}
+		return true;
+	}
+
+	private esBuenIntento(
+		pred: {
+			prediccionGolesLocal: number;
+			prediccionGolesVisitante: number;
+			prediccionPenalesGanadorId: number | null;
+		},
+		golesLocal: number,
+		golesVisitante: number,
+		penalesGanadorId: number | null,
+		esSuple: boolean,
+	): boolean {
+		const predDiff = pred.prediccionGolesLocal - pred.prediccionGolesVisitante;
+		const realDiff = golesLocal - golesVisitante;
+
+		if (
+			Math.sign(predDiff) !== Math.sign(realDiff) ||
+			Math.abs(predDiff) !== Math.abs(realDiff)
+		) {
+			return false;
+		}
+
+		// Si hay empate (diff = 0) en suple, el ganador de penales debe coincidir
+		if (esSuple && predDiff === 0 && realDiff === 0) {
+			return pred.prediccionPenalesGanadorId === penalesGanadorId;
+		}
+
+		return true;
 	}
 
 	async actualizarPartidoMedioTiempo(args: {

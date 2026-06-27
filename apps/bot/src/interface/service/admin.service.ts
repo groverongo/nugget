@@ -4,6 +4,7 @@ export interface ResumenActualizacion {
 	extraPartidazo: boolean;
 	puntosBatacazo: number;
 	puntosElegido: number;
+	supleCreado: { supleId: number } | null;
 }
 
 export interface BonusGanador {
@@ -36,6 +37,7 @@ export interface IAdminService {
 		golesLocal: number;
 		golesVisitante: number;
 		milagro: number;
+		penalesGanadorId?: number | null;
 	}): Promise<ResumenActualizacion>;
 
 	actualizarPartidoMedioTiempo(args: {

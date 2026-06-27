@@ -238,6 +238,15 @@ const actualizarPartidoCommand = new SlashCommandBuilder()
 			.setRequired(true)
 			.setMinValue(0),
 	)
+	.addIntegerOption((option) =>
+		option
+			.setName("penales_ganador_id")
+			.setDescription(
+				"[Solo suplementario] ID del equipo que ganó los penales (si hubo empate)",
+			)
+			.setRequired(false)
+			.setMinValue(1),
+	)
 	.setContexts(InteractionContextType.Guild);
 
 const resolverTimbasCommand = new SlashCommandBuilder()
@@ -293,6 +302,34 @@ const reanudarPartidoCommand = new SlashCommandBuilder()
 		option
 			.setName("partido_id")
 			.setDescription("Partido en medio tiempo")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const iniciarSupleCommand = new SlashCommandBuilder()
+	.setName("iniciar-suplementario")
+	.setDescription(
+		"[ADMIN] Inicia el tiempo suplementario (cierra las apuestas al suple)",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("ID del partido suplementario")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const iniciarPenalesCommand = new SlashCommandBuilder()
+	.setName("iniciar-penales")
+	.setDescription("[ADMIN] Inicia la tanda de penales del suplementario")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("ID del partido suplementario")
 			.setRequired(true)
 			.setAutocomplete(true),
 	)
@@ -767,6 +804,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					true,
 				);
 				const milagro = interaction.options.getInteger("milagro", true);
+				const penalesGanadorId =
+					interaction.options.getInteger("penales_ganador_id") ?? null;
 
 				await interaction.deferReply({ ephemeral: true });
 
@@ -776,6 +815,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						golesLocal,
 						golesVisitante,
 						milagro,
+						penalesGanadorId,
 					});
 
 					const extras: string[] = [];
@@ -786,15 +826,27 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					if (resumen.puntosElegido > 0)
 						extras.push(`El Elegido +${resumen.puntosElegido}pts 👑`);
 
-					await interaction.editReply({
-						content: [
-							`✅ **Partido #${partidoId}** cerrado: **${golesLocal} - ${golesVisitante}**`,
-							`👥 Apostadores: ${resumen.totalApostadores} | ✅ Exactos: ${resumen.totalAcertadores}`,
-							extras.length > 0
-								? `🎁 Extras activos: ${extras.join(", ")}`
-								: "Sin extras activos.",
-						].join("\n"),
-					});
+					const lines = [
+						`✅ **Partido #${partidoId}** cerrado: **${golesLocal} - ${golesVisitante}**`,
+						`👥 Apostadores: ${resumen.totalApostadores} | ✅ Exactos: ${resumen.totalAcertadores}`,
+						extras.length > 0
+							? `🎁 Extras activos: ${extras.join(", ")}`
+							: "Sin extras activos.",
+					];
+					if (resumen.supleCreado) {
+						lines.push(
+							`⏱️ Empate en fase KO → **Suplementario creado** (ID: ${resumen.supleCreado.supleId}). Los participantes ya pueden apostar.`,
+						);
+					}
+
+					await interaction.editReply({ content: lines.join("\n") });
+
+					if (resumen.supleCreado) {
+						await sendAlertsChannel(
+							interaction.client,
+							`⏱️ _¡Empate en fase KO! Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,
+						);
+					}
 
 					const [info, predicciones, sinPrediccion, puntajes] =
 						await Promise.all([
@@ -1016,7 +1068,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				try {
 					const [partidos] = await Promise.all([
 						appContext.services.partidos.verPartidosNoFinalizados(),
-						appContext.services.partidos.actualizarPartidoEnVivo(partidoId),
+						appContext.services.partidos.reanudarPartido(partidoId),
 						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
 					]);
 
@@ -1032,6 +1084,120 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await sendAlertsChannel(
 						interaction.client,
 						`▶️ _¡${nombrePartido} se reanudó! Las Timba Times vuelven a estar cerradas._`,
+					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"iniciar-suplementario",
+		{
+			definition: iniciarSupleCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter(
+						(p) =>
+							p.partidoOriginalId !== null &&
+							p.estado === "programado" &&
+							`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+								.toLowerCase()
+								.includes(focusedValue),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [SUPLE]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				await interaction.deferReply({ ephemeral: true });
+				try {
+					await appContext.services.partidos.iniciarSuplementario(partidoId);
+
+					const info = await appContext.services.partidos.verInformacionPartido(
+						{
+							id: partidoId,
+						},
+					);
+					const nombrePartido = info
+						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`
+						: `**Partido #${partidoId}**`;
+
+					await interaction.editReply({
+						content: `⏱️ Suplementario iniciado: ${nombrePartido}. Las apuestas están cerradas.`,
+					});
+					await sendAlertsChannel(
+						interaction.client,
+						`⏱️ _¡Empieza el suplementario de ${nombrePartido}! Las apuestas están cerradas._`,
+					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"iniciar-penales",
+		{
+			definition: iniciarPenalesCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter(
+						(p) =>
+							p.partidoOriginalId !== null &&
+							(p.estado === "suplementario" || p.estado === "medio_tiempo") &&
+							`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+								.toLowerCase()
+								.includes(focusedValue),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [${p.estado}]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				await interaction.deferReply({ ephemeral: true });
+				try {
+					await appContext.services.partidos.iniciarPenales(partidoId);
+
+					const info = await appContext.services.partidos.verInformacionPartido(
+						{
+							id: partidoId,
+						},
+					);
+					const nombrePartido = info
+						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`
+						: `**Partido #${partidoId}**`;
+
+					await interaction.editReply({
+						content: `⚽ Penales iniciados: ${nombrePartido}.`,
+					});
+					await sendAlertsChannel(
+						interaction.client,
+						`⚽ _¡Tanda de penales de ${nombrePartido}!_`,
 					);
 				} catch (error) {
 					await interaction.editReply({
