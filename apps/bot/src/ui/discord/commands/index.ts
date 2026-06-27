@@ -646,11 +646,11 @@ const predecirAwardsKOCommand = new SlashCommandBuilder()
 		option
 			.setName("num_suplementarios")
 			.setDescription(
-				"Cantidad de suplementarios que habrá en la fase KO (0-16)",
+				"Cantidad de suplementarios que habrá en la fase KO (0-32)",
 			)
 			.setRequired(true)
 			.setMinValue(0)
-			.setMaxValue(16),
+			.setMaxValue(32),
 	)
 	.addStringOption((option) =>
 		option
@@ -718,11 +718,11 @@ const predecirAwardsKOAdminCommand = new SlashCommandBuilder()
 		option
 			.setName("num_suplementarios")
 			.setDescription(
-				"Cantidad de suplementarios que habrá en la fase KO (0-16)",
+				"Cantidad de suplementarios que habrá en la fase KO (0-32)",
 			)
 			.setRequired(true)
 			.setMinValue(0)
-			.setMaxValue(16),
+			.setMaxValue(32),
 	)
 	.addStringOption((option) =>
 		option
@@ -787,7 +787,7 @@ const actualizarAwardsKOCommand = new SlashCommandBuilder()
 			.setDescription("Total de suplementarios que hubo en la fase KO")
 			.setRequired(true)
 			.setMinValue(0)
-			.setMaxValue(16),
+			.setMaxValue(32),
 	)
 	.addStringOption((option) =>
 		option
