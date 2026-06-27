@@ -54,6 +54,7 @@ const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
 const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
+const PREDICCION_PENALES_GANADOR_FIELD_ID = "penales-ganador";
 const TIMBA_MODAL_CUSTOM_ID = "timba:create";
 const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
 const TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID = "timba:contraoferta:create";
@@ -65,10 +66,11 @@ function buildPrediccionModal(
 	partidoId: number,
 	nombreEquipoLocal: string,
 	nombreEquipoVisitante: string,
+	esSuple = false,
 ): ModalBuilder {
-	return new ModalBuilder()
+	const modal = new ModalBuilder()
 		.setCustomId(`${PREDICCION_MODAL_CUSTOM_ID}:${partidoId}`)
-		.setTitle("Registrar predicción")
+		.setTitle(esSuple ? "Predecir suplementario" : "Registrar predicción")
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
@@ -91,6 +93,23 @@ function buildPrediccionModal(
 					.setMaxLength(2),
 			),
 		);
+
+	if (esSuple) {
+		modal.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_PENALES_GANADOR_FIELD_ID)
+					.setLabel("Ganador penales (si predices empate)")
+					.setPlaceholder(`"${nombreEquipoLocal}" o "${nombreEquipoVisitante}"`)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(false)
+					.setMinLength(0)
+					.setMaxLength(50),
+			),
+		);
+	}
+
+	return modal;
 }
 
 function parsePrediccionModalCustomId(customId: string): number | null {
@@ -146,6 +165,7 @@ export async function handlePartidosButtonInteraction(
 			partido.partidoId,
 			partido.equipoLocalNombre,
 			partido.equipoVisitanteNombre,
+			partido.partidoOriginalId !== null,
 		),
 	);
 }
@@ -200,6 +220,44 @@ export async function handlePrediccionModalSubmitInteraction(
 		return;
 	}
 
+	// Parsear penales_ganador si es suple
+	let penalesGanadorId: number | null = null;
+	const esSuple = partido.partidoOriginalId !== null;
+	if (esSuple) {
+		const rawPenales = interaction.fields
+			.getTextInputValue(PREDICCION_PENALES_GANADOR_FIELD_ID)
+			.trim()
+			.toLowerCase();
+
+		if (rawPenales) {
+			const localNombre = partido.equipoLocalNombre.toLowerCase();
+			const visitanteNombre = partido.equipoVisitanteNombre.toLowerCase();
+			const localSiglas = partido.equipoLocalSiglas.toLowerCase();
+			const visitanteSiglas = partido.equipoVisitanteSiglas.toLowerCase();
+
+			if (
+				rawPenales === localNombre ||
+				rawPenales === localSiglas ||
+				rawPenales === "local"
+			) {
+				penalesGanadorId = partido.equipoLocalId ?? null;
+			} else if (
+				rawPenales === visitanteNombre ||
+				rawPenales === visitanteSiglas ||
+				rawPenales === "visita" ||
+				rawPenales === "visitante"
+			) {
+				penalesGanadorId = partido.equipoVisitanteId ?? null;
+			} else {
+				await interaction.reply({
+					content: `No reconozco "${rawPenales}" como equipo. Escribe el nombre o siglas del equipo que gana los penales.`,
+					ephemeral: true,
+				});
+				return;
+			}
+		}
+	}
+
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
@@ -208,10 +266,18 @@ export async function handlePrediccionModalSubmitInteraction(
 			partidoId,
 			golesLocal: golesLocalParsed.data,
 			golesVisitante: golesVisitanteParsed.data,
+			penalesGanadorId,
 		});
 
+		const penalesStr =
+			esSuple && penalesGanadorId !== null
+				? penalesGanadorId === -1
+					? ` (penales: ${partido.equipoLocalNombre})`
+					: ` (penales: ${partido.equipoVisitanteNombre})`
+				: "";
+
 		await interaction.editReply(
-			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}.`,
+			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}${penalesStr}.`,
 		);
 
 		await sendAnnouncementChannel(

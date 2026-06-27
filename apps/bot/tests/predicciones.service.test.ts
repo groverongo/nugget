@@ -37,9 +37,17 @@ function createPrediccionesRepositoryMock(): jest.Mocked<IPrediccionesRepository
 }
 
 function createPartidosRepositoryMock(
-	partido: { id: number; fechaPartido: Date | null } | null = {
+	partido: {
+		id: number;
+		fechaPartido: Date | null;
+		partidoOriginalId?: number | null;
+		estado?: string;
+		golesMinimosLocal?: number | null;
+		golesMinimosVisitante?: number | null;
+	} | null = {
 		id: 42,
 		fechaPartido: null,
+		partidoOriginalId: null,
 	},
 ): jest.Mocked<IPartidosRepository> {
 	const repo = {
@@ -58,6 +66,7 @@ describe("PrediccionesService", () => {
 		const partidosRepo = createPartidosRepositoryMock({
 			id: 42,
 			fechaPartido: new Date(Date.now() + 60_000),
+			partidoOriginalId: null,
 		});
 		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
@@ -81,7 +90,10 @@ describe("PrediccionesService", () => {
 			usuarioId: "user-1",
 			partidoId: 42,
 		});
-		expect(prediccionesRepo.agregarPrediccion).toHaveBeenCalledWith(args);
+		expect(prediccionesRepo.agregarPrediccion).toHaveBeenCalledWith({
+			...args,
+			penalesGanadorId: null,
+		});
 		expect(prediccionesRepo.actualizarPrediccion).not.toHaveBeenCalled();
 		expect(txManager.runInTx).not.toHaveBeenCalled();
 		expect(prediccionesRepo.withTx).not.toHaveBeenCalled();
@@ -94,10 +106,12 @@ describe("PrediccionesService", () => {
 			partidoId: 42,
 			golesLocal: 1,
 			golesVisitante: 3,
+			penalesGanadorId: null,
 		});
 		const partidosRepo = createPartidosRepositoryMock({
 			id: 42,
 			fechaPartido: new Date(Date.now() + 60_000),
+			partidoOriginalId: null,
 		});
 		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(
@@ -121,7 +135,10 @@ describe("PrediccionesService", () => {
 			usuarioId: "user-1",
 			partidoId: 42,
 		});
-		expect(prediccionesRepo.actualizarPrediccion).toHaveBeenCalledWith(args);
+		expect(prediccionesRepo.actualizarPrediccion).toHaveBeenCalledWith({
+			...args,
+			penalesGanadorId: null,
+		});
 		expect(prediccionesRepo.agregarPrediccion).not.toHaveBeenCalled();
 	});
 
@@ -158,6 +175,7 @@ describe("PrediccionesService", () => {
 		const partidosRepo = createPartidosRepositoryMock({
 			id: 42,
 			fechaPartido: new Date(Date.now() - 60_000),
+			partidoOriginalId: null,
 		});
 		const txManager = createTxManagerMock();
 		const service = new PrediccionesService(

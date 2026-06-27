@@ -1,5 +1,4 @@
 import type {
-	AgregarPrediccionArgs,
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
@@ -15,10 +14,11 @@ import type {
 	VerPuntajesPartidoArgs,
 	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
+import type { GuardarPrediccionArgs } from "../../service/predicciones.service";
 
 export interface IPrediccionesService {
 	guardarPrediccion(
-		args: AgregarPrediccionArgs,
+		args: GuardarPrediccionArgs,
 	): Promise<"created" | "updated">;
 
 	verPrediccionesPorPartido(

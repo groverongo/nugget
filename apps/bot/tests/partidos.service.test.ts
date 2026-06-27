@@ -51,6 +51,7 @@ describe("PartidosService", () => {
 				extraMilagro: false,
 				extraBatacazo: false,
 				extraElElegido: false,
+				partidoOriginalId: null,
 			},
 		];
 		const args: VerPartidosPorFechaArgs = { date: "2026-06-06" };
@@ -93,6 +94,11 @@ describe("PartidosService", () => {
 			extraMilagro: false,
 			extraBatacazo: false,
 			extraElElegido: false,
+			equipoLocalId: 1,
+			equipoVisitanteId: 2,
+			partidoOriginalId: null,
+			golesMinimosLocal: null,
+			golesMinimosVisitante: null,
 		};
 		const args: VerInformacionPartidoArgs = { id: 1 };
 		const partidosRepo = createPartidosRepositoryMock();

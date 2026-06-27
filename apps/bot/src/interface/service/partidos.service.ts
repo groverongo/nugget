@@ -22,6 +22,12 @@ export interface IPartidosService {
 
 	actualizarPartidoEnVivo(id: number): Promise<void>;
 
+	reanudarPartido(id: number): Promise<void>;
+
+	iniciarSuplementario(id: number): Promise<void>;
+
+	iniciarPenales(id: number): Promise<void>;
+
 	sumarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void>;
 
 	restarGol(partidoId: number, equipo: "local" | "visitante"): Promise<void>;

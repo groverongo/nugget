@@ -48,12 +48,21 @@ function createPartidoDetalle(partidoId = 42) {
 		partidoId,
 		equipoLocalNombre: "Peru",
 		equipoVisitanteNombre: "Brasil",
+		equipoLocalSiglas: "PER",
+		equipoVisitanteSiglas: "BRA",
+		equipoLocalBandera: "🇵🇪",
+		equipoVisitanteBandera: "🇧🇷",
+		equipoLocalId: 1,
+		equipoVisitanteId: 2,
 		equipoLocalGrupo: "A",
 		equipoVisitanteGrupo: "B",
 		estado: "pendiente",
 		partidoGolesLocal: null,
 		partidoGolesVisitante: null,
 		fechaPartido: new Date("2026-06-06T10:00:00.000Z"),
+		partidoOriginalId: null,
+		golesMinimosLocal: null,
+		golesMinimosVisitante: null,
 	};
 }
 
@@ -192,6 +201,7 @@ describe("Discord interaction handlers", () => {
 			partidoId: 42,
 			golesLocal: 2,
 			golesVisitante: 1,
+			penalesGanadorId: null,
 		});
 		expect(editReply).toHaveBeenCalledWith(
 			"Predicción registrada para Peru vs Brasil: 2-1.",

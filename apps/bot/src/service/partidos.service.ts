@@ -36,6 +36,44 @@ export class PartidosService implements IPartidosService {
 		return this.partidosRepo.actualizarPartidoEnVivo({ id });
 	}
 
+	async reanudarPartido(id: number): Promise<void> {
+		const partido = await this.partidosRepo.obtenerPartido({ id });
+		if (!partido) throw new Error(`Partido #${id} no encontrado`);
+		if (partido.partidoOriginalId !== null) {
+			return this.partidosRepo.actualizarPartidoSuplementario({ id });
+		}
+		return this.partidosRepo.actualizarPartidoEnVivo({ id });
+	}
+
+	async iniciarSuplementario(id: number): Promise<void> {
+		const partido = await this.partidosRepo.obtenerPartido({ id });
+		if (!partido) throw new Error(`Partido #${id} no encontrado`);
+		if (partido.partidoOriginalId === null) {
+			throw new Error("Este partido no es un suplementario.");
+		}
+		if (partido.estado !== "programado") {
+			throw new Error("El suplementario ya fue iniciado.");
+		}
+		return this.partidosRepo.actualizarPartidoSuplementario({ id });
+	}
+
+	async iniciarPenales(id: number): Promise<void> {
+		const partido = await this.partidosRepo.obtenerPartido({ id });
+		if (!partido) throw new Error(`Partido #${id} no encontrado`);
+		if (partido.partidoOriginalId === null) {
+			throw new Error("Este partido no es un suplementario.");
+		}
+		if (
+			partido.estado !== "suplementario" &&
+			partido.estado !== "medio_tiempo"
+		) {
+			throw new Error(
+				"Solo se pueden iniciar penales desde suplementario o medio tiempo.",
+			);
+		}
+		return this.partidosRepo.actualizarPartidoPenales({ id });
+	}
+
 	async sumarGol(
 		partidoId: number,
 		equipo: "local" | "visitante",

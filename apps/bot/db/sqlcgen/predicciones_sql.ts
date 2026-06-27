@@ -5,20 +5,21 @@ interface Client {
 }
 
 export const agregarPrediccionQuery = `-- name: AgregarPrediccion :exec
-INSERT INTO prediccion (usuario_id, partido_id, goles_local, goles_visitante)
-VALUES ($1, $2, $3, $4)`;
+INSERT INTO prediccion (usuario_id, partido_id, goles_local, goles_visitante, penales_ganador_id)
+VALUES ($1, $2, $3, $4, $5)`;
 
 export interface AgregarPrediccionArgs {
     usuarioId: string;
     partidoId: number;
     golesLocal: number;
     golesVisitante: number;
+    penalesGanadorId: number | null;
 }
 
 export async function agregarPrediccion(client: Client, args: AgregarPrediccionArgs): Promise<void> {
     await client.query({
         text: agregarPrediccionQuery,
-        values: [args.usuarioId, args.partidoId, args.golesLocal, args.golesVisitante],
+        values: [args.usuarioId, args.partidoId, args.golesLocal, args.golesVisitante, args.penalesGanadorId],
         rowMode: "array"
     });
 }
@@ -46,12 +47,14 @@ export const actualizarPrediccionQuery = `-- name: ActualizarPrediccion :exec
 UPDATE prediccion SET
 goles_local = $1,
 goles_visitante = $2,
+penales_ganador_id = $3,
 actualizado_en = NOW()
-WHERE usuario_id = $3 AND partido_id = $4`;
+WHERE usuario_id = $4 AND partido_id = $5`;
 
 export interface ActualizarPrediccionArgs {
     golesLocal: number;
     golesVisitante: number;
+    penalesGanadorId: number | null;
     usuarioId: string;
     partidoId: number;
 }
@@ -59,13 +62,13 @@ export interface ActualizarPrediccionArgs {
 export async function actualizarPrediccion(client: Client, args: ActualizarPrediccionArgs): Promise<void> {
     await client.query({
         text: actualizarPrediccionQuery,
-        values: [args.golesLocal, args.golesVisitante, args.usuarioId, args.partidoId],
+        values: [args.golesLocal, args.golesVisitante, args.penalesGanadorId, args.usuarioId, args.partidoId],
         rowMode: "array"
     });
 }
 
 export const verPrediccionPorUsuarioYPartidoQuery = `-- name: VerPrediccionPorUsuarioYPartido :one
-SELECT usuario_id, partido_id, goles_local, goles_visitante
+SELECT usuario_id, partido_id, goles_local, goles_visitante, penales_ganador_id
 FROM prediccion
 WHERE usuario_id = $1 AND partido_id = $2`;
 
@@ -79,6 +82,7 @@ export interface VerPrediccionPorUsuarioYPartidoRow {
     partidoId: number;
     golesLocal: number;
     golesVisitante: number;
+    penalesGanadorId: number | null;
 }
 
 export async function verPrediccionPorUsuarioYPartido(client: Client, args: VerPrediccionPorUsuarioYPartidoArgs): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
@@ -95,17 +99,19 @@ export async function verPrediccionPorUsuarioYPartido(client: Client, args: VerP
         usuarioId: row[0],
         partidoId: row[1],
         golesLocal: row[2],
-        golesVisitante: row[3]
+        golesVisitante: row[3],
+        penalesGanadorId: row[4]
     };
 }
 
 export const verPrediccionesPorPartidoQuery = `-- name: VerPrediccionesPorPartido :many
-SELECT 
+SELECT
     prediccion.partido_id AS partido_id,
     prediccion.usuario_id AS usuario_id,
     usuarios.username AS username,
     prediccion.goles_local AS prediccion_goles_local,
     prediccion.goles_visitante AS prediccion_goles_visitante,
+    prediccion.penales_ganador_id AS prediccion_penales_ganador_id,
     partidos.equipo_local_id,
     partidos.equipo_visitante_id,
     partidos.fecha_partido,
@@ -136,6 +142,7 @@ export interface VerPrediccionesPorPartidoRow {
     username: string;
     prediccionGolesLocal: number;
     prediccionGolesVisitante: number;
+    prediccionPenalesGanadorId: number | null;
     equipoLocalId: number | null;
     equipoVisitanteId: number | null;
     fechaPartido: Date | null;
@@ -163,18 +170,19 @@ export async function verPrediccionesPorPartido(client: Client, args: VerPredicc
             username: row[2],
             prediccionGolesLocal: row[3],
             prediccionGolesVisitante: row[4],
-            equipoLocalId: row[5],
-            equipoVisitanteId: row[6],
-            fechaPartido: row[7],
-            partidoGolesLocal: row[8],
-            partidoGolesVisitante: row[9],
-            estado: row[10],
-            equipoLocalNombre: row[11],
-            equipoLocalPuntosFifa: row[12],
-            equipoLocalGrupo: row[13],
-            equipoVisitanteNombre: row[14],
-            equipoVisitantePuntosFifa: row[15],
-            equipoVisitanteGrupo: row[16]
+            prediccionPenalesGanadorId: row[5],
+            equipoLocalId: row[6],
+            equipoVisitanteId: row[7],
+            fechaPartido: row[8],
+            partidoGolesLocal: row[9],
+            partidoGolesVisitante: row[10],
+            estado: row[11],
+            equipoLocalNombre: row[12],
+            equipoLocalPuntosFifa: row[13],
+            equipoLocalGrupo: row[14],
+            equipoVisitanteNombre: row[15],
+            equipoVisitantePuntosFifa: row[16],
+            equipoVisitanteGrupo: row[17]
         };
     });
 }

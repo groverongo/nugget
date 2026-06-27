@@ -54,7 +54,11 @@ export class TimbaService implements ITimbaService {
 		]);
 
 		if (!partido) throw new Error("Partido no encontrado.");
-		if (partido.estado !== "programado" && partido.estado !== "medio_tiempo") {
+		if (
+			partido.estado !== "programado" &&
+			partido.estado !== "medio_tiempo" &&
+			partido.estado !== "penales"
+		) {
 			throw new Error(
 				"Solo puedes crear timbas para partidos programados o en medio tiempo.",
 			);
@@ -128,7 +132,8 @@ export class TimbaService implements ITimbaService {
 		}
 		if (
 			timba.partidoEstado !== "programado" &&
-			timba.partidoEstado !== "medio_tiempo"
+			timba.partidoEstado !== "medio_tiempo" &&
+			timba.partidoEstado !== "penales"
 		) {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}
@@ -436,7 +441,8 @@ export class TimbaService implements ITimbaService {
 		}
 		if (
 			timbaOriginal.partidoEstado !== "programado" &&
-			timbaOriginal.partidoEstado !== "medio_tiempo"
+			timbaOriginal.partidoEstado !== "medio_tiempo" &&
+			timbaOriginal.partidoEstado !== "penales"
 		) {
 			throw new Error(
 				"El partido ya comenzó, no se puede crear una contraoferta.",
@@ -542,7 +548,8 @@ export class TimbaService implements ITimbaService {
 		}
 		if (
 			timbaOriginal.partidoEstado !== "programado" &&
-			timbaOriginal.partidoEstado !== "medio_tiempo"
+			timbaOriginal.partidoEstado !== "medio_tiempo" &&
+			timbaOriginal.partidoEstado !== "penales"
 		) {
 			throw new Error("El partido ya comenzó, no se puede aceptar la timba.");
 		}

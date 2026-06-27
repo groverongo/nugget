@@ -1,0 +1,9 @@
+ALTER TABLE usuarios
+    DROP COLUMN award_ko_finalista1,
+    DROP COLUMN award_ko_finalista2,
+    DROP COLUMN award_ko_campeon,
+    DROP COLUMN award_ko_mejor_partido_equipo1,
+    DROP COLUMN award_ko_mejor_partido_equipo2,
+    DROP COLUMN award_ko_mejor_partido_mas_goles,
+    DROP COLUMN award_ko_num_suplementarios,
+    DROP COLUMN award_ko_goleador;
