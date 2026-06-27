@@ -2549,13 +2549,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						);
 
 					await interaction.editReply({
-						content: [
-							`✅ Awards Eliminatorias actualizados. ${resumen.totalUsuarios} usuarios procesados.`,
-							lineas.length > 0
-								? `\n**Top puntuadores:**\n${lineas.join("\n")}`
-								: "",
-						].join(""),
+						content: `✅ Awards Eliminatorias actualizados. ${resumen.totalUsuarios} usuarios procesados.`,
 					});
+
+					const alertaLineas = resumen.resultados
+						.filter((r) => r.puntosGanados > 0)
+						.sort((a, b) => b.puntosGanados - a.puntosGanados)
+						.map(
+							(r) =>
+								`<@${r.usuarioId}>: **+${r.puntosGanados}pts** (${r.aciertos.join(", ")})`,
+						);
+
+					await sendAlertsChannel(
+						interaction.client,
+						[
+							"🏆 **Resultados de Awards Eliminatorias:**",
+							...(alertaLineas.length > 0
+								? alertaLineas
+								: ["_Nadie acertó ningún award KO._"]),
+						].join("\n"),
+					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
