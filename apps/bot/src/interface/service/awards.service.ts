@@ -1,4 +1,9 @@
-import type { VerPrediccionesAwardsRow } from "@sqlc/awards_sql";
+import type {
+	BuscarJugadoresNoEliminadosRow,
+	VerEquiposNoEliminadosRow,
+	VerPrediccionesAwardsKORow,
+	VerPrediccionesAwardsRow,
+} from "@sqlc/awards_sql";
 import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	BuscarJugadoresRow,
@@ -50,6 +55,39 @@ export interface ResumenActualizacionAwards {
 	}[];
 }
 
+export interface GuardarAwardsKOInput {
+	usuarioId: string;
+	finalista1: number;
+	finalista2: number;
+	campeonFinal: number;
+	mejorPartidoEquipo1: number;
+	mejorPartidoEquipo2: number;
+	mejorPartidoMasGoles: number | null;
+	numSuplementarios: number;
+	goleadorKO: number;
+}
+
+export interface ResultadosAwardsKO {
+	finalista1: number;
+	finalista2: number;
+	campeon: number;
+	mejorPartidoEquipo1: number;
+	mejorPartidoEquipo2: number;
+	mejorPartidoMasGoles: number | null;
+	numSuplementarios: number;
+	goleadorKO: number;
+}
+
+export interface ResumenActualizacionAwardsKO {
+	totalUsuarios: number;
+	resultados: {
+		usuarioId: string;
+		username: string;
+		puntosGanados: number;
+		aciertos: string[];
+	}[];
+}
+
 export interface IAwardsService {
 	guardarAwards(input: GuardarAwardsInput): Promise<"created" | "updated">;
 	guardarAwardsAdmin(input: GuardarAwardsInput): Promise<"created" | "updated">;
@@ -63,4 +101,16 @@ export interface IAwardsService {
 	buscarJugadores(query: string): Promise<BuscarJugadoresRow[]>;
 	verJugadoresPorEquipo(equipoId: number): Promise<VerJugadoresPorEquipoRow[]>;
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]>;
+	guardarAwardsKO(input: GuardarAwardsKOInput): Promise<"created" | "updated">;
+	guardarAwardsKOAdmin(
+		input: GuardarAwardsKOInput,
+	): Promise<"created" | "updated">;
+	actualizarAwardsKO(
+		resultados: ResultadosAwardsKO,
+	): Promise<ResumenActualizacionAwardsKO>;
+	verEquiposNoEliminados(): Promise<VerEquiposNoEliminadosRow[]>;
+	buscarJugadoresNoEliminados(
+		query: string,
+	): Promise<BuscarJugadoresNoEliminadosRow[]>;
+	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]>;
 }

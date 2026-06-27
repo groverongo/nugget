@@ -1,4 +1,9 @@
-import type { VerPrediccionesAwardsRow } from "@sqlc/awards_sql";
+import type {
+	BuscarJugadoresNoEliminadosRow,
+	VerEquiposNoEliminadosRow,
+	VerPrediccionesAwardsKORow,
+	VerPrediccionesAwardsRow,
+} from "@sqlc/awards_sql";
 import type { VerEquiposRow } from "@sqlc/equipos_sql";
 import type {
 	BuscarJugadoresRow,
@@ -10,10 +15,13 @@ import type { IAwardsRepository } from "../interface/repository/awards.repositor
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type {
 	GuardarAwardsInput,
+	GuardarAwardsKOInput,
 	IAwardsService,
 	MisAwardsResueltos,
 	ResultadosAwards,
+	ResultadosAwardsKO,
 	ResumenActualizacionAwards,
+	ResumenActualizacionAwardsKO,
 } from "../interface/service/awards.service";
 
 export class AwardsService implements IAwardsService {
@@ -221,5 +229,202 @@ export class AwardsService implements IAwardsService {
 
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {
 		return this.awardsRepo.verPrediccionesAwards();
+	}
+
+	async guardarAwardsKO(
+		input: GuardarAwardsKOInput,
+	): Promise<"created" | "updated"> {
+		const fechaCierre = new Date(config.polla.fecha_cierre_awards_ko);
+		if (Date.now() >= fechaCierre.getTime()) {
+			throw new Error("Las predicciones de awards KO ya están cerradas.");
+		}
+
+		if (
+			input.campeonFinal !== input.finalista1 &&
+			input.campeonFinal !== input.finalista2
+		) {
+			throw new Error(
+				"El campeón debe ser uno de los dos finalistas que elegiste.",
+			);
+		}
+
+		const existing = await this.awardsRepo.verAwardsKODeUsuario({
+			id: input.usuarioId,
+		});
+		const eraVacio =
+			!existing || Object.values(existing).every((v) => v === null);
+
+		await this.awardsRepo.guardarAwardsKO({
+			id: input.usuarioId,
+			awardKoFinalista1: input.finalista1,
+			awardKoFinalista2: input.finalista2,
+			awardKoCampeon: input.campeonFinal,
+			awardKoMejorPartidoEquipo1: input.mejorPartidoEquipo1,
+			awardKoMejorPartidoEquipo2: input.mejorPartidoEquipo2,
+			awardKoMejorPartidoMasGoles: input.mejorPartidoMasGoles,
+			awardKoNumSuplementarios: input.numSuplementarios,
+			awardKoGoleador: input.goleadorKO,
+		});
+
+		return eraVacio ? "created" : "updated";
+	}
+
+	async guardarAwardsKOAdmin(
+		input: GuardarAwardsKOInput,
+	): Promise<"created" | "updated"> {
+		if (
+			input.campeonFinal !== input.finalista1 &&
+			input.campeonFinal !== input.finalista2
+		) {
+			throw new Error(
+				"El campeón debe ser uno de los dos finalistas que elegiste.",
+			);
+		}
+
+		const existing = await this.awardsRepo.verAwardsKODeUsuario({
+			id: input.usuarioId,
+		});
+		const eraVacio =
+			!existing || Object.values(existing).every((v) => v === null);
+
+		await this.awardsRepo.guardarAwardsKO({
+			id: input.usuarioId,
+			awardKoFinalista1: input.finalista1,
+			awardKoFinalista2: input.finalista2,
+			awardKoCampeon: input.campeonFinal,
+			awardKoMejorPartidoEquipo1: input.mejorPartidoEquipo1,
+			awardKoMejorPartidoEquipo2: input.mejorPartidoEquipo2,
+			awardKoMejorPartidoMasGoles: input.mejorPartidoMasGoles,
+			awardKoNumSuplementarios: input.numSuplementarios,
+			awardKoGoleador: input.goleadorKO,
+		});
+
+		return eraVacio ? "created" : "updated";
+	}
+
+	async actualizarAwardsKO(
+		resultados: ResultadosAwardsKO,
+	): Promise<ResumenActualizacionAwardsKO> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const usuarios = await repo.listUsuariosConAwardsKO();
+
+			const resumen: ResumenActualizacionAwardsKO = {
+				totalUsuarios: usuarios.length,
+				resultados: [],
+			};
+
+			const finalistasReales = new Set([
+				resultados.finalista1,
+				resultados.finalista2,
+			]);
+
+			for (const u of usuarios) {
+				let puntosGanados = 0;
+				const aciertos: string[] = [];
+
+				// Finalistas
+				const f1 = u.awardKoFinalista1 ?? 0;
+				const f2 = u.awardKoFinalista2 ?? 0;
+				const campeonPred = u.awardKoCampeon ?? 0;
+				const correctos = [f1, f2].filter((f) => finalistasReales.has(f));
+
+				if (correctos.length === 2) {
+					puntosGanados += 4;
+					aciertos.push("Finalistas +4");
+				} else if (correctos.length === 1) {
+					const esElCampeon = correctos[0] === resultados.campeon;
+					const pts = esElCampeon ? 3 : 2;
+					puntosGanados += pts;
+					aciertos.push(`Finalista${esElCampeon ? " (campeón)" : ""} +${pts}`);
+				}
+
+				if (campeonPred === resultados.campeon) {
+					puntosGanados += 5;
+					aciertos.push("Campeón final +5");
+				}
+
+				// Mejor partido
+				const mp1 = u.awardKoMejorPartidoEquipo1 ?? 0;
+				const mp2 = u.awardKoMejorPartidoEquipo2 ?? 0;
+				const mpReal = new Set([
+					resultados.mejorPartidoEquipo1,
+					resultados.mejorPartidoEquipo2,
+				]);
+				const mpCorrectos = [mp1, mp2].filter((e) => mpReal.has(e));
+
+				if (mpCorrectos.length === 2) {
+					const masGolesCorr =
+						u.awardKoMejorPartidoMasGoles === resultados.mejorPartidoMasGoles;
+					const pts = masGolesCorr ? 3 : 2;
+					puntosGanados += pts;
+					aciertos.push(
+						`Mejor partido${masGolesCorr ? " + más goles" : ""} +${pts}`,
+					);
+				} else if (mpCorrectos.length === 1) {
+					// +2 si el único equipo que acertó es el que hizo más goles
+					const equipo = mpCorrectos[0];
+					if (
+						resultados.mejorPartidoMasGoles !== null &&
+						equipo === resultados.mejorPartidoMasGoles
+					) {
+						puntosGanados += 2;
+						aciertos.push("Mejor partido (1 equipo + más goles) +2");
+					} else {
+						puntosGanados += 1;
+						aciertos.push("Mejor partido (1 equipo) +1");
+					}
+				}
+
+				// Número de suplementarios
+				const numPred = u.awardKoNumSuplementarios ?? -99;
+				const diff = Math.abs(numPred - resultados.numSuplementarios);
+				if (diff === 0) {
+					puntosGanados += 3;
+					aciertos.push("Suplementarios exacto +3");
+				} else if (diff === 1) {
+					puntosGanados += 2;
+					aciertos.push("Suplementarios ±1 +2");
+				} else if (diff === 2) {
+					puntosGanados += 1;
+					aciertos.push("Suplementarios ±2 +1");
+				}
+
+				// Goleador KO
+				if (u.awardKoGoleador === resultados.goleadorKO) {
+					puntosGanados += 3;
+					aciertos.push("Goleador KO +3");
+				}
+
+				if (puntosGanados > 0) {
+					await repo.sumarPuntosAward({ id: u.id, puntos: puntosGanados });
+				}
+
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados,
+					aciertos,
+				});
+			}
+
+			return resumen;
+		});
+	}
+
+	verEquiposNoEliminados(): Promise<VerEquiposNoEliminadosRow[]> {
+		return this.awardsRepo.verEquiposNoEliminados();
+	}
+
+	buscarJugadoresNoEliminados(
+		query: string,
+	): Promise<BuscarJugadoresNoEliminadosRow[]> {
+		return this.awardsRepo.buscarJugadoresNoEliminados({
+			query: `%${query}%`,
+		});
+	}
+
+	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]> {
+		return this.awardsRepo.verPrediccionesAwardsKO();
 	}
 }

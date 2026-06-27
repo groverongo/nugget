@@ -52,6 +52,100 @@ UPDATE usuarios SET
     puntos = puntos + sqlc.arg(puntos)
 WHERE id = sqlc.arg(id);
 
+-- name: GuardarAwardsKO :exec
+UPDATE usuarios SET
+    award_ko_finalista1 = sqlc.narg(award_ko_finalista1),
+    award_ko_finalista2 = sqlc.narg(award_ko_finalista2),
+    award_ko_campeon = sqlc.narg(award_ko_campeon),
+    award_ko_mejor_partido_equipo1 = sqlc.narg(award_ko_mejor_partido_equipo1),
+    award_ko_mejor_partido_equipo2 = sqlc.narg(award_ko_mejor_partido_equipo2),
+    award_ko_mejor_partido_mas_goles = sqlc.narg(award_ko_mejor_partido_mas_goles),
+    award_ko_num_suplementarios = sqlc.narg(award_ko_num_suplementarios),
+    award_ko_goleador = sqlc.narg(award_ko_goleador)
+WHERE id = sqlc.arg(id);
+
+-- name: VerAwardsKODeUsuario :one
+SELECT
+    award_ko_finalista1,
+    award_ko_finalista2,
+    award_ko_campeon,
+    award_ko_mejor_partido_equipo1,
+    award_ko_mejor_partido_equipo2,
+    award_ko_mejor_partido_mas_goles,
+    award_ko_num_suplementarios,
+    award_ko_goleador
+FROM usuarios
+WHERE id = sqlc.arg(id);
+
+-- name: ListUsuariosConAwardsKO :many
+SELECT
+    id,
+    username,
+    puntos,
+    award_ko_finalista1,
+    award_ko_finalista2,
+    award_ko_campeon,
+    award_ko_mejor_partido_equipo1,
+    award_ko_mejor_partido_equipo2,
+    award_ko_mejor_partido_mas_goles,
+    award_ko_num_suplementarios,
+    award_ko_goleador
+FROM usuarios
+WHERE
+    award_ko_finalista1 IS NOT NULL
+    AND award_ko_finalista2 IS NOT NULL
+    AND award_ko_campeon IS NOT NULL
+    AND award_ko_mejor_partido_equipo1 IS NOT NULL
+    AND award_ko_mejor_partido_equipo2 IS NOT NULL
+    AND award_ko_num_suplementarios IS NOT NULL
+    AND award_ko_goleador IS NOT NULL;
+
+-- name: VerPrediccionesAwardsKO :many
+SELECT
+    u.id AS usuario_id,
+    ef1.nombre AS finalista1_nombre,
+    ef1.bandera AS finalista1_bandera,
+    ef2.nombre AS finalista2_nombre,
+    ef2.bandera AS finalista2_bandera,
+    ec.nombre AS campeon_nombre,
+    ec.bandera AS campeon_bandera,
+    emp1.nombre AS mejor_partido_equipo1_nombre,
+    emp1.bandera AS mejor_partido_equipo1_bandera,
+    emp2.nombre AS mejor_partido_equipo2_nombre,
+    emp2.bandera AS mejor_partido_equipo2_bandera,
+    emg.nombre AS mejor_partido_mas_goles_nombre,
+    emg.bandera AS mejor_partido_mas_goles_bandera,
+    u.award_ko_num_suplementarios,
+    jg.nombre AS goleador_ko_nombre,
+    jg.equipo_id AS goleador_ko_equipo_id
+FROM usuarios u
+JOIN estatico_equipos ef1 ON ef1.id = u.award_ko_finalista1
+JOIN estatico_equipos ef2 ON ef2.id = u.award_ko_finalista2
+JOIN estatico_equipos ec ON ec.id = u.award_ko_campeon
+JOIN estatico_equipos emp1 ON emp1.id = u.award_ko_mejor_partido_equipo1
+JOIN estatico_equipos emp2 ON emp2.id = u.award_ko_mejor_partido_equipo2
+LEFT JOIN estatico_equipos emg ON emg.id = u.award_ko_mejor_partido_mas_goles
+JOIN estatico_jugadores jg ON jg.id = u.award_ko_goleador
+WHERE u.participante = TRUE AND u.award_ko_finalista1 IS NOT NULL;
+
+-- name: VerEquiposNoEliminados :many
+SELECT id, nombre, siglas, bandera
+FROM estatico_equipos
+WHERE eliminado = FALSE
+ORDER BY nombre ASC;
+
+-- name: BuscarJugadoresNoEliminados :many
+SELECT
+    j.id,
+    j.nombre,
+    j.posicion,
+    e.nombre AS equipo_nombre
+FROM estatico_jugadores j
+JOIN estatico_equipos e ON e.id = j.equipo_id
+WHERE e.eliminado = FALSE AND j.nombre ILIKE sqlc.arg(query)
+ORDER BY j.nombre ASC
+LIMIT 25;
+
 -- name: VerPrediccionesAwards :many
 SELECT
     u.id AS usuario_id,

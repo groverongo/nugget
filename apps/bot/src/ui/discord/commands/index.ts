@@ -595,6 +595,209 @@ const actualizarAwardsCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const predecirAwardsKOCommand = new SlashCommandBuilder()
+	.setName("predecir-awards-ko")
+	.setDescription("Predice los awards de la fase eliminatoria")
+	.addStringOption((option) =>
+		option
+			.setName("finalista1")
+			.setDescription("Primer equipo finalista")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("finalista2")
+			.setDescription("Segundo equipo finalista")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("campeon_final")
+			.setDescription("Campeón (debe ser uno de tus dos finalistas)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo1")
+			.setDescription("Primer equipo del partido con más goles en fase KO")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo2")
+			.setDescription("Segundo equipo del partido con más goles en fase KO")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_mas_goles")
+			.setDescription(
+				"Equipo que hará más goles en ese partido, o Empate si crees que harán igual",
+			)
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("num_suplementarios")
+			.setDescription(
+				"Cantidad de suplementarios que habrá en la fase KO (0-16)",
+			)
+			.setRequired(true)
+			.setMinValue(0)
+			.setMaxValue(16),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("goleador_ko")
+			.setDescription("Jugador con más goles en fase KO (sin contar penales)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const predecirAwardsKOAdminCommand = new SlashCommandBuilder()
+	.setName("predecir-awards-ko-admin")
+	.setDescription("[ADMIN] Registra los awards KO para otro usuario")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("usuario")
+			.setDescription("Usuario al que registrar las predicciones")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("finalista1")
+			.setDescription("Primer equipo finalista")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("finalista2")
+			.setDescription("Segundo equipo finalista")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("campeon_final")
+			.setDescription("Campeón (debe ser uno de los dos finalistas)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo1")
+			.setDescription("Primer equipo del partido con más goles en fase KO")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo2")
+			.setDescription("Segundo equipo del partido con más goles en fase KO")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_mas_goles")
+			.setDescription("Equipo con más goles en ese partido, o Empate")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("num_suplementarios")
+			.setDescription(
+				"Cantidad de suplementarios que habrá en la fase KO (0-16)",
+			)
+			.setRequired(true)
+			.setMinValue(0)
+			.setMaxValue(16),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("goleador_ko")
+			.setDescription("Jugador con más goles en fase KO")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const actualizarAwardsKOCommand = new SlashCommandBuilder()
+	.setName("actualizar-awards-ko")
+	.setDescription(
+		"[ADMIN] Resuelve los awards de fase eliminatoria y suma puntos",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("finalista1")
+			.setDescription("Primer equipo que llegó a la final")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("finalista2")
+			.setDescription("Segundo equipo que llegó a la final")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("campeon")
+			.setDescription("Equipo campeón")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo1")
+			.setDescription("Primer equipo del partido con más goles")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_equipo2")
+			.setDescription("Segundo equipo del partido con más goles")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("mejor_partido_mas_goles")
+			.setDescription("Equipo con más goles en ese partido (omitir si empate)")
+			.setRequired(false)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("num_suplementarios")
+			.setDescription("Total de suplementarios que hubo en la fase KO")
+			.setRequired(true)
+			.setMinValue(0)
+			.setMaxValue(16),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("goleador_ko")
+			.setDescription("Jugador goleador de la fase KO (sin penales)")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const timbaCommand = new SlashCommandBuilder()
 	.setName("timba-time")
 	.setDescription("Lanza un reto de puntos a otro pollero (Timba Time 🎲)")
@@ -1913,6 +2116,446 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							? `_🎯 ¡<@${usuarioId}> ha enviado sus predicciones de **Awards del Mundial**!_`
 							: `_✏️ ¡<@${usuarioId}> ha actualizado sus predicciones de **Awards del Mundial**!_`,
 					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"predecir-awards-ko",
+		{
+			definition: predecirAwardsKOCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const query = focused.value.toString().toLowerCase();
+
+				const EQUIPO_FIELDS = [
+					"finalista1",
+					"finalista2",
+					"campeon_final",
+					"mejor_partido_equipo1",
+					"mejor_partido_equipo2",
+				] as const;
+
+				if (
+					EQUIPO_FIELDS.includes(focused.name as (typeof EQUIPO_FIELDS)[number])
+				) {
+					const equipos =
+						await appContext.services.awards.verEquiposNoEliminados();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((e) => ({
+							name: `${e.bandera} ${e.nombre}`,
+							value: String(e.id),
+						}));
+					await interaction.respond(opciones);
+				} else if (focused.name === "mejor_partido_mas_goles") {
+					const equipos =
+						await appContext.services.awards.verEquiposNoEliminados();
+					const opciones: { name: string; value: string }[] = [];
+					if ("empate".includes(query)) {
+						opciones.push({
+							name: "Empate (misma cantidad de goles)",
+							value: "0",
+						});
+					}
+					opciones.push(
+						...equipos
+							.filter((e) => e.nombre.toLowerCase().includes(query))
+							.slice(0, 24)
+							.map((e) => ({
+								name: `${e.bandera} ${e.nombre}`,
+								value: String(e.id),
+							})),
+					);
+					await interaction.respond(opciones.slice(0, 25));
+				} else if (focused.name === "goleador_ko") {
+					const jugadores =
+						await appContext.services.awards.buscarJugadoresNoEliminados(query);
+					const opciones = jugadores.slice(0, 25).map((j) => ({
+						name: `${j.nombre} (${j.equipoNombre})`,
+						value: String(j.id),
+					}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const finalista1 = parseInt(
+						interaction.options.getString("finalista1", true),
+						10,
+					);
+					const finalista2 = parseInt(
+						interaction.options.getString("finalista2", true),
+						10,
+					);
+					const campeonFinal = parseInt(
+						interaction.options.getString("campeon_final", true),
+						10,
+					);
+					const mejorPartidoEquipo1 = parseInt(
+						interaction.options.getString("mejor_partido_equipo1", true),
+						10,
+					);
+					const mejorPartidoEquipo2 = parseInt(
+						interaction.options.getString("mejor_partido_equipo2", true),
+						10,
+					);
+					const masGolesRaw = interaction.options.getString(
+						"mejor_partido_mas_goles",
+						true,
+					);
+					const masGolesVal = parseInt(masGolesRaw, 10);
+					const mejorPartidoMasGoles =
+						masGolesRaw === "0" || masGolesVal === 0 ? null : masGolesVal;
+
+					const numSuplementarios = interaction.options.getInteger(
+						"num_suplementarios",
+						true,
+					);
+					const goleadorKO = parseInt(
+						interaction.options.getString("goleador_ko", true),
+						10,
+					);
+
+					if (
+						[
+							finalista1,
+							finalista2,
+							campeonFinal,
+							mejorPartidoEquipo1,
+							mejorPartidoEquipo2,
+							goleadorKO,
+						].some(Number.isNaN) ||
+						(mejorPartidoMasGoles !== null &&
+							Number.isNaN(mejorPartidoMasGoles))
+					) {
+						await interaction.editReply({
+							content: "❌ Selecciona los valores desde el autocompletado.",
+						});
+						return;
+					}
+
+					const resultado = await appContext.services.awards.guardarAwardsKO({
+						usuarioId: interaction.user.id,
+						finalista1,
+						finalista2,
+						campeonFinal,
+						mejorPartidoEquipo1,
+						mejorPartidoEquipo2,
+						mejorPartidoMasGoles,
+						numSuplementarios,
+						goleadorKO,
+					});
+
+					await interaction.editReply({
+						content:
+							"✅ Tus predicciones de awards de fase eliminatoria han sido guardadas.",
+					});
+
+					await sendAnnouncementChannel(
+						interaction.client,
+						resultado === "created"
+							? `_🎯 ¡<@${interaction.user.id}> ha enviado sus **Awards Eliminatorias**!_`
+							: `_✏️ ¡<@${interaction.user.id}> ha actualizado sus **Awards Eliminatorias**!_`,
+					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"predecir-awards-ko-admin",
+		{
+			definition: predecirAwardsKOAdminCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const query = focused.value.toString().toLowerCase();
+
+				if (focused.name === "usuario") {
+					const usuarios = await appContext.services.usuarios.listUsuarios();
+					const opciones = usuarios
+						.filter((u) => u.username.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((u) => ({ name: u.username, value: u.id }));
+					await interaction.respond(opciones);
+					return;
+				}
+
+				const EQUIPO_FIELDS = [
+					"finalista1",
+					"finalista2",
+					"campeon_final",
+					"mejor_partido_equipo1",
+					"mejor_partido_equipo2",
+				] as const;
+
+				if (
+					EQUIPO_FIELDS.includes(focused.name as (typeof EQUIPO_FIELDS)[number])
+				) {
+					const equipos =
+						await appContext.services.awards.verEquiposNoEliminados();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((e) => ({
+							name: `${e.bandera} ${e.nombre}`,
+							value: String(e.id),
+						}));
+					await interaction.respond(opciones);
+				} else if (focused.name === "mejor_partido_mas_goles") {
+					const equipos =
+						await appContext.services.awards.verEquiposNoEliminados();
+					const opciones: { name: string; value: string }[] = [];
+					if ("empate".includes(query)) {
+						opciones.push({
+							name: "Empate (misma cantidad de goles)",
+							value: "0",
+						});
+					}
+					opciones.push(
+						...equipos
+							.filter((e) => e.nombre.toLowerCase().includes(query))
+							.slice(0, 24)
+							.map((e) => ({
+								name: `${e.bandera} ${e.nombre}`,
+								value: String(e.id),
+							})),
+					);
+					await interaction.respond(opciones.slice(0, 25));
+				} else if (focused.name === "goleador_ko") {
+					const jugadores =
+						await appContext.services.awards.buscarJugadoresNoEliminados(query);
+					const opciones = jugadores.slice(0, 25).map((j) => ({
+						name: `${j.nombre} (${j.equipoNombre})`,
+						value: String(j.id),
+					}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const usuarioId = interaction.options.getString("usuario", true);
+					const finalista1 = parseInt(
+						interaction.options.getString("finalista1", true),
+						10,
+					);
+					const finalista2 = parseInt(
+						interaction.options.getString("finalista2", true),
+						10,
+					);
+					const campeonFinal = parseInt(
+						interaction.options.getString("campeon_final", true),
+						10,
+					);
+					const mejorPartidoEquipo1 = parseInt(
+						interaction.options.getString("mejor_partido_equipo1", true),
+						10,
+					);
+					const mejorPartidoEquipo2 = parseInt(
+						interaction.options.getString("mejor_partido_equipo2", true),
+						10,
+					);
+					const masGolesRaw = interaction.options.getString(
+						"mejor_partido_mas_goles",
+						true,
+					);
+					const masGolesVal = parseInt(masGolesRaw, 10);
+					const mejorPartidoMasGoles =
+						masGolesRaw === "0" || masGolesVal === 0 ? null : masGolesVal;
+					const numSuplementarios = interaction.options.getInteger(
+						"num_suplementarios",
+						true,
+					);
+					const goleadorKO = parseInt(
+						interaction.options.getString("goleador_ko", true),
+						10,
+					);
+
+					if (
+						[
+							finalista1,
+							finalista2,
+							campeonFinal,
+							mejorPartidoEquipo1,
+							mejorPartidoEquipo2,
+							goleadorKO,
+						].some(Number.isNaN) ||
+						(mejorPartidoMasGoles !== null &&
+							Number.isNaN(mejorPartidoMasGoles))
+					) {
+						await interaction.editReply({
+							content: "❌ Selecciona los valores desde el autocompletado.",
+						});
+						return;
+					}
+
+					const resultado =
+						await appContext.services.awards.guardarAwardsKOAdmin({
+							usuarioId,
+							finalista1,
+							finalista2,
+							campeonFinal,
+							mejorPartidoEquipo1,
+							mejorPartidoEquipo2,
+							mejorPartidoMasGoles,
+							numSuplementarios,
+							goleadorKO,
+						});
+
+					await interaction.editReply({
+						content:
+							resultado === "created"
+								? `✅ Awards KO guardadas para <@${usuarioId}>.`
+								: `✅ Awards KO actualizadas para <@${usuarioId}>.`,
+					});
+
+					await sendAnnouncementChannel(
+						interaction.client,
+						resultado === "created"
+							? `_🎯 ¡<@${usuarioId}> ha enviado sus **Awards Eliminatorias**!_`
+							: `_✏️ ¡<@${usuarioId}> ha actualizado sus **Awards Eliminatorias**!_`,
+					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"actualizar-awards-ko",
+		{
+			definition: actualizarAwardsKOCommand,
+			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const query = focused.value.toString().toLowerCase();
+
+				const EQUIPO_FIELDS = [
+					"finalista1",
+					"finalista2",
+					"campeon",
+					"mejor_partido_equipo1",
+					"mejor_partido_equipo2",
+					"mejor_partido_mas_goles",
+				] as const;
+
+				if (
+					EQUIPO_FIELDS.includes(focused.name as (typeof EQUIPO_FIELDS)[number])
+				) {
+					const equipos = await appContext.services.awards.verEquipos();
+					const opciones = equipos
+						.filter((e) => e.nombre.toLowerCase().includes(query))
+						.slice(0, 25)
+						.map((e) => ({ name: e.nombre, value: String(e.id) }));
+					await interaction.respond(opciones);
+				} else if (focused.name === "goleador_ko") {
+					const jugadores =
+						await appContext.services.awards.buscarJugadores(query);
+					const opciones = jugadores.slice(0, 25).map((j) => ({
+						name: `${j.nombre} (${j.equipoNombre})`,
+						value: String(j.id),
+					}));
+					await interaction.respond(opciones);
+				}
+			},
+			handle: async (interaction, appContext) => {
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					const finalista1 = parseInt(
+						interaction.options.getString("finalista1", true),
+						10,
+					);
+					const finalista2 = parseInt(
+						interaction.options.getString("finalista2", true),
+						10,
+					);
+					const campeon = parseInt(
+						interaction.options.getString("campeon", true),
+						10,
+					);
+					const mejorPartidoEquipo1 = parseInt(
+						interaction.options.getString("mejor_partido_equipo1", true),
+						10,
+					);
+					const mejorPartidoEquipo2 = parseInt(
+						interaction.options.getString("mejor_partido_equipo2", true),
+						10,
+					);
+					const masGolesRaw = interaction.options.getString(
+						"mejor_partido_mas_goles",
+					);
+					const mejorPartidoMasGoles = masGolesRaw
+						? parseInt(masGolesRaw, 10)
+						: null;
+					const numSuplementarios = interaction.options.getInteger(
+						"num_suplementarios",
+						true,
+					);
+					const goleadorKO = parseInt(
+						interaction.options.getString("goleador_ko", true),
+						10,
+					);
+
+					if (
+						[
+							finalista1,
+							finalista2,
+							campeon,
+							mejorPartidoEquipo1,
+							mejorPartidoEquipo2,
+							goleadorKO,
+						].some(Number.isNaN) ||
+						(mejorPartidoMasGoles !== null &&
+							Number.isNaN(mejorPartidoMasGoles))
+					) {
+						await interaction.editReply({
+							content: "❌ Selecciona los valores desde el autocompletado.",
+						});
+						return;
+					}
+
+					const resumen = await appContext.services.awards.actualizarAwardsKO({
+						finalista1,
+						finalista2,
+						campeon,
+						mejorPartidoEquipo1,
+						mejorPartidoEquipo2,
+						mejorPartidoMasGoles,
+						numSuplementarios,
+						goleadorKO,
+					});
+
+					const lineas = resumen.resultados
+						.filter((r) => r.puntosGanados > 0)
+						.sort((a, b) => b.puntosGanados - a.puntosGanados)
+						.slice(0, 10)
+						.map(
+							(r) =>
+								`**${r.username}**: +${r.puntosGanados}pts (${r.aciertos.join(", ")})`,
+						);
+
+					await interaction.editReply({
+						content: [
+							`✅ Awards Eliminatorias actualizados. ${resumen.totalUsuarios} usuarios procesados.`,
+							lineas.length > 0
+								? `\n**Top puntuadores:**\n${lineas.join("\n")}`
+								: "",
+						].join(""),
+					});
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
