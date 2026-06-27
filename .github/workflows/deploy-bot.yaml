@@ -105,6 +105,7 @@ jobs:
           DISCORD_OWNER_ID: GENERICO
           DISCORD_ANNOUNCEMENTS_CHANNEL_ID: GENERICO
           DISCORD_ALERTS_CHANNEL_ID: GENERICO
+          DISCORD_GENERAL_CHANNEL_ID: GENERICO
           DATABASE_URL: postgres://nugget:nugget@localhost:5432/nugget?sslmode=disable
         run: ./nx run bot:migrate-up
 
@@ -149,6 +150,7 @@ jobs:
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               -e DISCORD_ANNOUNCEMENTS_CHANNEL_ID="${{secrets.DISCORD_ANNOUNCEMENTS_CHANNEL_ID}}" \
+              -e DISCORD_GENERAL_CHANNEL_ID="${{secrets.DISCORD_GENERAL_CHANNEL_ID}}" \
               -e DISCORD_ALERTS_CHANNEL_ID="${{secrets.DISCORD_ALERTS_CHANNEL_ID}}" \
               ${{ env.IMAGE }}:${{ github.sha }} dist/cmd/migration.js up
               docker run -d \
@@ -159,6 +161,7 @@ jobs:
               -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
               -e DISCORD_OWNER_ID="${{secrets.DISCORD_OWNER_ID}}" \
               -e DISCORD_ANNOUNCEMENTS_CHANNEL_ID="${{secrets.DISCORD_ANNOUNCEMENTS_CHANNEL_ID}}" \
+              -e DISCORD_GENERAL_CHANNEL_ID="${{secrets.DISCORD_GENERAL_CHANNEL_ID}}" \
               -e DISCORD_ALERTS_CHANNEL_ID="${{secrets.DISCORD_ALERTS_CHANNEL_ID}}" \
               -e UTILITY_BASE_URL="${{secrets.UTILITY_BASE_URL}}"\
               ${{ env.IMAGE }}:${{ github.sha }}

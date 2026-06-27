@@ -7,6 +7,7 @@ import {
 	type AutocompleteInteraction,
 	type ButtonInteraction,
 	type ChatInputCommandInteraction,
+	type Client,
 	MessageFlags,
 	ModalBuilder,
 	type ModalSubmitInteraction,
@@ -711,6 +712,14 @@ function splitMessage(text: string, maxLength = 2000): string[] {
 	}
 	if (current) chunks.push(current);
 	return chunks;
+}
+
+export async function sendToUser(
+	client: Client,
+	userId: string,
+	message: string,
+) {
+	await client.users.send(userId, message);
 }
 
 async function sendToChannel(

@@ -3,6 +3,7 @@ import type {
 	VerParticipantesSinPrediccionRow,
 	VerPrediccionesPorPartidoRow,
 } from "@sqlc/predicciones_sql";
+import { config } from "@support/config";
 import { logger } from "@support/logger";
 import { AttachmentBuilder, type Client } from "discord.js";
 import type { AppContext } from "../../../app";
@@ -10,6 +11,7 @@ import {
 	sendAlertsChannel,
 	sendAlertsChannelWithFiles,
 	sendAnnouncementChannel,
+	sendToUser,
 } from "../handlers/interactions";
 import { buildAlertaGol } from "../utils/match-announcement";
 import { generarHeatmapPredicciones } from "./utility-client";
@@ -164,6 +166,14 @@ export async function enviarEstadisticasPrePartido(
 			),
 		];
 		await sendAlertsChannel(client, lineas.join("\n"));
+	}
+
+	if (sinPrediccion.length > 0) {
+		const matchInfo = `${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
+		const dmMessage = `⚽ No hiciste tu predicción para **${matchInfo}**. ¡No seas idiota y mandala a <#${config.discord.general.channel.id}> antes de que se acabe el tiempo!`;
+		await Promise.allSettled(
+			sinPrediccion.map((user) => sendToUser(client, user.id, dmMessage)),
+		);
 	}
 
 	return true;
