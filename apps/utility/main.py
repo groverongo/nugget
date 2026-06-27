@@ -1,13 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Tuple
 import io
 
+from config import init_config
 from handlers.heatmap import diagrama_predicciones
 from handlers.evolution import grafico_evolucion
+from handlers.chat import handle_chat
 
-app = FastAPI()
+config = init_config()
+app = FastAPI(title=config.app_name, debug=config.debug)
 
 
 class HeatmapRequest(BaseModel):
@@ -22,6 +25,26 @@ class EvolutionRequest(BaseModel):
     matches: List[str]
     cumulative_points: List[int]
     title: str = "Evolución de puntos"
+
+
+class ChatRequest(BaseModel):
+    system_instruction: str = Field(
+        ...,
+        description="The system prompt that sets the assistant's behavior."
+    )
+    user_message: str = Field(
+        ...,
+        description="The user's text input."
+    )
+    model: str = Field(
+        default="llama-3.3-70b-versatile",
+        description="Groq model to use."
+    )
+
+
+class ChatResponse(BaseModel):
+    content: str = Field(..., description="LLM response text")
+    model: str = Field(..., description="Model used for response")
 
 
 @app.post("/evolution")
@@ -56,4 +79,18 @@ async def generate_heatmap(request: HeatmapRequest):
         media_type="image/png",
         headers={"Content-Disposition": "attachment; filename=heatmap.png"}
     )
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest) -> ChatResponse:
+    try:
+        content = await handle_chat(
+            system_instruction=request.system_instruction,
+            user_message=request.user_message,
+            model_name=request.model,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Groq/agent error: {e}")
+
+    return ChatResponse(content=content, model=request.model)
 
