@@ -10,6 +10,7 @@ import {
 	sendAlertsChannel,
 	sendAlertsChannelWithFiles,
 	sendAnnouncementChannel,
+	sendToUser,
 } from "../handlers/interactions";
 import { buildAlertaGol } from "../utils/match-announcement";
 import { generarHeatmapPredicciones } from "./utility-client";
@@ -164,6 +165,14 @@ export async function enviarEstadisticasPrePartido(
 			),
 		];
 		await sendAlertsChannel(client, lineas.join("\n"));
+	}
+
+	if (sinPrediccion.length > 0) {
+		const matchInfo = `${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
+		const dmMessage = `⚽ No hiciste tu predicción para **${matchInfo}**. ¡Anímate a participar en la próxima!`;
+		await Promise.allSettled(
+			sinPrediccion.map((user) => sendToUser(client, user.id, dmMessage)),
+		);
 	}
 
 	return true;
