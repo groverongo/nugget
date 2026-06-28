@@ -14,6 +14,8 @@ import type { TxManager } from "@support/db.provider";
 import type { IAwardsRepository } from "../interface/repository/awards.repository";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type {
+	AwardsKODisplay,
+	AwardsKORaw,
 	GuardarAwardsInput,
 	GuardarAwardsKOInput,
 	IAwardsService,
@@ -229,6 +231,116 @@ export class AwardsService implements IAwardsService {
 
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {
 		return this.awardsRepo.verPrediccionesAwards();
+	}
+
+	async verMisAwardsKO(usuarioId: string): Promise<AwardsKODisplay> {
+		const raw = await this.awardsRepo.verAwardsKODeUsuario({ id: usuarioId });
+
+		const empty = {
+			finalista1: null,
+			finalista2: null,
+			campeon: null,
+			mejorPartidoEquipo1: null,
+			mejorPartidoEquipo2: null,
+			mejorPartidoMasGoles: null,
+			numSuplementarios: null,
+			goleador: null,
+		};
+
+		if (!raw) return empty;
+
+		const equipoIds = [
+			raw.awardKoFinalista1,
+			raw.awardKoFinalista2,
+			raw.awardKoCampeon,
+			raw.awardKoMejorPartidoEquipo1,
+			raw.awardKoMejorPartidoEquipo2,
+			raw.awardKoMejorPartidoMasGoles,
+		].filter((id): id is number => id !== null);
+
+		const [equipos, jugadores] = await Promise.all([
+			equipoIds.length > 0
+				? this.estaticoRepo.verEquipos({ blanco: null, negro: null })
+				: Promise.resolve([]),
+			raw.awardKoGoleador !== null
+				? this.estaticoRepo.verJugadoresPorIds({ ids: [raw.awardKoGoleador] })
+				: Promise.resolve([]),
+		]);
+
+		const equipoMap = new Map(equipos.map((e) => [e.id, e.nombre]));
+		const goleador = jugadores[0]
+			? `${jugadores[0].nombre} (${jugadores[0].equipoNombre})`
+			: null;
+
+		return {
+			finalista1: raw.awardKoFinalista1
+				? (equipoMap.get(raw.awardKoFinalista1) ?? null)
+				: null,
+			finalista2: raw.awardKoFinalista2
+				? (equipoMap.get(raw.awardKoFinalista2) ?? null)
+				: null,
+			campeon: raw.awardKoCampeon
+				? (equipoMap.get(raw.awardKoCampeon) ?? null)
+				: null,
+			mejorPartidoEquipo1: raw.awardKoMejorPartidoEquipo1
+				? (equipoMap.get(raw.awardKoMejorPartidoEquipo1) ?? null)
+				: null,
+			mejorPartidoEquipo2: raw.awardKoMejorPartidoEquipo2
+				? (equipoMap.get(raw.awardKoMejorPartidoEquipo2) ?? null)
+				: null,
+			mejorPartidoMasGoles: raw.awardKoMejorPartidoMasGoles
+				? (equipoMap.get(raw.awardKoMejorPartidoMasGoles) ?? null)
+				: null,
+			numSuplementarios: raw.awardKoNumSuplementarios,
+			goleador,
+		};
+	}
+
+	async verAwardsKORaw(usuarioId: string): Promise<AwardsKORaw> {
+		const raw = await this.awardsRepo.verAwardsKODeUsuario({ id: usuarioId });
+		if (!raw) {
+			return {
+				finalista1: null,
+				finalista2: null,
+				campeonFinal: null,
+				mejorPartidoEquipo1: null,
+				mejorPartidoEquipo2: null,
+				mejorPartidoMasGoles: null,
+				numSuplementarios: null,
+				goleadorKO: null,
+			};
+		}
+		return {
+			finalista1: raw.awardKoFinalista1,
+			finalista2: raw.awardKoFinalista2,
+			campeonFinal: raw.awardKoCampeon,
+			mejorPartidoEquipo1: raw.awardKoMejorPartidoEquipo1,
+			mejorPartidoEquipo2: raw.awardKoMejorPartidoEquipo2,
+			mejorPartidoMasGoles: raw.awardKoMejorPartidoMasGoles,
+			numSuplementarios: raw.awardKoNumSuplementarios,
+			goleadorKO: raw.awardKoGoleador,
+		};
+	}
+
+	async guardarAwardsKOParcial(
+		usuarioId: string,
+		data: AwardsKORaw,
+	): Promise<void> {
+		const fechaCierre = new Date(config.polla.fecha_cierre_awards_ko);
+		if (Date.now() >= fechaCierre.getTime()) {
+			throw new Error("Las predicciones de awards KO ya están cerradas.");
+		}
+		await this.awardsRepo.guardarAwardsKO({
+			id: usuarioId,
+			awardKoFinalista1: data.finalista1,
+			awardKoFinalista2: data.finalista2,
+			awardKoCampeon: data.campeonFinal,
+			awardKoMejorPartidoEquipo1: data.mejorPartidoEquipo1,
+			awardKoMejorPartidoEquipo2: data.mejorPartidoEquipo2,
+			awardKoMejorPartidoMasGoles: data.mejorPartidoMasGoles,
+			awardKoNumSuplementarios: data.numSuplementarios,
+			awardKoGoleador: data.goleadorKO,
+		});
 	}
 
 	async guardarAwardsKO(

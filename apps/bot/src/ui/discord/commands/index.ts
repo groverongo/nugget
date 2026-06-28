@@ -7,6 +7,7 @@ import {
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
+import { buildAwardsKOComponents } from "../components/awards-ko";
 import {
 	buildPartidosAdminComponents,
 	buildPartidosComponents,
@@ -25,6 +26,10 @@ import {
 	sendAlertsChannel,
 	sendAnnouncementChannel,
 } from "../handlers/interactions";
+import {
+	enviarAlertaCierreAwardsKO,
+	enviarAlertaFaltanAwardsKO,
+} from "../services/awards-ko-scheduler";
 import { enviarAlertaAwards } from "../services/awards-scheduler";
 import { enviarAlertaDiaria } from "../services/daily-alert-scheduler";
 import {
@@ -96,6 +101,14 @@ const enviarAlertaCommand = new SlashCommandBuilder()
 					value: "pre-partido",
 				},
 				{ name: "🏆 Awards — cierre de predicciones", value: "awards" },
+				{
+					name: "⏰ Awards KO — faltan enviar (12h antes del cierre)",
+					value: "awards-ko-faltan",
+				},
+				{
+					name: "🏆 Awards KO — cierre de predicciones eliminatorias",
+					value: "awards-ko-cierre",
+				},
 				{ name: "📋 Resumen del día", value: "resumen-dia" },
 				{
 					name: "🕛 Inicio de partido (solo mensaje, sin cambiar estado)",
@@ -598,67 +611,6 @@ const actualizarAwardsCommand = new SlashCommandBuilder()
 const predecirAwardsKOCommand = new SlashCommandBuilder()
 	.setName("predecir-awards-ko")
 	.setDescription("Predice los awards de la fase eliminatoria")
-	.addStringOption((option) =>
-		option
-			.setName("finalista1")
-			.setDescription("Primer equipo finalista")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("finalista2")
-			.setDescription("Segundo equipo finalista")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("campeon_final")
-			.setDescription("Campeón (debe ser uno de tus dos finalistas)")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_equipo1")
-			.setDescription("Primer equipo del partido con más goles en fase KO")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_equipo2")
-			.setDescription("Segundo equipo del partido con más goles en fase KO")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_mas_goles")
-			.setDescription(
-				"Equipo que hará más goles en ese partido, o Empate si crees que harán igual",
-			)
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addIntegerOption((option) =>
-		option
-			.setName("num_suplementarios")
-			.setDescription(
-				"Cantidad de suplementarios que habrá en la fase KO (0-32)",
-			)
-			.setRequired(true)
-			.setMinValue(0)
-			.setMaxValue(32),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("goleador_ko")
-			.setDescription("Jugador con más goles en fase KO (sin contar penales)")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
 	.setContexts(InteractionContextType.Guild);
 
 const predecirAwardsKOAdminCommand = new SlashCommandBuilder()
@@ -1269,8 +1221,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					const [partidos] = await Promise.all([
+					const [partidos, todasLasTimbas] = await Promise.all([
 						appContext.services.partidos.verPartidosNoFinalizados(),
+						appContext.services.timba.verTimbasPorPartido(partidoId),
+					]);
+
+					const timbasCanceladas = todasLasTimbas.filter(
+						(t) => t.estado === "abierta",
+					);
+
+					await Promise.all([
 						appContext.services.partidos.reanudarPartido(partidoId),
 						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
 					]);
@@ -1279,15 +1239,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const nombrePartido = partido
 						? `**${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}**`
 						: `**Partido #${partidoId}**`;
+					const siglas =
+						timbasCanceladas.length > 0
+							? `${timbasCanceladas[0].equipoLocalSiglas} ${timbasCanceladas[0].equipoLocalBandera} vs. ${timbasCanceladas[0].equipoVisitanteSiglas} ${timbasCanceladas[0].equipoVisitanteBandera}`
+							: partido
+								? `${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}`
+								: `Partido #${partidoId}`;
 
 					await interaction.editReply({
-						content: `▶️ ${nombrePartido} reanudado. Timbas abiertas canceladas.`,
+						content: `▶️ ${nombrePartido} reanudado.${timbasCanceladas.length > 0 ? ` ${timbasCanceladas.length} timba(s) abiertas canceladas.` : ""}`,
 					});
 
 					await sendAlertsChannel(
 						interaction.client,
 						`▶️ _¡${nombrePartido} se reanudó! Las Timba Times vuelven a estar cerradas._`,
 					);
+
+					if (timbasCanceladas.length > 0) {
+						const lineas = [
+							`🚫 _**Timba Times canceladas** (${siglas}):_`,
+							...timbasCanceladas.map(
+								(t) =>
+									`• <@${t.jugador_1Id}> — **${t.puntosPropuestos} 💠** — "${t.descripcion}"`,
+							),
+						];
+						await sendAnnouncementChannel(
+							interaction.client,
+							lineas.join("\n"),
+						);
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2128,143 +2108,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		"predecir-awards-ko",
 		{
 			definition: predecirAwardsKOCommand,
-			autocomplete: async (interaction, appContext) => {
-				const focused = interaction.options.getFocused(true);
-				const query = focused.value.toString().toLowerCase();
-
-				const EQUIPO_FIELDS = [
-					"finalista1",
-					"finalista2",
-					"campeon_final",
-					"mejor_partido_equipo1",
-					"mejor_partido_equipo2",
-				] as const;
-
-				if (
-					EQUIPO_FIELDS.includes(focused.name as (typeof EQUIPO_FIELDS)[number])
-				) {
-					const equipos =
-						await appContext.services.awards.verEquiposNoEliminados();
-					const opciones = equipos
-						.filter((e) => e.nombre.toLowerCase().includes(query))
-						.slice(0, 25)
-						.map((e) => ({
-							name: `${e.bandera} ${e.nombre}`,
-							value: String(e.id),
-						}));
-					await interaction.respond(opciones);
-				} else if (focused.name === "mejor_partido_mas_goles") {
-					const equipos =
-						await appContext.services.awards.verEquiposNoEliminados();
-					const opciones: { name: string; value: string }[] = [];
-					if ("empate".includes(query)) {
-						opciones.push({
-							name: "Empate (misma cantidad de goles)",
-							value: "0",
-						});
-					}
-					opciones.push(
-						...equipos
-							.filter((e) => e.nombre.toLowerCase().includes(query))
-							.slice(0, 24)
-							.map((e) => ({
-								name: `${e.bandera} ${e.nombre}`,
-								value: String(e.id),
-							})),
-					);
-					await interaction.respond(opciones.slice(0, 25));
-				} else if (focused.name === "goleador_ko") {
-					const jugadores =
-						await appContext.services.awards.buscarJugadoresNoEliminados(query);
-					const opciones = jugadores.slice(0, 25).map((j) => ({
-						name: `${j.nombre} (${j.equipoNombre})`,
-						value: String(j.id),
-					}));
-					await interaction.respond(opciones);
-				}
-			},
 			handle: async (interaction, appContext) => {
 				await interaction.deferReply({ ephemeral: true });
-
 				try {
-					const finalista1 = parseInt(
-						interaction.options.getString("finalista1", true),
-						10,
+					const display = await appContext.services.awards.verMisAwardsKO(
+						interaction.user.id,
 					);
-					const finalista2 = parseInt(
-						interaction.options.getString("finalista2", true),
-						10,
-					);
-					const campeonFinal = parseInt(
-						interaction.options.getString("campeon_final", true),
-						10,
-					);
-					const mejorPartidoEquipo1 = parseInt(
-						interaction.options.getString("mejor_partido_equipo1", true),
-						10,
-					);
-					const mejorPartidoEquipo2 = parseInt(
-						interaction.options.getString("mejor_partido_equipo2", true),
-						10,
-					);
-					const masGolesRaw = interaction.options.getString(
-						"mejor_partido_mas_goles",
-						true,
-					);
-					const masGolesVal = parseInt(masGolesRaw, 10);
-					const mejorPartidoMasGoles =
-						masGolesRaw === "0" || masGolesVal === 0 ? null : masGolesVal;
-
-					const numSuplementarios = interaction.options.getInteger(
-						"num_suplementarios",
-						true,
-					);
-					const goleadorKO = parseInt(
-						interaction.options.getString("goleador_ko", true),
-						10,
-					);
-
-					if (
-						[
-							finalista1,
-							finalista2,
-							campeonFinal,
-							mejorPartidoEquipo1,
-							mejorPartidoEquipo2,
-							goleadorKO,
-						].some(Number.isNaN) ||
-						(mejorPartidoMasGoles !== null &&
-							Number.isNaN(mejorPartidoMasGoles))
-					) {
-						await interaction.editReply({
-							content: "❌ Selecciona los valores desde el autocompletado.",
-						});
-						return;
-					}
-
-					const resultado = await appContext.services.awards.guardarAwardsKO({
-						usuarioId: interaction.user.id,
-						finalista1,
-						finalista2,
-						campeonFinal,
-						mejorPartidoEquipo1,
-						mejorPartidoEquipo2,
-						mejorPartidoMasGoles,
-						numSuplementarios,
-						goleadorKO,
-					});
-
 					await interaction.editReply({
-						content:
-							"✅ Tus predicciones de awards de fase eliminatoria han sido guardadas.",
+						components: buildAwardsKOComponents(display),
+						flags: MessageFlags.IsComponentsV2,
 					});
-
-					await sendAnnouncementChannel(
-						interaction.client,
-						resultado === "created"
-							? `_🎯 ¡<@${interaction.user.id}> ha enviado sus **Awards Eliminatorias**!_`
-							: `_✏️ ¡<@${interaction.user.id}> ha actualizado sus **Awards Eliminatorias**!_`,
-					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2795,6 +2648,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							await enviarAlertaAwards(appContext.services, interaction.client);
 							await interaction.editReply({
 								content: "✅ Alerta de awards enviada.",
+							});
+							break;
+						}
+						case "awards-ko-faltan": {
+							await enviarAlertaFaltanAwardsKO(
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: "✅ Alerta de 'faltan awards KO' enviada.",
+							});
+							break;
+						}
+						case "awards-ko-cierre": {
+							await enviarAlertaCierreAwardsKO(
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: "✅ Alerta de cierre de awards KO enviada.",
 							});
 							break;
 						}

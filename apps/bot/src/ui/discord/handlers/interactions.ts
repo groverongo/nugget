@@ -19,6 +19,13 @@ import {
 import type { AppContext } from "../../../app";
 import { discordCommands, POLLERO_ROLE_ID } from "../commands";
 import {
+	AWARDS_KO_BUTTON_FINALISTAS,
+	AWARDS_KO_BUTTON_GOLEADOR,
+	AWARDS_KO_BUTTON_MEJOR_PARTIDO,
+	AWARDS_KO_BUTTON_SUPLEMENTARIOS,
+	buildAwardsKOComponents,
+} from "../components/awards-ko";
+import {
 	buildPartidosAdminComponents,
 	buildPartidosComponents,
 	PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX,
@@ -50,6 +57,11 @@ import {
 	TIMBA_RESOLVER_J2_PREFIX,
 } from "../components/timba";
 import { golesSchema, puntosApuestaSchema } from "../types/shared";
+
+const AWARDS_KO_MODAL_FINALISTAS = "awards-ko:modal:finalistas";
+const AWARDS_KO_MODAL_MEJOR_PARTIDO = "awards-ko:modal:mejor-partido";
+const AWARDS_KO_MODAL_SUPLEMENTARIOS = "awards-ko:modal:suplementarios";
+const AWARDS_KO_MODAL_GOLEADOR = "awards-ko:modal:goleador";
 
 const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
 const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
@@ -1662,6 +1674,296 @@ async function handleTimbaResolucionMedioTiempo(
 	} catch (error) {
 		await interaction.followUp({
 			content: `❌ ${error instanceof Error ? error.message : "No se pudo procesar la timba."}`,
+			ephemeral: true,
+		});
+	}
+}
+
+export async function handleAwardsKOButtonInteraction(
+	interaction: ButtonInteraction,
+	_appContext: AppContext,
+): Promise<void> {
+	const id = interaction.customId;
+	if (
+		id !== AWARDS_KO_BUTTON_FINALISTAS &&
+		id !== AWARDS_KO_BUTTON_MEJOR_PARTIDO &&
+		id !== AWARDS_KO_BUTTON_SUPLEMENTARIOS &&
+		id !== AWARDS_KO_BUTTON_GOLEADOR
+	) {
+		return;
+	}
+
+	if (id === AWARDS_KO_BUTTON_FINALISTAS) {
+		await interaction.showModal(
+			new ModalBuilder()
+				.setCustomId(AWARDS_KO_MODAL_FINALISTAS)
+				.setTitle("🥈 Finalistas")
+				.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("f1")
+							.setLabel("Finalista 1 (nombre o siglas del equipo)")
+							.setPlaceholder("Ej: Argentina, ARG, Brasil...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("f2")
+							.setLabel("Finalista 2 (nombre o siglas del equipo)")
+							.setPlaceholder("Ej: Francia, FRA, España...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("campeon")
+							.setLabel("Campeón (debe ser uno de los dos finalistas)")
+							.setPlaceholder("Ej: Argentina, ARG...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+				),
+		);
+	} else if (id === AWARDS_KO_BUTTON_MEJOR_PARTIDO) {
+		await interaction.showModal(
+			new ModalBuilder()
+				.setCustomId(AWARDS_KO_MODAL_MEJOR_PARTIDO)
+				.setTitle("⚽ Mejor Partido")
+				.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("mp1")
+							.setLabel("Equipo 1 del partido (nombre o siglas)")
+							.setPlaceholder("Ej: Argentina, ARG...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("mp2")
+							.setLabel("Equipo 2 del partido (nombre o siglas)")
+							.setPlaceholder("Ej: Brasil, BRA...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("mas-goles")
+							.setLabel("¿Quién hace más goles? (o 'empate')")
+							.setPlaceholder("Ej: Argentina, ARG, o 'empate'")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(50),
+					),
+				),
+		);
+	} else if (id === AWARDS_KO_BUTTON_SUPLEMENTARIOS) {
+		await interaction.showModal(
+			new ModalBuilder()
+				.setCustomId(AWARDS_KO_MODAL_SUPLEMENTARIOS)
+				.setTitle("🔁 Número de Suplementarios")
+				.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("num")
+							.setLabel("¿Cuántos suplementarios habrá en la fase KO? (0-32)")
+							.setPlaceholder("Ej: 5")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(2),
+					),
+				),
+		);
+	} else if (id === AWARDS_KO_BUTTON_GOLEADOR) {
+		await interaction.showModal(
+			new ModalBuilder()
+				.setCustomId(AWARDS_KO_MODAL_GOLEADOR)
+				.setTitle("👟 Goleador KO")
+				.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(
+						new TextInputBuilder()
+							.setCustomId("jugador")
+							.setLabel("Jugador con más goles en fase KO (sin penales)")
+							.setPlaceholder("Ej: Messi, Mbappé, Ronaldo...")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(true)
+							.setMaxLength(100),
+					),
+				),
+		);
+	}
+}
+
+function resolveEquipo(
+	query: string,
+	equipos: { id: number; nombre: string; siglas: string }[],
+): number | null {
+	const q = query.trim().toLowerCase();
+	const exactNombre = equipos.find((e) => e.nombre.toLowerCase() === q);
+	if (exactNombre) return exactNombre.id;
+	const exactSiglas = equipos.find((e) => e.siglas.toLowerCase() === q);
+	if (exactSiglas) return exactSiglas.id;
+	const partial = equipos.find((e) => e.nombre.toLowerCase().includes(q));
+	return partial?.id ?? null;
+}
+
+export async function handleAwardsKOModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	const id = interaction.customId;
+	if (
+		id !== AWARDS_KO_MODAL_FINALISTAS &&
+		id !== AWARDS_KO_MODAL_MEJOR_PARTIDO &&
+		id !== AWARDS_KO_MODAL_SUPLEMENTARIOS &&
+		id !== AWARDS_KO_MODAL_GOLEADOR
+	) {
+		return;
+	}
+
+	await interaction.deferUpdate();
+
+	try {
+		const existing = await appContext.services.awards.verAwardsKORaw(
+			interaction.user.id,
+		);
+
+		if (id === AWARDS_KO_MODAL_FINALISTAS) {
+			const equipos = await appContext.services.awards.verEquiposNoEliminados();
+			const f1Id = resolveEquipo(
+				interaction.fields.getTextInputValue("f1"),
+				equipos,
+			);
+			const f2Id = resolveEquipo(
+				interaction.fields.getTextInputValue("f2"),
+				equipos,
+			);
+			const campeonId = resolveEquipo(
+				interaction.fields.getTextInputValue("campeon"),
+				equipos,
+			);
+
+			if (!f1Id || !f2Id || !campeonId) {
+				await interaction.followUp({
+					content:
+						"❌ No se reconoció alguno de los equipos. Revisá los nombres o siglas.",
+					ephemeral: true,
+				});
+				return;
+			}
+
+			if (campeonId !== f1Id && campeonId !== f2Id) {
+				await interaction.followUp({
+					content:
+						"❌ El campeón debe ser uno de los dos finalistas que ingresaste.",
+					ephemeral: true,
+				});
+				return;
+			}
+
+			await appContext.services.awards.guardarAwardsKOParcial(
+				interaction.user.id,
+				{
+					...existing,
+					finalista1: f1Id,
+					finalista2: f2Id,
+					campeonFinal: campeonId,
+				},
+			);
+		} else if (id === AWARDS_KO_MODAL_MEJOR_PARTIDO) {
+			const equipos = await appContext.services.awards.verEquiposNoEliminados();
+			const mp1Id = resolveEquipo(
+				interaction.fields.getTextInputValue("mp1"),
+				equipos,
+			);
+			const mp2Id = resolveEquipo(
+				interaction.fields.getTextInputValue("mp2"),
+				equipos,
+			);
+			const masGolesRaw = interaction.fields
+				.getTextInputValue("mas-goles")
+				.trim()
+				.toLowerCase();
+			const esEmpate = masGolesRaw === "empate" || masGolesRaw === "empate";
+			const masGolesId = esEmpate ? null : resolveEquipo(masGolesRaw, equipos);
+
+			if (!mp1Id || !mp2Id) {
+				await interaction.followUp({
+					content:
+						"❌ No se reconoció alguno de los equipos. Revisá los nombres o siglas.",
+					ephemeral: true,
+				});
+				return;
+			}
+			if (!esEmpate && masGolesId === null) {
+				await interaction.followUp({
+					content:
+						"❌ No se reconoció el equipo que hace más goles. Escribí el nombre, siglas, o 'empate'.",
+					ephemeral: true,
+				});
+				return;
+			}
+
+			await appContext.services.awards.guardarAwardsKOParcial(
+				interaction.user.id,
+				{
+					...existing,
+					mejorPartidoEquipo1: mp1Id,
+					mejorPartidoEquipo2: mp2Id,
+					mejorPartidoMasGoles: masGolesId,
+				},
+			);
+		} else if (id === AWARDS_KO_MODAL_SUPLEMENTARIOS) {
+			const num = Number(interaction.fields.getTextInputValue("num").trim());
+			if (!Number.isInteger(num) || num < 0 || num > 32) {
+				await interaction.followUp({
+					content: "❌ Ingresá un número entero entre 0 y 32.",
+					ephemeral: true,
+				});
+				return;
+			}
+			await appContext.services.awards.guardarAwardsKOParcial(
+				interaction.user.id,
+				{ ...existing, numSuplementarios: num },
+			);
+		} else if (id === AWARDS_KO_MODAL_GOLEADOR) {
+			const query = interaction.fields.getTextInputValue("jugador").trim();
+			const jugadores =
+				await appContext.services.awards.buscarJugadoresNoEliminados(query);
+			if (jugadores.length === 0) {
+				await interaction.followUp({
+					content: `❌ No se encontró ningún jugador con "${query}". Intentá con apellido o nombre completo.`,
+					ephemeral: true,
+				});
+				return;
+			}
+			const jugador = jugadores[0];
+			await appContext.services.awards.guardarAwardsKOParcial(
+				interaction.user.id,
+				{ ...existing, goleadorKO: jugador.id },
+			);
+			await interaction.followUp({
+				content: `✅ Goleador KO guardado: **${jugador.nombre}** (${jugador.equipoNombre})`,
+				ephemeral: true,
+			});
+		}
+
+		const display = await appContext.services.awards.verMisAwardsKO(
+			interaction.user.id,
+		);
+		await interaction.editReply({
+			components: buildAwardsKOComponents(display),
+			flags: MessageFlags.IsComponentsV2,
+		});
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
 			ephemeral: true,
 		});
 	}

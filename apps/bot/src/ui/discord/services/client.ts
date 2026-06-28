@@ -6,6 +6,8 @@ import type { AppContext } from "../../../app";
 import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
 import {
 	handleAutocompleteInteraction,
+	handleAwardsKOButtonInteraction,
+	handleAwardsKOModalSubmitInteraction,
 	handleCommandInteraction,
 	handleContraofertaModalSubmitInteraction,
 	handleMisTimbasDateSelectInteraction,
@@ -20,6 +22,7 @@ import {
 	handleTimbaButtonInteraction,
 	handleTimbaModalSubmitInteraction,
 } from "../handlers/interactions";
+import { AwardsKOScheduler } from "./awards-ko-scheduler";
 import { AwardsScheduler } from "./awards-scheduler";
 import { DailyAlertScheduler } from "./daily-alert-scheduler";
 import { initEndOfDayScheduler } from "./end-of-day-scheduler";
@@ -57,6 +60,7 @@ export function registerDiscordEventHandlers(
 			const scheduler = new MatchScheduler(appContext.services, readyClient);
 			await scheduler.init();
 			new AwardsScheduler(appContext.services, readyClient).init();
+			new AwardsKOScheduler(appContext.services, readyClient).init();
 			new DailyAlertScheduler(appContext.services, readyClient).init();
 			await initEndOfDayScheduler(appContext.services, readyClient);
 			logger.info({ user: readyClient.user.tag }, "Discord bot listo");
@@ -86,6 +90,7 @@ export function registerDiscordEventHandlers(
 				await handlePartidosButtonInteraction(interaction, appContext);
 				await handlePartidosAdminButtonInteraction(interaction, appContext);
 				await handleTimbaButtonInteraction(interaction, appContext);
+				await handleAwardsKOButtonInteraction(interaction, appContext);
 				return;
 			}
 
@@ -98,6 +103,7 @@ export function registerDiscordEventHandlers(
 				await handleTimbaModalSubmitInteraction(interaction, appContext);
 				await handleTimbaAdminModalSubmitInteraction(interaction, appContext);
 				await handleContraofertaModalSubmitInteraction(interaction, appContext);
+				await handleAwardsKOModalSubmitInteraction(interaction, appContext);
 				return;
 			}
 

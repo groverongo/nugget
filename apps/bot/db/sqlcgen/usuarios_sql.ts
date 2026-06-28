@@ -5,7 +5,7 @@ interface Client {
 }
 
 export const listUsuariosQuery = `-- name: ListUsuarios :many
-SELECT id, username, award_campeon, award_goleador, award_mejor_jugador, award_mejor_arquero, award_mejor_jugador_joven, award_mejor_gol, award_seleccion_decepcion, award_seleccion_sorpresa, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado, participante, racha_maxima FROM usuarios`;
+SELECT id, username, award_campeon, award_goleador, award_mejor_jugador, award_mejor_arquero, award_mejor_jugador_joven, award_mejor_gol, award_seleccion_decepcion, award_seleccion_sorpresa, partidos_apostados, partidos_ganados, partidos_perdidos, puntos, racha, win_rate, premio_asociado, participante, racha_maxima, award_ko_finalista1, award_ko_finalista2, award_ko_campeon, award_ko_mejor_partido_equipo1, award_ko_mejor_partido_equipo2, award_ko_mejor_partido_mas_goles, award_ko_num_suplementarios, award_ko_goleador FROM usuarios`;
 
 export interface ListUsuariosRow {
     id: string;
@@ -27,6 +27,14 @@ export interface ListUsuariosRow {
     premioAsociado: number | null;
     participante: boolean;
     rachaMaxima: number;
+    awardKoFinalista1: number | null;
+    awardKoFinalista2: number | null;
+    awardKoCampeon: number | null;
+    awardKoMejorPartidoEquipo1: number | null;
+    awardKoMejorPartidoEquipo2: number | null;
+    awardKoMejorPartidoMasGoles: number | null;
+    awardKoNumSuplementarios: number | null;
+    awardKoGoleador: number | null;
 }
 
 export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
@@ -55,7 +63,15 @@ export async function listUsuarios(client: Client): Promise<ListUsuariosRow[]> {
             winRate: row[15],
             premioAsociado: row[16],
             participante: row[17],
-            rachaMaxima: row[18]
+            rachaMaxima: row[18],
+            awardKoFinalista1: row[19],
+            awardKoFinalista2: row[20],
+            awardKoCampeon: row[21],
+            awardKoMejorPartidoEquipo1: row[22],
+            awardKoMejorPartidoEquipo2: row[23],
+            awardKoMejorPartidoMasGoles: row[24],
+            awardKoNumSuplementarios: row[25],
+            awardKoGoleador: row[26]
         };
     });
 }
