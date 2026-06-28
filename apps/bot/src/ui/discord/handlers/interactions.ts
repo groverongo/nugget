@@ -1679,24 +1679,56 @@ async function handleTimbaResolucionMedioTiempo(
 	}
 }
 
+function parseAwardsKOButtonId(
+	id: string,
+): { base: string; userId: string | null } | null {
+	const bases = [
+		AWARDS_KO_BUTTON_FINALISTAS,
+		AWARDS_KO_BUTTON_MEJOR_PARTIDO,
+		AWARDS_KO_BUTTON_SUPLEMENTARIOS,
+		AWARDS_KO_BUTTON_GOLEADOR,
+	];
+	for (const base of bases) {
+		if (id === base) return { base, userId: null };
+		if (id.startsWith(`${base}:`)) {
+			return { base, userId: id.slice(base.length + 1) };
+		}
+	}
+	return null;
+}
+
+function parseAwardsKOModalId(
+	id: string,
+): { base: string; userId: string | null } | null {
+	const bases = [
+		AWARDS_KO_MODAL_FINALISTAS,
+		AWARDS_KO_MODAL_MEJOR_PARTIDO,
+		AWARDS_KO_MODAL_SUPLEMENTARIOS,
+		AWARDS_KO_MODAL_GOLEADOR,
+	];
+	for (const base of bases) {
+		if (id === base) return { base, userId: null };
+		if (id.startsWith(`${base}:`)) {
+			return { base, userId: id.slice(base.length + 1) };
+		}
+	}
+	return null;
+}
+
 export async function handleAwardsKOButtonInteraction(
 	interaction: ButtonInteraction,
 	_appContext: AppContext,
 ): Promise<void> {
-	const id = interaction.customId;
-	if (
-		id !== AWARDS_KO_BUTTON_FINALISTAS &&
-		id !== AWARDS_KO_BUTTON_MEJOR_PARTIDO &&
-		id !== AWARDS_KO_BUTTON_SUPLEMENTARIOS &&
-		id !== AWARDS_KO_BUTTON_GOLEADOR
-	) {
-		return;
-	}
+	const parsed = parseAwardsKOButtonId(interaction.customId);
+	if (!parsed) return;
+
+	const { base: id, userId } = parsed;
+	const modalSuffix = userId ? `:${userId}` : "";
 
 	if (id === AWARDS_KO_BUTTON_FINALISTAS) {
 		await interaction.showModal(
 			new ModalBuilder()
-				.setCustomId(AWARDS_KO_MODAL_FINALISTAS)
+				.setCustomId(AWARDS_KO_MODAL_FINALISTAS + modalSuffix)
 				.setTitle("🥈 Finalistas")
 				.addComponents(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -1731,7 +1763,7 @@ export async function handleAwardsKOButtonInteraction(
 	} else if (id === AWARDS_KO_BUTTON_MEJOR_PARTIDO) {
 		await interaction.showModal(
 			new ModalBuilder()
-				.setCustomId(AWARDS_KO_MODAL_MEJOR_PARTIDO)
+				.setCustomId(AWARDS_KO_MODAL_MEJOR_PARTIDO + modalSuffix)
 				.setTitle("⚽ Mejor Partido")
 				.addComponents(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -1766,7 +1798,7 @@ export async function handleAwardsKOButtonInteraction(
 	} else if (id === AWARDS_KO_BUTTON_SUPLEMENTARIOS) {
 		await interaction.showModal(
 			new ModalBuilder()
-				.setCustomId(AWARDS_KO_MODAL_SUPLEMENTARIOS)
+				.setCustomId(AWARDS_KO_MODAL_SUPLEMENTARIOS + modalSuffix)
 				.setTitle("🔁 Número de Suplementarios")
 				.addComponents(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -1783,7 +1815,7 @@ export async function handleAwardsKOButtonInteraction(
 	} else if (id === AWARDS_KO_BUTTON_GOLEADOR) {
 		await interaction.showModal(
 			new ModalBuilder()
-				.setCustomId(AWARDS_KO_MODAL_GOLEADOR)
+				.setCustomId(AWARDS_KO_MODAL_GOLEADOR + modalSuffix)
 				.setTitle("👟 Goleador KO")
 				.addComponents(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -1817,22 +1849,16 @@ export async function handleAwardsKOModalSubmitInteraction(
 	interaction: ModalSubmitInteraction,
 	appContext: AppContext,
 ): Promise<void> {
-	const id = interaction.customId;
-	if (
-		id !== AWARDS_KO_MODAL_FINALISTAS &&
-		id !== AWARDS_KO_MODAL_MEJOR_PARTIDO &&
-		id !== AWARDS_KO_MODAL_SUPLEMENTARIOS &&
-		id !== AWARDS_KO_MODAL_GOLEADOR
-	) {
-		return;
-	}
+	const parsed = parseAwardsKOModalId(interaction.customId);
+	if (!parsed) return;
+
+	const { base: id, userId: targetUserId } = parsed;
+	const usuarioId = targetUserId ?? interaction.user.id;
 
 	await interaction.deferUpdate();
 
 	try {
-		const existing = await appContext.services.awards.verAwardsKORaw(
-			interaction.user.id,
-		);
+		const existing = await appContext.services.awards.verAwardsKORaw(usuarioId);
 
 		if (id === AWARDS_KO_MODAL_FINALISTAS) {
 			const equipos = await appContext.services.awards.verEquiposNoEliminados();
@@ -1867,15 +1893,12 @@ export async function handleAwardsKOModalSubmitInteraction(
 				return;
 			}
 
-			await appContext.services.awards.guardarAwardsKOParcial(
-				interaction.user.id,
-				{
-					...existing,
-					finalista1: f1Id,
-					finalista2: f2Id,
-					campeonFinal: campeonId,
-				},
-			);
+			await appContext.services.awards.guardarAwardsKOParcial(usuarioId, {
+				...existing,
+				finalista1: f1Id,
+				finalista2: f2Id,
+				campeonFinal: campeonId,
+			});
 		} else if (id === AWARDS_KO_MODAL_MEJOR_PARTIDO) {
 			const equipos = await appContext.services.awards.verEquiposNoEliminados();
 			const mp1Id = resolveEquipo(
@@ -1910,15 +1933,12 @@ export async function handleAwardsKOModalSubmitInteraction(
 				return;
 			}
 
-			await appContext.services.awards.guardarAwardsKOParcial(
-				interaction.user.id,
-				{
-					...existing,
-					mejorPartidoEquipo1: mp1Id,
-					mejorPartidoEquipo2: mp2Id,
-					mejorPartidoMasGoles: masGolesId,
-				},
-			);
+			await appContext.services.awards.guardarAwardsKOParcial(usuarioId, {
+				...existing,
+				mejorPartidoEquipo1: mp1Id,
+				mejorPartidoEquipo2: mp2Id,
+				mejorPartidoMasGoles: masGolesId,
+			});
 		} else if (id === AWARDS_KO_MODAL_SUPLEMENTARIOS) {
 			const num = Number(interaction.fields.getTextInputValue("num").trim());
 			if (!Number.isInteger(num) || num < 0 || num > 32) {
@@ -1928,10 +1948,10 @@ export async function handleAwardsKOModalSubmitInteraction(
 				});
 				return;
 			}
-			await appContext.services.awards.guardarAwardsKOParcial(
-				interaction.user.id,
-				{ ...existing, numSuplementarios: num },
-			);
+			await appContext.services.awards.guardarAwardsKOParcial(usuarioId, {
+				...existing,
+				numSuplementarios: num,
+			});
 		} else if (id === AWARDS_KO_MODAL_GOLEADOR) {
 			const query = interaction.fields.getTextInputValue("jugador").trim();
 			const jugadores =
@@ -1944,10 +1964,10 @@ export async function handleAwardsKOModalSubmitInteraction(
 				return;
 			}
 			const jugador = jugadores[0];
-			await appContext.services.awards.guardarAwardsKOParcial(
-				interaction.user.id,
-				{ ...existing, goleadorKO: jugador.id },
-			);
+			await appContext.services.awards.guardarAwardsKOParcial(usuarioId, {
+				...existing,
+				goleadorKO: jugador.id,
+			});
 			await interaction.followUp({
 				content: `✅ Goleador KO guardado: **${jugador.nombre}** (${jugador.equipoNombre})`,
 				ephemeral: true,
@@ -1955,12 +1975,12 @@ export async function handleAwardsKOModalSubmitInteraction(
 		}
 
 		const [display, rawActualizado] = await Promise.all([
-			appContext.services.awards.verMisAwardsKO(interaction.user.id),
-			appContext.services.awards.verAwardsKORaw(interaction.user.id),
+			appContext.services.awards.verMisAwardsKO(usuarioId),
+			appContext.services.awards.verAwardsKORaw(usuarioId),
 		]);
 
 		await interaction.editReply({
-			components: buildAwardsKOComponents(display),
+			components: buildAwardsKOComponents(display, targetUserId ?? undefined),
 			flags: MessageFlags.IsComponentsV2,
 		});
 
@@ -1985,7 +2005,7 @@ export async function handleAwardsKOModalSubmitInteraction(
 		if (estaCompleto && !eraCompleto) {
 			await sendAnnouncementChannel(
 				interaction.client,
-				`_🎯 ¡<@${interaction.user.id}> ha enviado sus **Awards Eliminatorias**!_`,
+				`_🎯 ¡<@${usuarioId}> ha enviado sus **Awards Eliminatorias**!_`,
 			);
 		}
 	} catch (error) {
