@@ -8,22 +8,14 @@ import {
 	SeparatorSpacingSize,
 	TextDisplayBuilder,
 } from "discord.js";
+import type { AwardsKODisplay } from "../../../interface/service/awards.service";
+
+export type { AwardsKODisplay };
 
 export const AWARDS_KO_BUTTON_FINALISTAS = "awards-ko:finalistas";
 export const AWARDS_KO_BUTTON_MEJOR_PARTIDO = "awards-ko:mejor-partido";
 export const AWARDS_KO_BUTTON_SUPLEMENTARIOS = "awards-ko:suplementarios";
 export const AWARDS_KO_BUTTON_GOLEADOR = "awards-ko:goleador";
-
-export interface AwardsKODisplay {
-	finalista1: string | null;
-	finalista2: string | null;
-	campeon: string | null;
-	mejorPartidoEquipo1: string | null;
-	mejorPartidoEquipo2: string | null;
-	mejorPartidoMasGoles: string | null;
-	numSuplementarios: number | null;
-	goleador: string | null;
-}
 
 function seccionFinalistas(d: AwardsKODisplay): string {
 	if (!d.finalista1 && !d.finalista2 && !d.campeon) {

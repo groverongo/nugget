@@ -88,6 +88,17 @@ export interface ResumenActualizacionAwardsKO {
 	}[];
 }
 
+export interface AwardsKODisplay {
+	finalista1: string | null;
+	finalista2: string | null;
+	campeon: string | null;
+	mejorPartidoEquipo1: string | null;
+	mejorPartidoEquipo2: string | null;
+	mejorPartidoMasGoles: string | null;
+	numSuplementarios: number | null;
+	goleador: string | null;
+}
+
 export interface AwardsKORaw {
 	finalista1: number | null;
 	finalista2: number | null;
@@ -112,9 +123,7 @@ export interface IAwardsService {
 	buscarJugadores(query: string): Promise<BuscarJugadoresRow[]>;
 	verJugadoresPorEquipo(equipoId: number): Promise<VerJugadoresPorEquipoRow[]>;
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]>;
-	verMisAwardsKO(
-		usuarioId: string,
-	): Promise<import("../../ui/discord/components/awards-ko").AwardsKODisplay>;
+	verMisAwardsKO(usuarioId: string): Promise<AwardsKODisplay>;
 	verAwardsKORaw(usuarioId: string): Promise<AwardsKORaw>;
 	guardarAwardsKOParcial(usuarioId: string, data: AwardsKORaw): Promise<void>;
 	guardarAwardsKO(input: GuardarAwardsKOInput): Promise<"created" | "updated">;

@@ -14,6 +14,8 @@ import type { TxManager } from "@support/db.provider";
 import type { IAwardsRepository } from "../interface/repository/awards.repository";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type {
+	AwardsKODisplay,
+	AwardsKORaw,
 	GuardarAwardsInput,
 	GuardarAwardsKOInput,
 	IAwardsService,
@@ -231,9 +233,7 @@ export class AwardsService implements IAwardsService {
 		return this.awardsRepo.verPrediccionesAwards();
 	}
 
-	async verMisAwardsKO(
-		usuarioId: string,
-	): Promise<import("../ui/discord/components/awards-ko").AwardsKODisplay> {
+	async verMisAwardsKO(usuarioId: string): Promise<AwardsKODisplay> {
 		const raw = await this.awardsRepo.verAwardsKODeUsuario({ id: usuarioId });
 
 		const empty = {
@@ -296,9 +296,7 @@ export class AwardsService implements IAwardsService {
 		};
 	}
 
-	async verAwardsKORaw(
-		usuarioId: string,
-	): Promise<import("../interface/service/awards.service").AwardsKORaw> {
+	async verAwardsKORaw(usuarioId: string): Promise<AwardsKORaw> {
 		const raw = await this.awardsRepo.verAwardsKODeUsuario({ id: usuarioId });
 		if (!raw) {
 			return {
@@ -326,7 +324,7 @@ export class AwardsService implements IAwardsService {
 
 	async guardarAwardsKOParcial(
 		usuarioId: string,
-		data: import("../interface/service/awards.service").AwardsKORaw,
+		data: AwardsKORaw,
 	): Promise<void> {
 		const fechaCierre = new Date(config.polla.fecha_cierre_awards_ko);
 		if (Date.now() >= fechaCierre.getTime()) {
