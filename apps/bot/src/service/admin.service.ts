@@ -251,7 +251,7 @@ export class AdminService implements IAdminService {
 
 			// Si no es suple y terminó en empate en fase KO, crear suplementario
 			let supleCreado: { supleId: number } | null = null;
-			if (!esSuple && hayEmpateGoles && info.faseNombre !== "Fase de Grupos") {
+			if (!esSuple && hayEmpateGoles && !info.faseNombre.toLowerCase().includes("grupo")) {
 				if (equipoLocalId !== null && equipoVisitanteId !== null) {
 					const suple = await partidoRepo.crearPartidoSuplementario({
 						faseId: info.faseId,
