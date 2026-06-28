@@ -126,35 +126,7 @@ export class AwardsKOScheduler {
 
 	init(): void {
 		const fechaCierre = new Date(config.polla.fecha_cierre_awards_ko);
-		const fechaAviso = new Date(fechaCierre.getTime() - 12 * 60 * 60 * 1000);
-
-		const delayAviso = fechaAviso.getTime() - Date.now();
 		const delayCierre = fechaCierre.getTime() - Date.now();
-
-		if (delayAviso > 0) {
-			setTimeout(() => {
-				enviarAlertaFaltanAwardsKO(this.services, this.client).catch((err) =>
-					logger.error({ err }, "Error disparando alerta previa de awards KO"),
-				);
-			}, delayAviso);
-			logger.info(
-				{ fechaAviso: fechaAviso.toISOString(), delayMs: delayAviso },
-				"Alerta previa de awards KO programada",
-			);
-		} else if (delayCierre > 0) {
-			// El bot arrancó después de la hora de aviso pero antes del cierre: disparar ya
-			enviarAlertaFaltanAwardsKO(this.services, this.client).catch((err) =>
-				logger.error(
-					{ err },
-					"Error disparando alerta previa de awards KO (tardía)",
-				),
-			);
-			logger.info(
-				"Alerta previa de awards KO ya pasó, disparando inmediatamente.",
-			);
-		} else {
-			logger.info("Alerta previa de awards KO ya pasó, no se programa.");
-		}
 
 		if (delayCierre > 0) {
 			setTimeout(() => {

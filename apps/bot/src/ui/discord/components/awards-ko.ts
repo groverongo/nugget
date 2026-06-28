@@ -59,8 +59,8 @@ export function buildAwardsKOComponents(
 	const suffix = targetUserId ? `:${targetUserId}` : "";
 
 	const header = targetUserId
-		? `## Awards Eliminatorias ⚽\n-# Editando para <@${targetUserId}> · Cierre: domingo 29/06 a las 2pm`
-		: "## Awards Eliminatorias ⚽\n-# Cierre: domingo 29/06 a las 2pm";
+		? `## Awards Eliminatorias ⚽\n-# Editando para <@${targetUserId}> · Cierre: domingo 28/06 a las 2pm`
+		: "## Awards Eliminatorias ⚽\n-# Cierre: domingo 28/06 a las 2pm";
 
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(header),
