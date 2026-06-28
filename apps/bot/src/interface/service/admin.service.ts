@@ -47,4 +47,6 @@ export interface IAdminService {
 	}): Promise<void>;
 
 	asignarBonuses(): Promise<BonusResult>;
+
+	ajustarPuntos(usuarioId: string, delta: number): Promise<void>;
 }

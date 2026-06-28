@@ -54,11 +54,16 @@ function seccionGoleador(d: AwardsKODisplay): string {
 
 export function buildAwardsKOComponents(
 	display: AwardsKODisplay,
+	targetUserId?: string,
 ): APIMessageTopLevelComponent[] {
+	const suffix = targetUserId ? `:${targetUserId}` : "";
+
+	const header = targetUserId
+		? `## Awards Eliminatorias ⚽\n-# Editando para <@${targetUserId}> · Cierre: domingo 28/06 a las 2pm`
+		: "## Awards Eliminatorias ⚽\n-# Cierre: domingo 28/06 a las 2pm";
+
 	const container = new ContainerBuilder().addTextDisplayComponents(
-		new TextDisplayBuilder().setContent(
-			"## Awards Eliminatorias ⚽\n-# Cierre: domingo 29/06 a las 2pm",
-		),
+		new TextDisplayBuilder().setContent(header),
 	);
 
 	container
@@ -74,7 +79,7 @@ export function buildAwardsKOComponents(
 				)
 				.setButtonAccessory(
 					new ButtonBuilder()
-						.setCustomId(AWARDS_KO_BUTTON_FINALISTAS)
+						.setCustomId(AWARDS_KO_BUTTON_FINALISTAS + suffix)
 						.setLabel(display.finalista1 ? "Editar" : "Registrar")
 						.setStyle(
 							display.finalista1 ? ButtonStyle.Secondary : ButtonStyle.Primary,
@@ -93,7 +98,7 @@ export function buildAwardsKOComponents(
 				)
 				.setButtonAccessory(
 					new ButtonBuilder()
-						.setCustomId(AWARDS_KO_BUTTON_MEJOR_PARTIDO)
+						.setCustomId(AWARDS_KO_BUTTON_MEJOR_PARTIDO + suffix)
 						.setLabel(display.mejorPartidoEquipo1 ? "Editar" : "Registrar")
 						.setStyle(
 							display.mejorPartidoEquipo1
@@ -114,7 +119,7 @@ export function buildAwardsKOComponents(
 				)
 				.setButtonAccessory(
 					new ButtonBuilder()
-						.setCustomId(AWARDS_KO_BUTTON_SUPLEMENTARIOS)
+						.setCustomId(AWARDS_KO_BUTTON_SUPLEMENTARIOS + suffix)
 						.setLabel(
 							display.numSuplementarios !== null ? "Editar" : "Registrar",
 						)
@@ -137,7 +142,7 @@ export function buildAwardsKOComponents(
 				)
 				.setButtonAccessory(
 					new ButtonBuilder()
-						.setCustomId(AWARDS_KO_BUTTON_GOLEADOR)
+						.setCustomId(AWARDS_KO_BUTTON_GOLEADOR + suffix)
 						.setLabel(display.goleador ? "Editar" : "Registrar")
 						.setStyle(
 							display.goleador ? ButtonStyle.Secondary : ButtonStyle.Primary,

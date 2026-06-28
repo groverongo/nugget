@@ -624,65 +624,6 @@ const predecirAwardsKOAdminCommand = new SlashCommandBuilder()
 			.setRequired(true)
 			.setAutocomplete(true),
 	)
-	.addStringOption((option) =>
-		option
-			.setName("finalista1")
-			.setDescription("Primer equipo finalista")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("finalista2")
-			.setDescription("Segundo equipo finalista")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("campeon_final")
-			.setDescription("Campeón (debe ser uno de los dos finalistas)")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_equipo1")
-			.setDescription("Primer equipo del partido con más goles en fase KO")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_equipo2")
-			.setDescription("Segundo equipo del partido con más goles en fase KO")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("mejor_partido_mas_goles")
-			.setDescription("Equipo con más goles en ese partido, o Empate")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
-	.addIntegerOption((option) =>
-		option
-			.setName("num_suplementarios")
-			.setDescription(
-				"Cantidad de suplementarios que habrá en la fase KO (0-32)",
-			)
-			.setRequired(true)
-			.setMinValue(0)
-			.setMaxValue(32),
-	)
-	.addStringOption((option) =>
-		option
-			.setName("goleador_ko")
-			.setDescription("Jugador con más goles en fase KO")
-			.setRequired(true)
-			.setAutocomplete(true),
-	)
 	.setContexts(InteractionContextType.Guild);
 
 const actualizarAwardsKOCommand = new SlashCommandBuilder()
@@ -803,6 +744,31 @@ const asignarBonusesCommand = new SlashCommandBuilder()
 		option
 			.setName("confirmar")
 			.setDescription("Confirmar la ejecución (acción no reversible)")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const ajustarPuntosCommand = new SlashCommandBuilder()
+	.setName("ajustar-puntos")
+	.setDescription("[ADMIN] Suma o resta puntos manualmente a un usuario")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("usuario")
+			.setDescription("Usuario al que ajustar los puntos")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("delta")
+			.setDescription("Puntos a sumar (positivo) o restar (negativo). Ej: -10")
+			.setRequired(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("razon")
+			.setDescription("Motivo del ajuste (para el registro)")
 			.setRequired(true),
 	)
 	.setContexts(InteractionContextType.Guild);
@@ -2132,154 +2098,25 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 			definition: predecirAwardsKOAdminCommand,
 			autocomplete: async (interaction, appContext) => {
 				const focused = interaction.options.getFocused(true);
+				if (focused.name !== "usuario") return;
 				const query = focused.value.toString().toLowerCase();
-
-				if (focused.name === "usuario") {
-					const usuarios = await appContext.services.usuarios.listUsuarios();
-					const opciones = usuarios
-						.filter((u) => u.username.toLowerCase().includes(query))
-						.slice(0, 25)
-						.map((u) => ({ name: u.username, value: u.id }));
-					await interaction.respond(opciones);
-					return;
-				}
-
-				const EQUIPO_FIELDS = [
-					"finalista1",
-					"finalista2",
-					"campeon_final",
-					"mejor_partido_equipo1",
-					"mejor_partido_equipo2",
-				] as const;
-
-				if (
-					EQUIPO_FIELDS.includes(focused.name as (typeof EQUIPO_FIELDS)[number])
-				) {
-					const equipos =
-						await appContext.services.awards.verEquiposNoEliminados();
-					const opciones = equipos
-						.filter((e) => e.nombre.toLowerCase().includes(query))
-						.slice(0, 25)
-						.map((e) => ({
-							name: `${e.bandera} ${e.nombre}`,
-							value: String(e.id),
-						}));
-					await interaction.respond(opciones);
-				} else if (focused.name === "mejor_partido_mas_goles") {
-					const equipos =
-						await appContext.services.awards.verEquiposNoEliminados();
-					const opciones: { name: string; value: string }[] = [];
-					if ("empate".includes(query)) {
-						opciones.push({
-							name: "Empate (misma cantidad de goles)",
-							value: "0",
-						});
-					}
-					opciones.push(
-						...equipos
-							.filter((e) => e.nombre.toLowerCase().includes(query))
-							.slice(0, 24)
-							.map((e) => ({
-								name: `${e.bandera} ${e.nombre}`,
-								value: String(e.id),
-							})),
-					);
-					await interaction.respond(opciones.slice(0, 25));
-				} else if (focused.name === "goleador_ko") {
-					const jugadores =
-						await appContext.services.awards.buscarJugadoresNoEliminados(query);
-					const opciones = jugadores.slice(0, 25).map((j) => ({
-						name: `${j.nombre} (${j.equipoNombre})`,
-						value: String(j.id),
-					}));
-					await interaction.respond(opciones);
-				}
+				const usuarios = await appContext.services.usuarios.listUsuarios();
+				const opciones = usuarios
+					.filter((u) => u.username.toLowerCase().includes(query))
+					.slice(0, 25)
+					.map((u) => ({ name: u.username, value: u.id }));
+				await interaction.respond(opciones);
 			},
 			handle: async (interaction, appContext) => {
 				await interaction.deferReply({ ephemeral: true });
-
 				try {
 					const usuarioId = interaction.options.getString("usuario", true);
-					const finalista1 = parseInt(
-						interaction.options.getString("finalista1", true),
-						10,
-					);
-					const finalista2 = parseInt(
-						interaction.options.getString("finalista2", true),
-						10,
-					);
-					const campeonFinal = parseInt(
-						interaction.options.getString("campeon_final", true),
-						10,
-					);
-					const mejorPartidoEquipo1 = parseInt(
-						interaction.options.getString("mejor_partido_equipo1", true),
-						10,
-					);
-					const mejorPartidoEquipo2 = parseInt(
-						interaction.options.getString("mejor_partido_equipo2", true),
-						10,
-					);
-					const masGolesRaw = interaction.options.getString(
-						"mejor_partido_mas_goles",
-						true,
-					);
-					const masGolesVal = parseInt(masGolesRaw, 10);
-					const mejorPartidoMasGoles =
-						masGolesRaw === "0" || masGolesVal === 0 ? null : masGolesVal;
-					const numSuplementarios = interaction.options.getInteger(
-						"num_suplementarios",
-						true,
-					);
-					const goleadorKO = parseInt(
-						interaction.options.getString("goleador_ko", true),
-						10,
-					);
-
-					if (
-						[
-							finalista1,
-							finalista2,
-							campeonFinal,
-							mejorPartidoEquipo1,
-							mejorPartidoEquipo2,
-							goleadorKO,
-						].some(Number.isNaN) ||
-						(mejorPartidoMasGoles !== null &&
-							Number.isNaN(mejorPartidoMasGoles))
-					) {
-						await interaction.editReply({
-							content: "❌ Selecciona los valores desde el autocompletado.",
-						});
-						return;
-					}
-
-					const resultado =
-						await appContext.services.awards.guardarAwardsKOAdmin({
-							usuarioId,
-							finalista1,
-							finalista2,
-							campeonFinal,
-							mejorPartidoEquipo1,
-							mejorPartidoEquipo2,
-							mejorPartidoMasGoles,
-							numSuplementarios,
-							goleadorKO,
-						});
-
+					const display =
+						await appContext.services.awards.verMisAwardsKO(usuarioId);
 					await interaction.editReply({
-						content:
-							resultado === "created"
-								? `✅ Awards KO guardadas para <@${usuarioId}>.`
-								: `✅ Awards KO actualizadas para <@${usuarioId}>.`,
+						components: buildAwardsKOComponents(display, usuarioId),
+						flags: MessageFlags.IsComponentsV2,
 					});
-
-					await sendAnnouncementChannel(
-						interaction.client,
-						resultado === "created"
-							? `_🎯 ¡<@${usuarioId}> ha enviado sus **Awards Eliminatorias**!_`
-							: `_✏️ ¡<@${usuarioId}> ha actualizado sus **Awards Eliminatorias**!_`,
-					);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -3156,6 +2993,43 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.editReply({
 					content: "✅ Bonuses asignados y alerta enviada.",
 				});
+			},
+		},
+	],
+	[
+		"ajustar-puntos",
+		{
+			definition: ajustarPuntosCommand,
+			autocomplete: async (interaction, appContext) => {
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const usuarios = await appContext.services.usuarios.listUsuarios();
+				const opciones = usuarios
+					.filter((u) => u.username.toLowerCase().includes(q))
+					.slice(0, 25)
+					.map((u) => ({ name: u.username, value: u.id }));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const usuarioId = interaction.options.getString("usuario", true);
+				const delta = interaction.options.getInteger("delta", true);
+				const razon = interaction.options.getString("razon", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.admin.ajustarPuntos(usuarioId, delta);
+					const signo = delta >= 0 ? `+${delta}` : String(delta);
+					await interaction.editReply({
+						content: `✅ Puntos ajustados: <@${usuarioId}> ${signo} 💠\n📝 Razón: ${razon}`,
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
 			},
 		},
 	],
