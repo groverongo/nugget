@@ -141,6 +141,17 @@ export class AwardsKOScheduler {
 				{ fechaAviso: fechaAviso.toISOString(), delayMs: delayAviso },
 				"Alerta previa de awards KO programada",
 			);
+		} else if (delayCierre > 0) {
+			// El bot arrancó después de la hora de aviso pero antes del cierre: disparar ya
+			enviarAlertaFaltanAwardsKO(this.services, this.client).catch((err) =>
+				logger.error(
+					{ err },
+					"Error disparando alerta previa de awards KO (tardía)",
+				),
+			);
+			logger.info(
+				"Alerta previa de awards KO ya pasó, disparando inmediatamente.",
+			);
 		} else {
 			logger.info("Alerta previa de awards KO ya pasó, no se programa.");
 		}

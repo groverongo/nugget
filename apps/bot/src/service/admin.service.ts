@@ -346,6 +346,10 @@ export class AdminService implements IAdminService {
 		});
 	}
 
+	ajustarPuntos(usuarioId: string, delta: number): Promise<void> {
+		return this.usuariosRepo.ajustarPuntos(usuarioId, delta);
+	}
+
 	async asignarBonuses(): Promise<BonusResult> {
 		const [wrGanadores, rmGanadores, hmgGanadores] = await Promise.all([
 			this.usuariosRepo.verGanadoresMayorWinRate(),

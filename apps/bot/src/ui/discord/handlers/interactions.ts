@@ -1954,13 +1954,40 @@ export async function handleAwardsKOModalSubmitInteraction(
 			});
 		}
 
-		const display = await appContext.services.awards.verMisAwardsKO(
-			interaction.user.id,
-		);
+		const [display, rawActualizado] = await Promise.all([
+			appContext.services.awards.verMisAwardsKO(interaction.user.id),
+			appContext.services.awards.verAwardsKORaw(interaction.user.id),
+		]);
+
 		await interaction.editReply({
 			components: buildAwardsKOComponents(display),
 			flags: MessageFlags.IsComponentsV2,
 		});
+
+		const estaCompleto =
+			rawActualizado.finalista1 !== null &&
+			rawActualizado.finalista2 !== null &&
+			rawActualizado.campeonFinal !== null &&
+			rawActualizado.mejorPartidoEquipo1 !== null &&
+			rawActualizado.mejorPartidoEquipo2 !== null &&
+			rawActualizado.numSuplementarios !== null &&
+			rawActualizado.goleadorKO !== null;
+
+		const eraCompleto =
+			existing.finalista1 !== null &&
+			existing.finalista2 !== null &&
+			existing.campeonFinal !== null &&
+			existing.mejorPartidoEquipo1 !== null &&
+			existing.mejorPartidoEquipo2 !== null &&
+			existing.numSuplementarios !== null &&
+			existing.goleadorKO !== null;
+
+		if (estaCompleto && !eraCompleto) {
+			await sendAnnouncementChannel(
+				interaction.client,
+				`_🎯 ¡<@${interaction.user.id}> ha enviado sus **Awards Eliminatorias**!_`,
+			);
+		}
 	} catch (error) {
 		await interaction.followUp({
 			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,

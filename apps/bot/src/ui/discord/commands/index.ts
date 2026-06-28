@@ -807,6 +807,31 @@ const asignarBonusesCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const ajustarPuntosCommand = new SlashCommandBuilder()
+	.setName("ajustar-puntos")
+	.setDescription("[ADMIN] Suma o resta puntos manualmente a un usuario")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addStringOption((option) =>
+		option
+			.setName("usuario")
+			.setDescription("Usuario al que ajustar los puntos")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("delta")
+			.setDescription("Puntos a sumar (positivo) o restar (negativo). Ej: -10")
+			.setRequired(true),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("razon")
+			.setDescription("Motivo del ajuste (para el registro)")
+			.setRequired(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const anularTimbaCommand = new SlashCommandBuilder()
 	.setName("anular-timba")
 	.setDescription("[ADMIN] Elimina una timba time (haya sido aceptada o no)")
@@ -3156,6 +3181,43 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.editReply({
 					content: "✅ Bonuses asignados y alerta enviada.",
 				});
+			},
+		},
+	],
+	[
+		"ajustar-puntos",
+		{
+			definition: ajustarPuntosCommand,
+			autocomplete: async (interaction, appContext) => {
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const usuarios = await appContext.services.usuarios.listUsuarios();
+				const opciones = usuarios
+					.filter((u) => u.username.toLowerCase().includes(q))
+					.slice(0, 25)
+					.map((u) => ({ name: u.username, value: u.id }));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const usuarioId = interaction.options.getString("usuario", true);
+				const delta = interaction.options.getInteger("delta", true);
+				const razon = interaction.options.getString("razon", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.admin.ajustarPuntos(usuarioId, delta);
+					const signo = delta >= 0 ? `+${delta}` : String(delta);
+					await interaction.editReply({
+						content: `✅ Puntos ajustados: <@${usuarioId}> ${signo} 💠\n📝 Razón: ${razon}`,
+					});
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
 			},
 		},
 	],
