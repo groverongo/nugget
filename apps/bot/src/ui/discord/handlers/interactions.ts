@@ -1772,8 +1772,8 @@ export async function handleAwardsKOButtonInteraction(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
 						new TextInputBuilder()
 							.setCustomId("num")
-							.setLabel("¿Cuántos suplementarios habrá en la fase KO? (0-32)")
-							.setPlaceholder("Ej: 5")
+							.setLabel("¿Cuántos suplementarios en fase KO?")
+							.setPlaceholder("Entre 0 y 32. Ej: 5")
 							.setStyle(TextInputStyle.Short)
 							.setRequired(true)
 							.setMaxLength(2),
@@ -1789,8 +1789,8 @@ export async function handleAwardsKOButtonInteraction(
 					new ActionRowBuilder<TextInputBuilder>().addComponents(
 						new TextInputBuilder()
 							.setCustomId("jugador")
-							.setLabel("Jugador con más goles en fase KO (sin penales)")
-							.setPlaceholder("Ej: Messi, Mbappé, Ronaldo...")
+							.setLabel("Jugador con más goles en fase KO")
+							.setPlaceholder("Sin penales. Ej: Messi, Mbappé...")
 							.setStyle(TextInputStyle.Short)
 							.setRequired(true)
 							.setMaxLength(100),
