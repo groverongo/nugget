@@ -16,15 +16,15 @@ type Grouped = {
 function groupAndSort(
 	predicciones: VerPrediccionesPorPartidoRow[],
 	localId?: number | null,
-	localSiglas?: string,
-	visitanteSiglas?: string,
+	localBandera?: string,
+	visitanteBandera?: string,
 ): Grouped[] {
 	const map = new Map<string, Grouped>();
 	for (const p of predicciones) {
 		const scoreLabel = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
 		const penalesLabel =
 			p.prediccionPenalesGanadorId != null && localId != null
-				? ` (${p.prediccionPenalesGanadorId === localId ? localSiglas : visitanteSiglas})`
+				? ` (${p.prediccionPenalesGanadorId === localId ? localBandera : visitanteBandera})`
 				: "";
 		const label = `${scoreLabel}${penalesLabel}`;
 		const mapKey = `${scoreLabel}-${p.prediccionPenalesGanadorId ?? ""}`;
@@ -77,8 +77,8 @@ export function buildAlertaMedioTiempo(
 	const grouped = groupAndSort(
 		predicciones,
 		info.equipoLocalId,
-		info.equipoLocalSiglas,
-		info.equipoVisitanteSiglas,
+		info.equipoLocalBandera,
+		info.equipoVisitanteBandera,
 	);
 	const ganadoresActuales: string[] = [];
 
@@ -131,8 +131,8 @@ export function buildAlertaFinPartido(
 	const grouped = groupAndSort(
 		predicciones,
 		info.equipoLocalId,
-		info.equipoLocalSiglas,
-		info.equipoVisitanteSiglas,
+		info.equipoLocalBandera,
+		info.equipoVisitanteBandera,
 	);
 
 	const hayGanadores = grouped.some(({ gL: pL, gV: pV, penalesId }) => {

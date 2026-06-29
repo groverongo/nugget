@@ -38,7 +38,7 @@ function buildAlertaPartido(
 			const scoreLabel = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
 			const penalesLabel =
 				p.prediccionPenalesGanadorId != null
-					? ` (${p.prediccionPenalesGanadorId === info.equipoLocalId ? info.equipoLocalSiglas : info.equipoVisitanteSiglas})`
+					? ` (${p.prediccionPenalesGanadorId === info.equipoLocalId ? info.equipoLocalBandera : info.equipoVisitanteBandera})`
 					: "";
 			const label = `${scoreLabel}${penalesLabel}`;
 			const mapKey = `${scoreLabel}-${p.prediccionPenalesGanadorId ?? ""}`;
