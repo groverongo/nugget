@@ -988,7 +988,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					if (info) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaFinPartido(info, predicciones, sinPrediccion),
+							buildAlertaFinPartido(
+								info,
+								predicciones,
+								sinPrediccion,
+								penalesGanadorId,
+							),
 						);
 						const mensajeAura = buildAlertaAuraPoints(puntajes);
 						if (mensajeAura) {
@@ -2419,12 +2424,19 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const partidos =
 					await appContext.services.partidos.verPartidosNoFinalizados();
 				const q = focusedOption.value.toString().toLowerCase();
+				const ESTADOS_SUPLE = [
+					"en_vivo",
+					"medio_tiempo",
+					"suplementario",
+					"penales",
+				];
 				const opciones = partidos
 					.filter((p) => {
 						if (tipo === "inicio-partido")
-							return p.estado === "programado" || p.estado === "en_vivo";
-						if (tipo === "gol")
-							return p.estado === "en_vivo" || p.estado === "medio_tiempo";
+							return (
+								p.estado === "programado" || ESTADOS_SUPLE.includes(p.estado)
+							);
+						if (tipo === "gol") return ESTADOS_SUPLE.includes(p.estado);
 						return true;
 					})
 					.filter((p) =>
@@ -2586,8 +2598,14 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.getFocused(true)
 					.value.toString()
 					.toLowerCase();
+				const ESTADOS_VIVO = [
+					"en_vivo",
+					"medio_tiempo",
+					"suplementario",
+					"penales",
+				];
 				const opciones = partidos
-					.filter((p) => p.estado === "en_vivo" || p.estado === "medio_tiempo")
+					.filter((p) => ESTADOS_VIVO.includes(p.estado))
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
@@ -2645,8 +2663,14 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.getFocused(true)
 					.value.toString()
 					.toLowerCase();
+				const ESTADOS_VIVO = [
+					"en_vivo",
+					"medio_tiempo",
+					"suplementario",
+					"penales",
+				];
 				const opciones = partidos
-					.filter((p) => p.estado === "en_vivo" || p.estado === "medio_tiempo")
+					.filter((p) => ESTADOS_VIVO.includes(p.estado))
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
