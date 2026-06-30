@@ -1,5 +1,6 @@
 import type { APIMessageTopLevelComponent } from "discord.js";
 import {
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ContainerBuilder,
@@ -23,6 +24,7 @@ export const PARTIDOS_DATE_SELECT_CUSTOM_ID = "partidos:date-select";
 export const PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick-admin:";
 export const PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX =
 	"partidos:date-select-admin:";
+export const PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX = "partidos:et:";
 
 const PARTIDOS_MAX_BUTTONS = 25;
 
@@ -69,6 +71,10 @@ export function buildPartidosComponents(
 	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
 		const { estado } = partido;
 		const esSuple = partido.partidoOriginalId !== null;
+		const esElegibleEt =
+			!esSuple &&
+			estado === "programado" &&
+			!partido.faseNombre.toLowerCase().includes("grupo");
 
 		const button =
 			estado === "en_vivo" ||
@@ -109,6 +115,19 @@ export function buildPartidosComponents(
 				)
 				.setButtonAccessory(button),
 		);
+
+		if (esElegibleEt) {
+			container.addActionRowComponents(
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder()
+						.setCustomId(
+							`${PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+						)
+						.setLabel("🕐 Apostar ET")
+						.setStyle(ButtonStyle.Secondary),
+				),
+			);
+		}
 
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),

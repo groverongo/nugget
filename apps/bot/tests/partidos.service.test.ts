@@ -52,6 +52,7 @@ describe("PartidosService", () => {
 				extraBatacazo: false,
 				extraElElegido: false,
 				partidoOriginalId: null,
+				faseNombre: "Grupos",
 			},
 		];
 		const args: VerPartidosPorFechaArgs = { date: "2026-06-06" };

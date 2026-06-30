@@ -32,6 +32,7 @@ import {
 	PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX,
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
+	PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX,
 } from "../components/partidos";
 import {
 	buildMisPrediccionesComponents,
@@ -68,6 +69,10 @@ const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
 const PREDICCION_PENALES_GANADOR_FIELD_ID = "penales-ganador";
+const PREDICCION_ET_MODAL_CUSTOM_ID = "prediccion-et:create";
+const PREDICCION_ET_GOLES_LOCAL_FIELD_ID = "et-goles-local";
+const PREDICCION_ET_GOLES_VISITANTE_FIELD_ID = "et-goles-visitante";
+const PREDICCION_ET_PENALES_PREFIX = "prediccion-et:penales:";
 const TIMBA_MODAL_CUSTOM_ID = "timba:create";
 const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
 const TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID = "timba:contraoferta:create";
@@ -181,6 +186,238 @@ export async function handlePartidosButtonInteraction(
 			partido.partidoOriginalId !== null,
 		),
 	);
+}
+
+export async function handlePartidosEtButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX)) {
+		return;
+	}
+
+	const member =
+		interaction.guild?.members.cache.get(interaction.user.id) ??
+		(await interaction.guild?.members.fetch(interaction.user.id));
+	if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+		await interaction.reply({
+			content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const selectedPartidoId = Number(
+		interaction.customId.slice(PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX.length),
+	);
+	if (Number.isNaN(selectedPartidoId)) return;
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: selectedPartidoId,
+	});
+	if (!partido) {
+		await interaction.reply({
+			content: `No se encontró el partido ${selectedPartidoId}.`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const existing = await appContext.services.prediccionesEt.verPrediccionEt({
+		usuarioId: interaction.user.id,
+		partidoId: selectedPartidoId,
+	});
+
+	const modal = new ModalBuilder()
+		.setCustomId(`${PREDICCION_ET_MODAL_CUSTOM_ID}:${selectedPartidoId}`)
+		.setTitle(
+			`Apostar ET — ${partido.equipoLocalSiglas} vs ${partido.equipoVisitanteSiglas}`,
+		)
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_ET_GOLES_LOCAL_FIELD_ID)
+					.setLabel(`Goles adicionales de ${partido.equipoLocalNombre} en ET`)
+					.setPlaceholder(
+						existing
+							? String(existing.golesLocalAdicionales)
+							: "Ej: 0, 1, 2...",
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_ET_GOLES_VISITANTE_FIELD_ID)
+					.setLabel(
+						`Goles adicionales de ${partido.equipoVisitanteNombre} en ET`,
+					)
+					.setPlaceholder(
+						existing
+							? String(existing.golesVisitanteAdicionales)
+							: "Ej: 0, 1, 2...",
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+		);
+
+	await interaction.showModal(modal);
+}
+
+export async function handlePrediccionEtModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(`${PREDICCION_ET_MODAL_CUSTOM_ID}:`))
+		return;
+
+	const partidoId = Number(
+		interaction.customId.slice(PREDICCION_ET_MODAL_CUSTOM_ID.length + 1),
+	);
+	if (Number.isNaN(partidoId)) return;
+
+	const golesLocalParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(PREDICCION_ET_GOLES_LOCAL_FIELD_ID),
+	);
+	const golesVisitanteParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(
+			PREDICCION_ET_GOLES_VISITANTE_FIELD_ID,
+		),
+	);
+
+	if (!golesLocalParsed.success || !golesVisitanteParsed.success) {
+		await interaction.reply({
+			content: "Goles inválidos. Ingresa un número entre 0 y 9.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const golesLocal = golesLocalParsed.data;
+	const golesVisitante = golesVisitanteParsed.data;
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: partidoId,
+	});
+	if (!partido) {
+		await interaction.reply({
+			content: "Partido no encontrado.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	// Si predice empate en ET, pedir ganador en penales via botones
+	if (golesLocal === golesVisitante) {
+		await interaction.reply({
+			content: [
+				`**⚡ ET — ${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}**`,
+				`Predices **${golesLocal}-${golesVisitante}** en el tiempo extra → ¿Quién gana los penales?`,
+			].join("\n"),
+			components: [
+				{
+					type: 1,
+					components: [
+						{
+							type: 2,
+							style: 1,
+							label: `🏆 ${partido.equipoLocalNombre}`,
+							custom_id: `${PREDICCION_ET_PENALES_PREFIX}${partidoId}:${partido.equipoLocalId}:${golesLocal}:${golesVisitante}`,
+						},
+						{
+							type: 2,
+							style: 1,
+							label: `🏆 ${partido.equipoVisitanteNombre}`,
+							custom_id: `${PREDICCION_ET_PENALES_PREFIX}${partidoId}:${partido.equipoVisitanteId}:${golesLocal}:${golesVisitante}`,
+						},
+					],
+				},
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+			] as any,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	// No hay empate, guardar directamente sin penalesGanadorId
+	await interaction.deferReply({ ephemeral: true });
+	try {
+		await appContext.services.prediccionesEt.guardarPrediccionEt({
+			usuarioId: interaction.user.id,
+			partidoId,
+			golesLocalAdicionales: golesLocal,
+			golesVisitanteAdicionales: golesVisitante,
+			penalesGanadorId: null,
+		});
+		await interaction.editReply(
+			`✅ Apuesta ET guardada: **${partido.equipoLocalSiglas} +${golesLocal} — ${partido.equipoVisitanteSiglas} +${golesVisitante}**.`,
+		);
+	} catch (error) {
+		await interaction.editReply(
+			`❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+		);
+	}
+}
+
+export async function handlePrediccionEtPenalesButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PREDICCION_ET_PENALES_PREFIX)) return;
+
+	const rest = interaction.customId.slice(PREDICCION_ET_PENALES_PREFIX.length);
+	// format: partidoId:equipoId:golesLocal:golesVisitante
+	const parts = rest.split(":");
+	if (parts.length !== 4) return;
+
+	const [partidoIdStr, equipoIdStr, golesLocalStr, golesVisitanteStr] = parts;
+	const partidoId = Number(partidoIdStr);
+	const equipoId = Number(equipoIdStr);
+	const golesLocal = Number(golesLocalStr);
+	const golesVisitante = Number(golesVisitanteStr);
+
+	if (
+		Number.isNaN(partidoId) ||
+		Number.isNaN(equipoId) ||
+		Number.isNaN(golesLocal) ||
+		Number.isNaN(golesVisitante)
+	)
+		return;
+
+	await interaction.deferUpdate();
+
+	try {
+		const partido = await appContext.services.partidos.verInformacionPartido({
+			id: partidoId,
+		});
+		await appContext.services.prediccionesEt.guardarPrediccionEt({
+			usuarioId: interaction.user.id,
+			partidoId,
+			golesLocalAdicionales: golesLocal,
+			golesVisitanteAdicionales: golesVisitante,
+			penalesGanadorId: equipoId,
+		});
+
+		const localNombre = partido?.equipoLocalNombre ?? "Local";
+		const visitanteNombre = partido?.equipoVisitanteNombre ?? "Visitante";
+		const localId = partido?.equipoLocalId;
+		const penalesNombre = equipoId === localId ? localNombre : visitanteNombre;
+
+		await interaction.editReply({
+			content: `✅ Apuesta ET guardada: **+${golesLocal}-+${golesVisitante}**, penales → **${penalesNombre}**.`,
+			components: [],
+		});
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+			ephemeral: true,
+		});
+	}
 }
 
 export async function handlePrediccionModalSubmitInteraction(

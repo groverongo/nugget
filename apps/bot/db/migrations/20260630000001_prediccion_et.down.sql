@@ -1,0 +1,3 @@
+-- DOWN MIGRATION: 20260630000001_prediccion_et
+
+DROP TABLE IF EXISTS prediccion_et;
