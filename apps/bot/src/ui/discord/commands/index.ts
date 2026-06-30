@@ -262,10 +262,10 @@ const actualizarPartidoCommand = new SlashCommandBuilder()
 		option
 			.setName("penales_ganador_id")
 			.setDescription(
-				"[Solo suplementario] ID del equipo que ganó los penales (si hubo empate)",
+				"[Solo suplementario] Equipo que ganó los penales (si hubo empate)",
 			)
 			.setRequired(false)
-			.setMinValue(1),
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -816,8 +816,9 @@ const anularTimbaCommand = new SlashCommandBuilder()
 	.addIntegerOption((option) =>
 		option
 			.setName("timba_id")
-			.setDescription("ID de la timba a anular")
-			.setRequired(true),
+			.setDescription("Timba a anular")
+			.setRequired(true)
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -934,12 +935,46 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: actualizarPartidoCommand,
 			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const focusedValue = focused.value.toString().toLowerCase();
+
+				if (focused.name === "penales_ganador_id") {
+					const partidoId =
+						interaction.options.getInteger("partido_id") ?? null;
+					if (!partidoId) {
+						await interaction.respond([]);
+						return;
+					}
+					const partido =
+						await appContext.services.partidos.verInformacionPartido({
+							id: partidoId,
+						});
+					if (
+						!partido ||
+						!partido.equipoLocalId ||
+						!partido.equipoVisitanteId
+					) {
+						await interaction.respond([]);
+						return;
+					}
+					const equipos = [
+						{
+							id: partido.equipoLocalId,
+							nombre: `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} — ${partido.equipoLocalNombre}`,
+						},
+						{
+							id: partido.equipoVisitanteId,
+							nombre: `${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas} — ${partido.equipoVisitanteNombre}`,
+						},
+					].filter((e) => e.nombre.toLowerCase().includes(focusedValue));
+					await interaction.respond(
+						equipos.map((e) => ({ name: e.nombre, value: e.id })),
+					);
+					return;
+				}
+
 				const partidos =
 					await appContext.services.partidos.verPartidosNoFinalizados();
-				const focusedValue = interaction.options
-					.getFocused(true)
-					.value.toString()
-					.toLowerCase();
 				const opciones = partidos
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
@@ -3001,6 +3036,28 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		"anular-timba",
 		{
 			definition: anularTimbaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const timbas = await appContext.services.timba.verTodasLasTimbas();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = timbas
+					.filter((t) =>
+						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion} ${t.jugador1Nombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((t) => {
+						const label = `#${t.id} [${t.estado}] ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} — "${t.descripcion}" (${t.jugador1Nombre})`;
+						return {
+							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
+							value: t.id,
+						};
+					});
+				await interaction.respond(opciones);
+			},
 			handle: async (interaction, appContext) => {
 				const timbaId = interaction.options.getInteger("timba_id", true);
 

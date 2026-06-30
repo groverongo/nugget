@@ -33,6 +33,7 @@ import {
 	type VerTimbasMedioTiempoPorPartidoRow,
 	type VerTimbasPorPartidoRow,
 	type VerTimbasResueltasPorPartidoRow,
+	type VerTodasLasTimbasRow,
 	verContraofertasMensajesPorTimba,
 	verFechasDeTimbasPorUsuario,
 	verMisTimbas,
@@ -43,6 +44,7 @@ import {
 	verTimbasMedioTiempoPorPartido,
 	verTimbasPorPartido,
 	verTimbasResueltasPorPartido,
+	verTodasLasTimbas,
 } from "@sqlc/timba_sql";
 import type { Pool, PoolClient } from "pg";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
@@ -82,6 +84,10 @@ export class TimbaRepository implements ITimbaRepository {
 
 	verMisTimbas(jugador_1Id: string): Promise<VerMisTimbasRow[]> {
 		return verMisTimbas(this.pool, { jugador_1Id });
+	}
+
+	verTodasLasTimbas(): Promise<VerTodasLasTimbasRow[]> {
+		return verTodasLasTimbas(this.pool);
 	}
 
 	async verFechasDeTimbasPorUsuario(jugador_1Id: string): Promise<string[]> {

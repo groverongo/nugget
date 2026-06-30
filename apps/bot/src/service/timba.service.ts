@@ -7,6 +7,7 @@ import type {
 	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
+	VerTodasLasTimbasRow,
 } from "@sqlc/timba_sql";
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { ITimbaRepository } from "../interface/repository/timba.repository";
@@ -343,6 +344,10 @@ export class TimbaService implements ITimbaService {
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]> {
 		return this.timbaRepo.verMisTimbas(jugador1Id);
+	}
+
+	verTodasLasTimbas(): Promise<VerTodasLasTimbasRow[]> {
+		return this.timbaRepo.verTodasLasTimbas();
 	}
 
 	verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]> {
