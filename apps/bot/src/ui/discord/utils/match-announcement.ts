@@ -4,6 +4,7 @@ import type {
 	VerPrediccionesPorPartidoRow,
 	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
+import { etLabel } from "./fecha";
 
 type Grouped = {
 	label: string;
@@ -59,13 +60,14 @@ export function buildAlertaMedioTiempo(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
+	esPrePenales = false,
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
 
 	const lineas = [
-		`**⏸️ ¡MEDIO TIEMPO!**`,
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		esPrePenales ? `**⏸️ FIN DEL TIEMPO EXTRA**` : `**⏸️ ¡MEDIO TIEMPO!**`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		`**Resultado parcial: (${gL} - ${gV})**`,
 	];
 
@@ -119,7 +121,7 @@ export function buildAlertaFinPartido(
 
 	const lineas = [
 		`**🏁 ¡TIEMPO COMPLETO!**`,
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		`**Resultado final: (${gL} - ${gV})**`,
 	];
 
@@ -204,7 +206,7 @@ export function buildAlertaGol(
 			? `${info.equipoLocalNombre} ${info.equipoLocalBandera}`
 			: `${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
 	return [
-		`***¡GOOOL!** de ${equipoGol}*`,
+		`***¡GOOOL!** de ${equipoGol}${etLabel(info.partidoOriginalId)}*`,
 		`${info.equipoLocalBandera} ${info.equipoLocalSiglas} ${gL}-${gV} ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`,
 	].join("\n");
 }

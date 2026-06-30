@@ -2,7 +2,7 @@ import { logger } from "@support/logger";
 import type { Client } from "discord.js";
 import type { AppContext } from "../../../app";
 import { sendAlertsChannel } from "../handlers/interactions";
-import { fechaADiscordTimestamp } from "../utils/fecha";
+import { etLabel, fechaADiscordTimestamp } from "../utils/fecha";
 
 type Services = AppContext["services"];
 
@@ -135,7 +135,7 @@ async function buildResumenDia(
 
 		lineas.push("");
 		lineas.push(
-			`${partido.equipoLocalBandera} **${partido.equipoLocalSiglas} ${gL}-${gV} ${partido.equipoVisitanteSiglas}** ${partido.equipoVisitanteBandera}`,
+			`${partido.equipoLocalBandera} **${partido.equipoLocalSiglas} ${gL}-${gV} ${partido.equipoVisitanteSiglas}** ${partido.equipoVisitanteBandera}${etLabel(partido.partidoOriginalId)}`,
 		);
 
 		const extras: string[] = [];
@@ -163,7 +163,9 @@ async function buildResumenDia(
 
 			for (const p of predicciones) {
 				const esExacto =
-					p.prediccionGolesLocal === gL && p.prediccionGolesVisitante === gV;
+					p.prediccionGolesLocal === gL &&
+					p.prediccionGolesVisitante === gV &&
+					p.puntosBase > 0;
 
 				if (esExacto) {
 					puntosExactoBase = p.puntosTotal - p.puntosEnRacha;

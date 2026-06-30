@@ -13,6 +13,7 @@ import {
 	sendAnnouncementChannel,
 	sendToUser,
 } from "../handlers/interactions";
+import { etLabel } from "../utils/fecha";
 import { buildAlertaGol } from "../utils/match-announcement";
 import { generarHeatmapPredicciones } from "./utility-client";
 
@@ -25,7 +26,7 @@ function buildAlertaPartido(
 ): string {
 	const lineas = [
 		"🕛 **¡EMPEZÓ EL PARTIDO!**",
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		"*Ya no más apuestas* 🙅",
 	];
 
@@ -86,7 +87,7 @@ function buildAlertaPrePartido(
 
 	const lineas: string[] = [
 		"📊 ***Estadísticas pre-partido***",
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}** ${horaStr}*`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}** ${horaStr}*`,
 	];
 
 	let sinApostarStr = "";

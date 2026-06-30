@@ -58,6 +58,13 @@ import type { DiscordCommand, DiscordCommandPayload } from "../utils/types";
 
 export const POLLERO_ROLE_ID = "1513773724074250350";
 
+const ESTADOS_EN_JUEGO = [
+	"en_vivo",
+	"medio_tiempo",
+	"suplementario",
+	"penales",
+];
+
 async function assertPollero(
 	interaction: import("discord.js").ChatInputCommandInteraction,
 ): Promise<boolean> {
@@ -345,6 +352,35 @@ const iniciarPenalesCommand = new SlashCommandBuilder()
 			.setDescription("ID del partido suplementario")
 			.setRequired(true)
 			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const prePenalesCommand = new SlashCommandBuilder()
+	.setName("pre-penales")
+	.setDescription(
+		"[ADMIN] Pausa el suplementario antes de la tanda de penales (no otorga puntos)",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("partido_id")
+			.setDescription("Partido suplementario")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("goles_local")
+			.setDescription("Goles del local al final del tiempo extra")
+			.setRequired(true)
+			.setMinValue(0),
+	)
+	.addIntegerOption((option) =>
+		option
+			.setName("goles_visitante")
+			.setDescription("Goles del visitante al final del tiempo extra")
+			.setRequired(true)
+			.setMinValue(0),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -1208,7 +1244,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					const partido = partidos.find((p) => p.partidoId === partidoId);
 					const nombrePartido = partido
-						? `**${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}**`
+						? `**${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}${partido.partidoOriginalId != null ? " (ET)" : ""}**`
 						: `**Partido #${partidoId}**`;
 					const siglas =
 						timbasCanceladas.length > 0
@@ -1286,7 +1322,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						},
 					);
 					const nombrePartido = info
-						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`
+						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${info.partidoOriginalId != null ? " (ET)" : ""}**`
 						: `**Partido #${partidoId}**`;
 
 					await interaction.editReply({
@@ -1343,16 +1379,91 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						},
 					);
 					const nombrePartido = info
-						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}**`
+						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${info.partidoOriginalId != null ? " (ET)" : ""}**`
 						: `**Partido #${partidoId}**`;
 
 					await interaction.editReply({
 						content: `⚽ Penales iniciados: ${nombrePartido}.`,
 					});
+					await appContext.services.timba.cancelarTimbasAbiertas(partidoId);
 					await sendAlertsChannel(
 						interaction.client,
 						`⚽ _¡Tanda de penales de ${nombrePartido}!_`,
 					);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"pre-penales",
+		{
+			definition: prePenalesCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter(
+						(p) =>
+							p.partidoOriginalId !== null &&
+							p.estado === "suplementario" &&
+							`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+								.toLowerCase()
+								.includes(focusedValue),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const partidoId = interaction.options.getInteger("partido_id", true);
+				const golesLocal = interaction.options.getInteger("goles_local", true);
+				const golesVisitante = interaction.options.getInteger(
+					"goles_visitante",
+					true,
+				);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.admin.actualizarPartidoMedioTiempo({
+						partidoId,
+						golesLocal,
+						golesVisitante,
+					});
+
+					await interaction.editReply({
+						content: `⏸️ **Partido #${partidoId}** — Pre-penales: **${golesLocal} - ${golesVisitante}**`,
+					});
+
+					const [info, predicciones, sinPrediccion] = await Promise.all([
+						appContext.services.partidos.verInformacionPartido({
+							id: partidoId,
+						}),
+						appContext.services.predicciones.verPrediccionesPorPartido({
+							partidoId,
+						}),
+						appContext.services.predicciones.verParticipantesSinPrediccion({
+							partidoId,
+						}),
+					]);
+
+					if (info) {
+						await sendAlertsChannel(
+							interaction.client,
+							buildAlertaMedioTiempo(info, predicciones, sinPrediccion, true),
+						);
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -2424,19 +2535,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const partidos =
 					await appContext.services.partidos.verPartidosNoFinalizados();
 				const q = focusedOption.value.toString().toLowerCase();
-				const ESTADOS_SUPLE = [
-					"en_vivo",
-					"medio_tiempo",
-					"suplementario",
-					"penales",
-				];
 				const opciones = partidos
 					.filter((p) => {
 						if (tipo === "inicio-partido")
 							return (
-								p.estado === "programado" || ESTADOS_SUPLE.includes(p.estado)
+								p.estado === "programado" || ESTADOS_EN_JUEGO.includes(p.estado)
 							);
-						if (tipo === "gol") return ESTADOS_SUPLE.includes(p.estado);
+						if (tipo === "gol") return ESTADOS_EN_JUEGO.includes(p.estado);
 						return true;
 					})
 					.filter((p) =>
@@ -2598,14 +2703,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.getFocused(true)
 					.value.toString()
 					.toLowerCase();
-				const ESTADOS_VIVO = [
-					"en_vivo",
-					"medio_tiempo",
-					"suplementario",
-					"penales",
-				];
 				const opciones = partidos
-					.filter((p) => ESTADOS_VIVO.includes(p.estado))
+					.filter((p) => ESTADOS_EN_JUEGO.includes(p.estado))
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
@@ -2663,14 +2762,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.getFocused(true)
 					.value.toString()
 					.toLowerCase();
-				const ESTADOS_VIVO = [
-					"en_vivo",
-					"medio_tiempo",
-					"suplementario",
-					"penales",
-				];
 				const opciones = partidos
-					.filter((p) => ESTADOS_VIVO.includes(p.estado))
+					.filter((p) => ESTADOS_EN_JUEGO.includes(p.estado))
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
 							.toLowerCase()
