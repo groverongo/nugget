@@ -35,12 +35,13 @@ function buildAwardsSection(
 		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
 
-	type AwardKey = {
+	type AwardDef = {
 		label: string;
 		isEliminated: (r: VerAwardsParaRecuentoRow) => boolean;
 	};
 
-	const awardDefs: AwardKey[] = [
+	// Awards regulares: si tu equipo fue eliminado → ❌ (perdiste la award)
+	const regularDefs: AwardDef[] = [
 		{
 			label: AWARD_LABELS.campeon,
 			isEliminated: (r) =>
@@ -75,12 +76,6 @@ function buildAwardsSection(
 				r.mejorGolEquipoId !== null && eliminadosIds.has(r.mejorGolEquipoId),
 		},
 		{
-			label: AWARD_LABELS.seleccionDecepcion,
-			isEliminated: (r) =>
-				r.seleccionDecepcionId !== null &&
-				eliminadosIds.has(r.seleccionDecepcionId),
-		},
-		{
 			label: AWARD_LABELS.seleccionSorpresa,
 			isEliminated: (r) =>
 				r.seleccionSorpresaId !== null &&
@@ -91,7 +86,7 @@ function buildAwardsSection(
 	const lineas: string[] = [];
 	let hayMuertas = false;
 
-	for (const def of awardDefs) {
+	for (const def of regularDefs) {
 		const muertos = awards
 			.filter((r) => def.isEliminated(r))
 			.map((r) => `<@${r.usuarioId}>`);
@@ -99,6 +94,34 @@ function buildAwardsSection(
 			hayMuertas = true;
 			lineas.push(`- ***${def.label}:*** ${muertos.join("/")} ❌`);
 		}
+	}
+
+	// Selección decepción: lógica invertida
+	// Si tu selección fue eliminada → ✅ (acertaste la decepción)
+	// Si tu selección sigue viva → ❌ (fallaste)
+	const decepcionGanadores = awards
+		.filter(
+			(r) =>
+				r.seleccionDecepcionId !== null &&
+				eliminadosIds.has(r.seleccionDecepcionId),
+		)
+		.map((r) => `<@${r.usuarioId}>`);
+	const decepcionPerdedores = awards
+		.filter(
+			(r) =>
+				r.seleccionDecepcionId !== null &&
+				!eliminadosIds.has(r.seleccionDecepcionId),
+		)
+		.map((r) => `<@${r.usuarioId}>`);
+
+	if (decepcionGanadores.length > 0 || decepcionPerdedores.length > 0) {
+		hayMuertas = true;
+		const parts: string[] = [];
+		if (decepcionGanadores.length > 0)
+			parts.push(`${decepcionGanadores.join("/")} ✅`);
+		if (decepcionPerdedores.length > 0)
+			parts.push(`${decepcionPerdedores.join("/")} ❌`);
+		lineas.push(`- ***${AWARD_LABELS.seleccionDecepcion}:*** ${parts.join(" · ")}`);
 	}
 
 	if (!hayMuertas) {
@@ -122,7 +145,6 @@ export function buildAlertaEliminacion(
 		afectadas.length > 0 &&
 		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
 	) {
-		lineas.push("");
 		lineas.push(...afectadas);
 	}
 

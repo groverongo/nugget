@@ -1066,7 +1066,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							);
 							await sendAlertsChannel(
 								interaction.client,
-								`⏱️ _Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,
+								`⏱️ _Se abrió el **Suplementario**. Tienen hasta que empiece para apostar._`,
 							);
 						}
 					} else if (info) {
