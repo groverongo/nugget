@@ -48,6 +48,7 @@ import {
 	buildAlertaFinPartido,
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
+	buildAlertaSupleCreado,
 } from "../utils/match-announcement";
 import {
 	buildAlertaEliminacion,
@@ -1033,21 +1034,6 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					await interaction.editReply({ content: lines.join("\n") });
 
-					if (resumen.supleCreado) {
-						await appContext.services.prediccionesEt.materializarPrediccionesEt(
-							{
-								partidoOriginalId: partidoId,
-								partidoSupleId: resumen.supleCreado.supleId,
-								golesBaseLocal: golesLocal,
-								golesBaseVisitante: golesVisitante,
-							},
-						);
-						await sendAlertsChannel(
-							interaction.client,
-							`⏱️ _¡Empate en fase KO! Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,
-						);
-					}
-
 					const [info, predicciones, sinPrediccion, puntajes] =
 						await Promise.all([
 							appContext.services.partidos.verInformacionPartido({
@@ -1064,7 +1050,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							}),
 						]);
 
-					if (info) {
+					if (resumen.supleCreado) {
+						await appContext.services.prediccionesEt.materializarPrediccionesEt(
+							{
+								partidoOriginalId: partidoId,
+								partidoSupleId: resumen.supleCreado.supleId,
+								golesBaseLocal: golesLocal,
+								golesBaseVisitante: golesVisitante,
+							},
+						);
+						if (info) {
+							await sendAlertsChannel(
+								interaction.client,
+								buildAlertaSupleCreado(info, predicciones, sinPrediccion),
+							);
+							await sendAlertsChannel(
+								interaction.client,
+								`⏱️ _Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,
+							);
+						}
+					} else if (info) {
 						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaFinPartido(
