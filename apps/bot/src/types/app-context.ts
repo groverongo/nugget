@@ -9,6 +9,7 @@ import type { AdminService } from "../service/admin.service";
 import type { AwardsService } from "../service/awards.service";
 import type { PartidosService } from "../service/partidos.service";
 import type { PrediccionesService } from "../service/predicciones.service";
+import type { PrediccionesEtService } from "../service/predicciones-et.service";
 import type { RecuentoService } from "../service/recuento.service";
 import type { TimbaService } from "../service/timba.service";
 import type { UsuariosService } from "../service/usuarios.service";
@@ -27,6 +28,7 @@ export interface AppContext {
 		usuarios: UsuariosService;
 		partidos: PartidosService;
 		predicciones: PrediccionesService;
+		prediccionesEt: PrediccionesEtService;
 		admin: AdminService;
 		awards: AwardsService;
 		timba: TimbaService;

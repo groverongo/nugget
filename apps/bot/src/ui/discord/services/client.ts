@@ -15,7 +15,10 @@ import {
 	handlePartidosAdminDateSelectInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
+	handlePartidosEtButtonInteraction,
 	handlePrediccionAdminModalSubmitInteraction,
+	handlePrediccionEtModalSubmitInteraction,
+	handlePrediccionEtPenalesButtonInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 	handleTimbaAdminModalSubmitInteraction,
@@ -88,14 +91,20 @@ export function registerDiscordEventHandlers(
 
 			if (interaction.isButton()) {
 				await handlePartidosButtonInteraction(interaction, appContext);
+				await handlePartidosEtButtonInteraction(interaction, appContext);
 				await handlePartidosAdminButtonInteraction(interaction, appContext);
 				await handleTimbaButtonInteraction(interaction, appContext);
 				await handleAwardsKOButtonInteraction(interaction, appContext);
+				await handlePrediccionEtPenalesButtonInteraction(
+					interaction,
+					appContext,
+				);
 				return;
 			}
 
 			if (interaction.isModalSubmit()) {
 				await handlePrediccionModalSubmitInteraction(interaction, appContext);
+				await handlePrediccionEtModalSubmitInteraction(interaction, appContext);
 				await handlePrediccionAdminModalSubmitInteraction(
 					interaction,
 					appContext,

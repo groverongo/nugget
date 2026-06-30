@@ -5,6 +5,7 @@ import { AwardsRepository } from "./repository/awards.repository";
 import { EstaticoRepository } from "./repository/estatico.repository";
 import { PartidosRepository } from "./repository/partidos.repository";
 import { PrediccionesRepository } from "./repository/predicciones.repository";
+import { PrediccionesEtRepository } from "./repository/predicciones-et.repository";
 import { RecuentoRepository } from "./repository/recuento.repository";
 import { TimbaRepository } from "./repository/timba.repository";
 import { UsuariosRepository } from "./repository/usuarios.repository";
@@ -12,6 +13,7 @@ import { AdminService } from "./service/admin.service";
 import { AwardsService } from "./service/awards.service";
 import { PartidosService } from "./service/partidos.service";
 import { PrediccionesService } from "./service/predicciones.service";
+import { PrediccionesEtService } from "./service/predicciones-et.service";
 import { RecuentoService } from "./service/recuento.service";
 import { TimbaService } from "./service/timba.service";
 import { UsuariosService } from "./service/usuarios.service";
@@ -32,6 +34,7 @@ export function createAppContext(): AppContext {
 	const awardsRepository = new AwardsRepository(db);
 	const recuentoRepository = new RecuentoRepository(db);
 	const timbaRepository = new TimbaRepository(db);
+	const prediccionesEtRepository = new PrediccionesEtRepository(db);
 	const usuariosService = new UsuariosService(
 		usuariosRepository,
 		estaticoRepository,
@@ -63,6 +66,10 @@ export function createAppContext(): AppContext {
 		recuentoRepository,
 		prediccionesRepository,
 	);
+	const prediccionesEtService = new PrediccionesEtService(
+		prediccionesEtRepository,
+		prediccionesRepository,
+	);
 
 	return {
 		db,
@@ -78,6 +85,7 @@ export function createAppContext(): AppContext {
 			usuarios: usuariosService,
 			partidos: partidosService,
 			predicciones: prediccionesService,
+			prediccionesEt: prediccionesEtService,
 			admin: adminService,
 			awards: awardsService,
 			timba: timbaService,

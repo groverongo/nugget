@@ -999,6 +999,14 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await interaction.editReply({ content: lines.join("\n") });
 
 					if (resumen.supleCreado) {
+						await appContext.services.prediccionesEt.materializarPrediccionesEt(
+							{
+								partidoOriginalId: partidoId,
+								partidoSupleId: resumen.supleCreado.supleId,
+								golesBaseLocal: golesLocal,
+								golesBaseVisitante: golesVisitante,
+							},
+						);
 						await sendAlertsChannel(
 							interaction.client,
 							`⏱️ _¡Empate en fase KO! Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,

@@ -23,10 +23,12 @@ SELECT
 	partidos.extra_milagro,
 	partidos.extra_batacazo,
 	partidos.extra_el_elegido,
-	partidos.partido_original_id
+	partidos.partido_original_id,
+	f.nombre AS fase_nombre
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
+JOIN estatico_fases f ON f.id = partidos.fase_id
 WHERE DATE(partidos.fecha_partido - INTERVAL '5 hours') = DATE($1)
 ORDER BY partidos.fecha_partido ASC`;
 
@@ -53,6 +55,7 @@ export interface VerPartidosPorFechaRow {
     extraBatacazo: boolean;
     extraElElegido: boolean;
     partidoOriginalId: number | null;
+    faseNombre: string;
 }
 
 export async function verPartidosPorFecha(client: Client, args: VerPartidosPorFechaArgs): Promise<VerPartidosPorFechaRow[]> {
@@ -80,7 +83,8 @@ export async function verPartidosPorFecha(client: Client, args: VerPartidosPorFe
             extraMilagro: row[14],
             extraBatacazo: row[15],
             extraElElegido: row[16],
-            partidoOriginalId: row[17]
+            partidoOriginalId: row[17],
+            faseNombre: row[18]
         };
     });
 }
