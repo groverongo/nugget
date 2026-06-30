@@ -28,6 +28,7 @@ function getPremioParaPuesto(
 function buildAwardsSection(
 	awards: VerAwardsParaRecuentoRow[],
 	eliminadosIds: Set<number>,
+	firstEliminadoId?: number | null,
 ): string[] {
 	if (awards.length === 0) return [];
 
@@ -96,21 +97,22 @@ function buildAwardsSection(
 		}
 	}
 
-	// Selección decepción: lógica invertida
-	// Si tu selección fue eliminada → ✅ (acertaste la decepción)
-	// Si tu selección sigue viva → ❌ (fallaste)
+	// Selección decepción: gana quien acertó la PRIMERA selección eliminada
+	// Si tu selección = primera eliminada → ✅
+	// Cualquier otra selección (aún viva o eliminada después) → ❌
 	const decepcionGanadores = awards
 		.filter(
 			(r) =>
 				r.seleccionDecepcionId !== null &&
-				eliminadosIds.has(r.seleccionDecepcionId),
+				firstEliminadoId != null &&
+				r.seleccionDecepcionId === firstEliminadoId,
 		)
 		.map((r) => `<@${r.usuarioId}>`);
 	const decepcionPerdedores = awards
 		.filter(
 			(r) =>
 				r.seleccionDecepcionId !== null &&
-				!eliminadosIds.has(r.seleccionDecepcionId),
+				r.seleccionDecepcionId !== firstEliminadoId,
 		)
 		.map((r) => `<@${r.usuarioId}>`);
 
@@ -135,12 +137,17 @@ export function buildAlertaEliminacion(
 	equipo: { nombre: string; bandera: string },
 	awards: VerAwardsParaRecuentoRow[],
 	equipoId: number,
+	firstEliminadoId: number,
 ): string {
 	const lineas: string[] = [
 		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
 	];
 
-	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
+	const afectadas = buildAwardsSection(
+		awards,
+		new Set([equipoId]),
+		firstEliminadoId,
+	);
 	if (
 		afectadas.length > 0 &&
 		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
@@ -207,6 +214,8 @@ export function buildRecuento(datos: DatosRecuento): string {
 			: "0%";
 
 	const eliminadosIds = new Set(eliminados.map((e) => e.id));
+	// eliminados está ordenado por eliminado_at ASC → el primero fue el primero en caer
+	const firstEliminadoId = eliminados[0]?.id ?? null;
 
 	const lineas: string[] = [
 		`⚽ 🏆  ***RECUENTO: POLLITA FWC 2026***`,
@@ -224,7 +233,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 	}
 
 	// Awards
-	const awardsLineas = buildAwardsSection(awards, eliminadosIds);
+	const awardsLineas = buildAwardsSection(awards, eliminadosIds, firstEliminadoId);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
 		if (eliminados.length > 0) {

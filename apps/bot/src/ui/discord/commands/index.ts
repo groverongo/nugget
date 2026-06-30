@@ -3278,10 +3278,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						appContext.services.recuento.verAwardsParaRecuento(),
 					]);
 					const equipo = eliminados.find((e) => e.id === equipoId);
+					// eliminados ordenado por eliminado_at ASC → primero = primera selección eliminada
+					const firstEliminadoId = eliminados[0]?.id ?? equipoId;
 					if (equipo) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaEliminacion(equipo, awards, equipoId),
+							buildAlertaEliminacion(equipo, awards, equipoId, firstEliminadoId),
 						);
 					}
 				} else {
