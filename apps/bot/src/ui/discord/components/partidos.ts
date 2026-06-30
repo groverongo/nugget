@@ -25,6 +25,7 @@ export const PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick-admin:";
 export const PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX =
 	"partidos:date-select-admin:";
 export const PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX = "partidos:et:";
+export const PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:et-admin:";
 
 const PARTIDOS_MAX_BUTTONS = 25;
 
@@ -211,20 +212,65 @@ export function buildPartidosAdminComponents(
 	}
 
 	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		const { estado } = partido;
+		const esSuple = partido.partidoOriginalId !== null;
+		const esElegibleEt =
+			!esSuple &&
+			(estado === "programado" || estado === "en_vivo") &&
+			!partido.faseNombre.toLowerCase().includes("grupo");
+
+		const button =
+			estado === "en_vivo" ||
+			estado === "medio_tiempo" ||
+			estado === "suplementario"
+				? new ButtonBuilder()
+						.setCustomId(`noop:${partido.partidoId}`)
+						.setLabel("🔴 ¡En vivo!")
+						.setStyle(ButtonStyle.Danger)
+						.setDisabled(true)
+				: estado === "penales"
+					? new ButtonBuilder()
+							.setCustomId(`noop:${partido.partidoId}`)
+							.setLabel("⚽ Penales")
+							.setStyle(ButtonStyle.Danger)
+							.setDisabled(true)
+					: estado === "finalizado"
+						? new ButtonBuilder()
+								.setCustomId(`noop:${partido.partidoId}`)
+								.setLabel("Finalizado")
+								.setStyle(ButtonStyle.Secondary)
+								.setDisabled(true)
+						: new ButtonBuilder()
+								.setCustomId(
+									`${PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX}${usuarioId}:${partido.partidoId}`,
+								)
+								.setLabel(esSuple ? "Predecir (Suple)" : "Predecir")
+								.setStyle(esSuple ? ButtonStyle.Success : ButtonStyle.Primary);
+
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent(formatPartidoLine(partido)),
+					new TextDisplayBuilder().setContent(
+						esSuple
+							? `⏱️ ${formatPartidoLine(partido, true)}`
+							: formatPartidoLine(partido),
+					),
 				)
-				.setButtonAccessory(
+				.setButtonAccessory(button),
+		);
+
+		if (esElegibleEt) {
+			container.addActionRowComponents(
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
 					new ButtonBuilder()
 						.setCustomId(
-							`${PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX}${usuarioId}:${partido.partidoId}`,
+							`${PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX}${usuarioId}:${partido.partidoId}`,
 						)
-						.setLabel("Predecir")
-						.setStyle(ButtonStyle.Primary),
+						.setLabel("🕐 Apostar ET")
+						.setStyle(ButtonStyle.Secondary),
 				),
-		);
+			);
+		}
 
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
