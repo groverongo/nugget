@@ -223,6 +223,20 @@ export async function handlePartidosEtButtonInteraction(
 		return;
 	}
 
+	const prediccionOriginal =
+		await appContext.services.predicciones.verPrediccionPorUsuarioYPartido({
+			usuarioId: interaction.user.id,
+			partidoId: selectedPartidoId,
+		});
+	if (!prediccionOriginal) {
+		await interaction.reply({
+			content:
+				"❌ Debes predecir el resultado del partido primero antes de apostar el tiempo extra.",
+			ephemeral: true,
+		});
+		return;
+	}
+
 	const existing = await appContext.services.prediccionesEt.verPrediccionEt({
 		usuarioId: interaction.user.id,
 		partidoId: selectedPartidoId,
@@ -312,12 +326,16 @@ export async function handlePrediccionEtModalSubmitInteraction(
 		return;
 	}
 
-	// Si predice empate en ET, pedir ganador en penales via botones
-	if (golesLocal === golesVisitante) {
+	const empate = golesLocal === golesVisitante;
+	const golesDisplay = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} **+${golesLocal}** — **+${golesVisitante}** ${partido.equipoVisitanteSiglas} ${partido.equipoVisitanteBandera}`;
+
+	if (empate) {
+		// Empate en ET: mostrar goles + botones de penales en el mismo mensaje. No guardar en BD aún.
 		await interaction.reply({
 			content: [
-				`**⚡ ET — ${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}**`,
-				`Predices **${golesLocal}-${golesVisitante}** en el tiempo extra → ¿Quién gana los penales?`,
+				`🕐 **Apuesta ET** — ${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}`,
+				`${golesDisplay}`,
+				`Empate en ET → **¿Quién gana los penales?**`,
 			].join("\n"),
 			components: [
 				{
@@ -326,13 +344,13 @@ export async function handlePrediccionEtModalSubmitInteraction(
 						{
 							type: 2,
 							style: 1,
-							label: `🏆 ${partido.equipoLocalNombre}`,
+							label: `🏆 ${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`,
 							custom_id: `${PREDICCION_ET_PENALES_PREFIX}${partidoId}:${partido.equipoLocalId}:${golesLocal}:${golesVisitante}`,
 						},
 						{
 							type: 2,
 							style: 1,
-							label: `🏆 ${partido.equipoVisitanteNombre}`,
+							label: `🏆 ${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`,
 							custom_id: `${PREDICCION_ET_PENALES_PREFIX}${partidoId}:${partido.equipoVisitanteId}:${golesLocal}:${golesVisitante}`,
 						},
 					],
@@ -354,9 +372,7 @@ export async function handlePrediccionEtModalSubmitInteraction(
 			golesVisitanteAdicionales: golesVisitante,
 			penalesGanadorId: null,
 		});
-		await interaction.editReply(
-			`✅ Apuesta ET guardada: **${partido.equipoLocalSiglas} +${golesLocal} — ${partido.equipoVisitanteSiglas} +${golesVisitante}**.`,
-		);
+		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
 	} catch (error) {
 		await interaction.editReply(
 			`❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -403,13 +419,17 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 			penalesGanadorId: equipoId,
 		});
 
-		const localNombre = partido?.equipoLocalNombre ?? "Local";
-		const visitanteNombre = partido?.equipoVisitanteNombre ?? "Visitante";
-		const localId = partido?.equipoLocalId;
-		const penalesNombre = equipoId === localId ? localNombre : visitanteNombre;
+		const esLocal = equipoId === partido?.equipoLocalId;
+		const penalesBandera = esLocal
+			? (partido?.equipoLocalBandera ?? "")
+			: (partido?.equipoVisitanteBandera ?? "");
+		const penalesSiglas = esLocal
+			? (partido?.equipoLocalSiglas ?? "")
+			: (partido?.equipoVisitanteSiglas ?? "");
+		const golesDisplay = `${partido?.equipoLocalBandera} ${partido?.equipoLocalSiglas} **+${golesLocal}** — **+${golesVisitante}** ${partido?.equipoVisitanteSiglas} ${partido?.equipoVisitanteBandera}`;
 
 		await interaction.editReply({
-			content: `✅ Apuesta ET guardada: **+${golesLocal}-+${golesVisitante}**, penales → **${penalesNombre}**.`,
+			content: `✅ Apuesta ET guardada: ${golesDisplay} · Penales → **${penalesBandera} ${penalesSiglas}**`,
 			components: [],
 		});
 	} catch (error) {

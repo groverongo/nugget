@@ -20,6 +20,7 @@ import type {
 	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 	VerTimbasResueltasPorPartidoRow,
+	VerTodasLasTimbasRow,
 } from "@sqlc/timba_sql";
 import type { PoolClient } from "pg";
 
@@ -43,6 +44,8 @@ export interface ITimbaRepository {
 	verTimbasPorPartido(partidoId: number): Promise<VerTimbasPorPartidoRow[]>;
 
 	verMisTimbas(jugador1Id: string): Promise<VerMisTimbasRow[]>;
+
+	verTodasLasTimbas(): Promise<VerTodasLasTimbasRow[]>;
 
 	verFechasDeTimbasPorUsuario(jugador1Id: string): Promise<string[]>;
 

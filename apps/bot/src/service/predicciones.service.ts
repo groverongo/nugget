@@ -11,6 +11,8 @@ import type {
 	VerPrediccionesResumenPartidoArgs,
 	VerPrediccionesResumenPartidoRow,
 	VerPrediccionesRow,
+	VerPrediccionPorUsuarioYPartidoArgs,
+	VerPrediccionPorUsuarioYPartidoRow,
 	VerPuntajesPartidoArgs,
 	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
@@ -169,5 +171,11 @@ export class PrediccionesService implements IPrediccionesService {
 		args: VerParticipantesSinPrediccionArgs,
 	): Promise<VerParticipantesSinPrediccionRow[]> {
 		return this.prediccionesRepo.verParticipantesSinPrediccion(args);
+	}
+
+	verPrediccionPorUsuarioYPartido(
+		args: VerPrediccionPorUsuarioYPartidoArgs,
+	): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
+		return this.prediccionesRepo.verPrediccionPorUsuarioYPartido(args);
 	}
 }

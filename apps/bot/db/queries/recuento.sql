@@ -50,13 +50,13 @@ ORDER BY racha_maxima DESC, partidos_ganados DESC;
 SELECT id, nombre, siglas, bandera
 FROM estatico_equipos
 WHERE eliminado = TRUE
-ORDER BY nombre ASC;
+ORDER BY eliminado_at ASC NULLS LAST;
 
 -- name: MarcarEquipoEliminado :exec
-UPDATE estatico_equipos SET eliminado = TRUE WHERE id = $1;
+UPDATE estatico_equipos SET eliminado = TRUE, eliminado_at = NOW() WHERE id = $1;
 
 -- name: MarcarEquipoNoEliminado :exec
-UPDATE estatico_equipos SET eliminado = FALSE WHERE id = $1;
+UPDATE estatico_equipos SET eliminado = FALSE, eliminado_at = NULL WHERE id = $1;
 
 -- name: VerAwardsParaRecuento :many
 SELECT

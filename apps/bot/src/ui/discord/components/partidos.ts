@@ -73,7 +73,7 @@ export function buildPartidosComponents(
 		const esSuple = partido.partidoOriginalId !== null;
 		const esElegibleEt =
 			!esSuple &&
-			estado === "programado" &&
+			(estado === "programado" || estado === "en_vivo") &&
 			!partido.faseNombre.toLowerCase().includes("grupo");
 
 		const button =

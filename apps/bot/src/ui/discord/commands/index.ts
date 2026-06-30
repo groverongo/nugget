@@ -48,6 +48,7 @@ import {
 	buildAlertaFinPartido,
 	buildAlertaGol,
 	buildAlertaMedioTiempo,
+	buildAlertaSupleCreado,
 } from "../utils/match-announcement";
 import {
 	buildAlertaEliminacion,
@@ -262,10 +263,10 @@ const actualizarPartidoCommand = new SlashCommandBuilder()
 		option
 			.setName("penales_ganador_id")
 			.setDescription(
-				"[Solo suplementario] ID del equipo que ganó los penales (si hubo empate)",
+				"[Solo suplementario] Equipo que ganó los penales (si hubo empate)",
 			)
 			.setRequired(false)
-			.setMinValue(1),
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -816,8 +817,9 @@ const anularTimbaCommand = new SlashCommandBuilder()
 	.addIntegerOption((option) =>
 		option
 			.setName("timba_id")
-			.setDescription("ID de la timba a anular")
-			.setRequired(true),
+			.setDescription("Timba a anular")
+			.setRequired(true)
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -934,12 +936,46 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		{
 			definition: actualizarPartidoCommand,
 			autocomplete: async (interaction, appContext) => {
+				const focused = interaction.options.getFocused(true);
+				const focusedValue = focused.value.toString().toLowerCase();
+
+				if (focused.name === "penales_ganador_id") {
+					const partidoId =
+						interaction.options.getInteger("partido_id") ?? null;
+					if (!partidoId) {
+						await interaction.respond([]);
+						return;
+					}
+					const partido =
+						await appContext.services.partidos.verInformacionPartido({
+							id: partidoId,
+						});
+					if (
+						!partido ||
+						!partido.equipoLocalId ||
+						!partido.equipoVisitanteId
+					) {
+						await interaction.respond([]);
+						return;
+					}
+					const equipos = [
+						{
+							id: partido.equipoLocalId,
+							nombre: `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} — ${partido.equipoLocalNombre}`,
+						},
+						{
+							id: partido.equipoVisitanteId,
+							nombre: `${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas} — ${partido.equipoVisitanteNombre}`,
+						},
+					].filter((e) => e.nombre.toLowerCase().includes(focusedValue));
+					await interaction.respond(
+						equipos.map((e) => ({ name: e.nombre, value: e.id })),
+					);
+					return;
+				}
+
 				const partidos =
 					await appContext.services.partidos.verPartidosNoFinalizados();
-				const focusedValue = interaction.options
-					.getFocused(true)
-					.value.toString()
-					.toLowerCase();
 				const opciones = partidos
 					.filter((p) =>
 						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
@@ -998,21 +1034,6 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 					await interaction.editReply({ content: lines.join("\n") });
 
-					if (resumen.supleCreado) {
-						await appContext.services.prediccionesEt.materializarPrediccionesEt(
-							{
-								partidoOriginalId: partidoId,
-								partidoSupleId: resumen.supleCreado.supleId,
-								golesBaseLocal: golesLocal,
-								golesBaseVisitante: golesVisitante,
-							},
-						);
-						await sendAlertsChannel(
-							interaction.client,
-							`⏱️ _¡Empate en fase KO! Se abrió el **Suplementario** (partido #${resumen.supleCreado.supleId}). Tienen hasta que empiece para apostar._`,
-						);
-					}
-
 					const [info, predicciones, sinPrediccion, puntajes] =
 						await Promise.all([
 							appContext.services.partidos.verInformacionPartido({
@@ -1029,7 +1050,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							}),
 						]);
 
-					if (info) {
+					if (resumen.supleCreado) {
+						await appContext.services.prediccionesEt.materializarPrediccionesEt(
+							{
+								partidoOriginalId: partidoId,
+								partidoSupleId: resumen.supleCreado.supleId,
+								golesBaseLocal: golesLocal,
+								golesBaseVisitante: golesVisitante,
+							},
+						);
+						if (info) {
+							await sendAlertsChannel(
+								interaction.client,
+								buildAlertaSupleCreado(info, predicciones, sinPrediccion),
+							);
+							await sendAlertsChannel(
+								interaction.client,
+								`⏱️ _Se abrió el **Suplementario**. Tienen hasta que empiece para apostar._`,
+							);
+						}
+					} else if (info) {
 						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaFinPartido(
@@ -3001,6 +3041,28 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		"anular-timba",
 		{
 			definition: anularTimbaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const timbas = await appContext.services.timba.verTodasLasTimbas();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = timbas
+					.filter((t) =>
+						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion} ${t.jugador1Nombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((t) => {
+						const label = `#${t.id} [${t.estado}] ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} — "${t.descripcion}" (${t.jugador1Nombre})`;
+						return {
+							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
+							value: t.id,
+						};
+					});
+				await interaction.respond(opciones);
+			},
 			handle: async (interaction, appContext) => {
 				const timbaId = interaction.options.getInteger("timba_id", true);
 
@@ -3216,10 +3278,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						appContext.services.recuento.verAwardsParaRecuento(),
 					]);
 					const equipo = eliminados.find((e) => e.id === equipoId);
+					// eliminados ordenado por eliminado_at ASC → primero = primera selección eliminada
+					const firstEliminadoId = eliminados[0]?.id ?? equipoId;
 					if (equipo) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaEliminacion(equipo, awards, equipoId),
+							buildAlertaEliminacion(
+								equipo,
+								awards,
+								equipoId,
+								firstEliminadoId,
+							),
 						);
 					}
 				} else {
