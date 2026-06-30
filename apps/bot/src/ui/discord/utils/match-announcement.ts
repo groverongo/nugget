@@ -4,22 +4,44 @@ import type {
 	VerPrediccionesPorPartidoRow,
 	VerPuntajesPartidoRow,
 } from "@sqlc/predicciones_sql";
+import { etLabel } from "./fecha";
+
+type Grouped = {
+	label: string;
+	menciones: string[];
+	gL: number;
+	gV: number;
+	penalesId: number | null;
+};
 
 function groupAndSort(
 	predicciones: VerPrediccionesPorPartidoRow[],
-): [string, string[]][] {
-	const grouped = new Map<string, string[]>();
+	localId?: number | null,
+	localBandera?: string,
+	visitanteBandera?: string,
+): Grouped[] {
+	const map = new Map<string, Grouped>();
 	for (const p of predicciones) {
-		const key = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
-		const group = grouped.get(key) ?? [];
-		group.push(`<@${p.usuarioId}>`);
-		grouped.set(key, group);
+		const scoreLabel = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
+		const penalesLabel =
+			p.prediccionPenalesGanadorId != null && localId != null
+				? ` (${p.prediccionPenalesGanadorId === localId ? localBandera : visitanteBandera})`
+				: "";
+		const label = `${scoreLabel}${penalesLabel}`;
+		const mapKey = `${scoreLabel}-${p.prediccionPenalesGanadorId ?? ""}`;
+		const entry = map.get(mapKey) ?? {
+			label,
+			menciones: [],
+			gL: p.prediccionGolesLocal,
+			gV: p.prediccionGolesVisitante,
+			penalesId: p.prediccionPenalesGanadorId,
+		};
+		entry.menciones.push(`<@${p.usuarioId}>`);
+		map.set(mapKey, entry);
 	}
-	return [...grouped.entries()].sort(([a], [b]) => {
-		const [aL, aV] = a.split("-").map(Number);
-		const [bL, bV] = b.split("-").map(Number);
-		const diff = bL + bV - (aL + aV);
-		return diff !== 0 ? diff : bL - aL;
+	return [...map.values()].sort((a, b) => {
+		const diff = b.gL + b.gV - (a.gL + a.gV);
+		return diff !== 0 ? diff : b.gL - a.gL;
 	});
 }
 
@@ -38,13 +60,14 @@ export function buildAlertaMedioTiempo(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
+	esPrePenales = false,
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
 
 	const lineas = [
-		`**⏸️ ¡MEDIO TIEMPO!**`,
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		esPrePenales ? `**⏸️ FIN DEL TIEMPO EXTRA**` : `**⏸️ ¡MEDIO TIEMPO!**`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		`**Resultado parcial: (${gL} - ${gV})**`,
 	];
 
@@ -53,11 +76,15 @@ export function buildAlertaMedioTiempo(
 		return lineas.join("\n");
 	}
 
-	const grouped = groupAndSort(predicciones);
+	const grouped = groupAndSort(
+		predicciones,
+		info.equipoLocalId,
+		info.equipoLocalBandera,
+		info.equipoVisitanteBandera,
+	);
 	const ganadoresActuales: string[] = [];
 
-	for (const [key, menciones] of grouped) {
-		const [pL, pV] = key.split("-").map(Number);
+	for (const { label, menciones, gL: pL, gV: pV } of grouped) {
 		let emoji: string;
 		if (pL === gL && pV === gV) {
 			emoji = "❇️";
@@ -67,7 +94,7 @@ export function buildAlertaMedioTiempo(
 		} else {
 			emoji = "⏺️";
 		}
-		lineas.push(`${key}: ${menciones.join("/")} ${emoji}`);
+		lineas.push(`${label}: ${menciones.join("/")} ${emoji}`);
 	}
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
@@ -87,13 +114,14 @@ export function buildAlertaFinPartido(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
+	penalesGanadorId?: number | null,
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
 
 	const lineas = [
 		`**🏁 ¡TIEMPO COMPLETO!**`,
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		`**Resultado final: (${gL} - ${gV})**`,
 	];
 
@@ -102,23 +130,36 @@ export function buildAlertaFinPartido(
 		return lineas.join("\n");
 	}
 
-	const grouped = groupAndSort(predicciones);
-	const hayGanadores = grouped.some(([key]) => {
-		const [pL, pV] = key.split("-").map(Number);
-		return pL === gL && pV === gV;
+	const grouped = groupAndSort(
+		predicciones,
+		info.equipoLocalId,
+		info.equipoLocalBandera,
+		info.equipoVisitanteBandera,
+	);
+
+	const hayGanadores = grouped.some(({ gL: pL, gV: pV, penalesId }) => {
+		if (pL !== gL || pV !== gV) return false;
+		if (penalesGanadorId != null) return penalesId === penalesGanadorId;
+		return true;
 	});
 
 	const ganadores: string[] = [];
-
 	const resultadoReal = gL > gV ? "local" : gL < gV ? "visitante" : "empate";
 
-	for (const [key, menciones] of grouped) {
-		const [pL, pV] = key.split("-").map(Number);
-		const esExacto = pL === gL && pV === gV;
+	for (const { label, menciones, gL: pL, gV: pV, penalesId } of grouped) {
+		const scoreMatch = pL === gL && pV === gV;
+		const esExacto =
+			scoreMatch &&
+			(penalesGanadorId == null || penalesId === penalesGanadorId);
 		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
 		const mismaDiferencia = pL - pV === gL - gV;
+		// En supple con empate+penales: penales incorrectos → fallado (no buenIntento)
 		const esBuenIntento =
-			!esExacto && resultadoPred === resultadoReal && mismaDiferencia;
+			!esExacto &&
+			resultadoPred === resultadoReal &&
+			mismaDiferencia &&
+			(penalesGanadorId == null || pL !== pV || penalesId === penalesGanadorId);
+
 		let emoji: string;
 		if (!hayGanadores) {
 			emoji = "⏹️";
@@ -130,7 +171,7 @@ export function buildAlertaFinPartido(
 		} else {
 			emoji = "❌";
 		}
-		lineas.push(`${key}: ${menciones.join("/")} ${emoji}`);
+		lineas.push(`${label}: ${menciones.join("/")} ${emoji}`);
 	}
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
@@ -165,7 +206,7 @@ export function buildAlertaGol(
 			? `${info.equipoLocalNombre} ${info.equipoLocalBandera}`
 			: `${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}`;
 	return [
-		`***¡GOOOL!** de ${equipoGol}*`,
+		`***¡GOOOL!** de ${equipoGol}${etLabel(info.partidoOriginalId)}*`,
 		`${info.equipoLocalBandera} ${info.equipoLocalSiglas} ${gL}-${gV} ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`,
 	].join("\n");
 }

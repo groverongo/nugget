@@ -13,6 +13,7 @@ import {
 	sendAnnouncementChannel,
 	sendToUser,
 } from "../handlers/interactions";
+import { etLabel } from "../utils/fecha";
 import { buildAlertaGol } from "../utils/match-announcement";
 import { generarHeatmapPredicciones } from "./utility-client";
 
@@ -25,30 +26,38 @@ function buildAlertaPartido(
 ): string {
 	const lineas = [
 		"🕛 **¡EMPEZÓ EL PARTIDO!**",
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		"*Ya no más apuestas* 🙅",
 	];
 
 	if (predicciones.length === 0) {
 		lineas.push("_Nadie apostó en este partido._");
 	} else {
-		const grouped = new Map<string, string[]>();
+		type G = { label: string; menciones: string[]; gL: number; gV: number };
+		const map = new Map<string, G>();
 		for (const p of predicciones) {
-			const key = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
-			const group = grouped.get(key) ?? [];
-			group.push(`<@${p.usuarioId}>`);
-			grouped.set(key, group);
+			const scoreLabel = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
+			const penalesLabel =
+				p.prediccionPenalesGanadorId != null
+					? ` (${p.prediccionPenalesGanadorId === info.equipoLocalId ? info.equipoLocalBandera : info.equipoVisitanteBandera})`
+					: "";
+			const label = `${scoreLabel}${penalesLabel}`;
+			const mapKey = `${scoreLabel}-${p.prediccionPenalesGanadorId ?? ""}`;
+			const entry = map.get(mapKey) ?? {
+				label,
+				menciones: [],
+				gL: p.prediccionGolesLocal,
+				gV: p.prediccionGolesVisitante,
+			};
+			entry.menciones.push(`<@${p.usuarioId}>`);
+			map.set(mapKey, entry);
 		}
-
-		const sorted = [...grouped.entries()].sort(([a], [b]) => {
-			const [aL, aV] = a.split("-").map(Number);
-			const [bL, bV] = b.split("-").map(Number);
-			const totalDiff = bL + bV - (aL + aV);
-			return totalDiff !== 0 ? totalDiff : bL - aL;
+		const sorted = [...map.values()].sort((a, b) => {
+			const diff = b.gL + b.gV - (a.gL + a.gV);
+			return diff !== 0 ? diff : b.gL - a.gL;
 		});
-
-		for (const [resultado, menciones] of sorted) {
-			lineas.push(`${resultado}: ${menciones.join("/")}`);
+		for (const { label, menciones } of sorted) {
+			lineas.push(`${label}: ${menciones.join("/")}`);
 		}
 	}
 
@@ -78,7 +87,7 @@ function buildAlertaPrePartido(
 
 	const lineas: string[] = [
 		"📊 ***Estadísticas pre-partido***",
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}** ${horaStr}*`,
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}** ${horaStr}*`,
 	];
 
 	let sinApostarStr = "";

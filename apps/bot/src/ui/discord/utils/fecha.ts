@@ -1,3 +1,8 @@
+/** Agrega " (ET)" al nombre de un partido si es suplementario */
+export function etLabel(partidoOriginalId: number | null | undefined): string {
+	return partidoOriginalId != null ? " (ET)" : "";
+}
+
 export function fechaADiscordTimestamp(yyyymmdd: string): number {
 	return Math.floor(new Date(`${yyyymmdd}T12:00:00Z`).getTime() / 1000);
 }

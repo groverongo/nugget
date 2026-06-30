@@ -30,7 +30,7 @@ export function isValidDateInput(value: string): boolean {
 	return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-function formatPartidoLine(partido: PartidoPorFecha): string {
+function formatPartidoLine(partido: PartidoPorFecha, esSuple = false): string {
 	const marcador =
 		partido.partidoGolesLocal !== null && partido.partidoGolesVisitante !== null
 			? ` **${partido.partidoGolesLocal} - ${partido.partidoGolesVisitante}**`
@@ -44,8 +44,9 @@ function formatPartidoLine(partido: PartidoPorFecha): string {
 	const visitante = `${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`;
 	const hora = timestamp ? `<t:${timestamp}:t>` : "";
 	const regresivo = timestamp ? ` — <t:${timestamp}:R>` : "";
+	const etSuffix = esSuple ? " **(ET)**" : "";
 
-	return `${local} vs ${visitante}${marcador} (${hora})${regresivo}`;
+	return `${local} vs ${visitante}${etSuffix}${marcador} (${hora})${regresivo}`;
 }
 
 export function buildPartidosComponents(
@@ -102,7 +103,7 @@ export function buildPartidosComponents(
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
 						esSuple
-							? `⏱️ **[SUPLEMENTARIO]** ${formatPartidoLine(partido)}`
+							? `⏱️ ${formatPartidoLine(partido, true)}`
 							: formatPartidoLine(partido),
 					),
 				)
