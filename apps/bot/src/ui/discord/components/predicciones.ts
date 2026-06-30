@@ -10,6 +10,7 @@ import {
 	StringSelectMenuOptionBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
+import type { VerPrediccionEtRow } from "../../../../db/sqlcgen/predicciones_et_sql";
 import type { VerMisPrediccionesPorFechaRow } from "../../../../db/sqlcgen/predicciones_sql";
 import { fechaADiscordTimestamp } from "../utils/fecha";
 import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
@@ -62,7 +63,26 @@ function getPrediccionEmoji(prediccion: MiPrediccionPorFecha): string {
 	return "";
 }
 
-function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
+function formatEtLine(
+	et: VerPrediccionEtRow,
+	prediccion: MiPrediccionPorFecha,
+): string {
+	const golesStr = `+${et.golesLocalAdicionales} — +${et.golesVisitanteAdicionales}`;
+	let penalesStr = "";
+	if (et.penalesGanadorId !== null) {
+		const bandera =
+			et.penalesGanadorId === prediccion.equipoLocalId
+				? prediccion.equipoLocalBandera
+				: prediccion.equipoVisitanteBandera;
+		penalesStr = ` · Penales → ${bandera}`;
+	}
+	return `**Mi apuesta ET: ${golesStr}**${penalesStr} 🕐`;
+}
+
+function formatPrediccionLine(
+	prediccion: MiPrediccionPorFecha,
+	et?: VerPrediccionEtRow,
+): string {
 	const fechaPartido = prediccion.fechaPartido
 		? `<t:${prediccion.fechaPartido.getTime() / 1_000}:t>`
 		: "Hora pendiente";
@@ -70,19 +90,24 @@ function formatPrediccionLine(prediccion: MiPrediccionPorFecha): string {
 	const emoji = getPrediccionEmoji(prediccion);
 	const emojiSuffix = emoji ? ` ${emoji}` : "";
 
-	return [
+	const lines = [
 		`### ${prediccion.equipoLocalNombre} ${prediccion.equipoLocalBandera} vs. ${prediccion.equipoVisitanteNombre} ${prediccion.equipoVisitanteBandera}`,
 		`**Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}**${emojiSuffix}`,
+	];
+	if (et) lines.push(formatEtLine(et, prediccion));
+	lines.push(
 		formatMarcadorReal(prediccion),
 		`Estado: ${prediccion.estado}`,
 		fechaPartido,
-	].join("\n");
+	);
+	return lines.join("\n");
 }
 
 export function buildMisPrediccionesComponents(
 	date: string,
 	predicciones: MiPrediccionPorFecha[],
 	fechas: string[],
+	etPrediccionesMap?: Map<number, VerPrediccionEtRow>,
 ): APIMessageTopLevelComponent[] {
 	const titulo = `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D>`;
 
@@ -123,7 +148,10 @@ export function buildMisPrediccionesComponents(
 				new SectionBuilder()
 					.addTextDisplayComponents(
 						new TextDisplayBuilder().setContent(
-							formatPrediccionLine(prediccion),
+							formatPrediccionLine(
+								prediccion,
+								etPrediccionesMap?.get(prediccion.partidoId),
+							),
 						),
 					)
 					.setButtonAccessory(button),

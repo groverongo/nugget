@@ -1,3 +1,4 @@
+import type { VerPrediccionEtRow } from "@sqlc/predicciones_et_sql";
 import { config } from "@support/config";
 import { logger } from "@support/logger";
 import {
@@ -373,6 +374,10 @@ export async function handlePrediccionEtModalSubmitInteraction(
 			penalesGanadorId: null,
 		});
 		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${interaction.user.id}> ha apostado el **Tiempo Extra** de **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+		);
 	} catch (error) {
 		await interaction.editReply(
 			`❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -432,6 +437,10 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 			content: `✅ Apuesta ET guardada: ${golesDisplay} · Penales → **${penalesBandera} ${penalesSiglas}**`,
 			components: [],
 		});
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${interaction.user.id}> ha apostado el **Tiempo Extra** de **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} **vs.** **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera}!_`,
+		);
 	} catch (error) {
 		await interaction.followUp({
 			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -629,11 +638,23 @@ export async function handlePrediccionesDateSelectInteraction(
 			date: selectedDate,
 		});
 
+	const etPrediccionesMap = new Map<number, VerPrediccionEtRow>();
+	await Promise.all(
+		predicciones.map(async (p) => {
+			const et = await appContext.services.prediccionesEt.verPrediccionEt({
+				usuarioId: interaction.user.id,
+				partidoId: p.partidoId,
+			});
+			if (et) etPrediccionesMap.set(p.partidoId, et);
+		}),
+	);
+
 	await interaction.editReply({
 		components: buildMisPrediccionesComponents(
 			selectedDate,
 			predicciones,
 			fechas,
+			etPrediccionesMap,
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});
