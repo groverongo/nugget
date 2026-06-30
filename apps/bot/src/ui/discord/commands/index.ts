@@ -3283,7 +3283,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					if (equipo) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaEliminacion(equipo, awards, equipoId, firstEliminadoId),
+							buildAlertaEliminacion(
+								equipo,
+								awards,
+								equipoId,
+								firstEliminadoId,
+							),
 						);
 					}
 				} else {

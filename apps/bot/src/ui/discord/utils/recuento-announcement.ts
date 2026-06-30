@@ -123,7 +123,9 @@ function buildAwardsSection(
 			parts.push(`${decepcionGanadores.join("/")} ✅`);
 		if (decepcionPerdedores.length > 0)
 			parts.push(`${decepcionPerdedores.join("/")} ❌`);
-		lineas.push(`- ***${AWARD_LABELS.seleccionDecepcion}:*** ${parts.join(" · ")}`);
+		lineas.push(
+			`- ***${AWARD_LABELS.seleccionDecepcion}:*** ${parts.join(" · ")}`,
+		);
 	}
 
 	if (!hayMuertas) {
@@ -233,7 +235,11 @@ export function buildRecuento(datos: DatosRecuento): string {
 	}
 
 	// Awards
-	const awardsLineas = buildAwardsSection(awards, eliminadosIds, firstEliminadoId);
+	const awardsLineas = buildAwardsSection(
+		awards,
+		eliminadosIds,
+		firstEliminadoId,
+	);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
 		if (eliminados.length > 0) {
