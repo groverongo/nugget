@@ -1,3 +1,4 @@
+import type { VerPrediccionEtRow } from "@sqlc/predicciones_et_sql";
 import { config } from "@support/config";
 import { logger } from "@support/logger";
 import {
@@ -32,6 +33,7 @@ import {
 	PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX,
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
+	PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX,
 } from "../components/partidos";
 import {
@@ -73,6 +75,8 @@ const PREDICCION_ET_MODAL_CUSTOM_ID = "prediccion-et:create";
 const PREDICCION_ET_GOLES_LOCAL_FIELD_ID = "et-goles-local";
 const PREDICCION_ET_GOLES_VISITANTE_FIELD_ID = "et-goles-visitante";
 const PREDICCION_ET_PENALES_PREFIX = "prediccion-et:penales:";
+const PREDICCION_ET_ADMIN_MODAL_CUSTOM_ID = "prediccion-et:create-admin";
+const PREDICCION_ET_ADMIN_PENALES_PREFIX = "prediccion-et:penales-admin:";
 const TIMBA_MODAL_CUSTOM_ID = "timba:create";
 const TIMBA_ADMIN_MODAL_CUSTOM_ID = "timba:create-admin";
 const TIMBA_CONTRAOFERTA_MODAL_CUSTOM_ID = "timba:contraoferta:create";
@@ -373,6 +377,10 @@ export async function handlePrediccionEtModalSubmitInteraction(
 			penalesGanadorId: null,
 		});
 		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${interaction.user.id}> ha apostado el **Tiempo Extra** de **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+		);
 	} catch (error) {
 		await interaction.editReply(
 			`❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -432,6 +440,282 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 			content: `✅ Apuesta ET guardada: ${golesDisplay} · Penales → **${penalesBandera} ${penalesSiglas}**`,
 			components: [],
 		});
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${interaction.user.id}> ha apostado el **Tiempo Extra** de **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} **vs.** **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera}!_`,
+		);
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+			ephemeral: true,
+		});
+	}
+}
+
+export async function handlePartidosEtAdminButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (
+		!interaction.customId.startsWith(PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX)
+	)
+		return;
+
+	const rest = interaction.customId.slice(
+		PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX.length,
+	);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const usuarioId = rest.slice(0, lastColon);
+	const selectedPartidoId = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(selectedPartidoId) || !usuarioId) return;
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: selectedPartidoId,
+	});
+	if (!partido) {
+		await interaction.reply({
+			content: `No se encontró el partido ${selectedPartidoId}.`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const prediccionOriginal =
+		await appContext.services.predicciones.verPrediccionPorUsuarioYPartido({
+			usuarioId,
+			partidoId: selectedPartidoId,
+		});
+	if (!prediccionOriginal) {
+		await interaction.reply({
+			content: `❌ <@${usuarioId}> no tiene predicción en el partido original. Regístrala primero.`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const existing = await appContext.services.prediccionesEt.verPrediccionEt({
+		usuarioId,
+		partidoId: selectedPartidoId,
+	});
+
+	const modal = new ModalBuilder()
+		.setCustomId(
+			`${PREDICCION_ET_ADMIN_MODAL_CUSTOM_ID}:${usuarioId}:${selectedPartidoId}`,
+		)
+		.setTitle(
+			`ET Admin — ${partido.equipoLocalSiglas} vs ${partido.equipoVisitanteSiglas}`,
+		)
+		.addComponents(
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_ET_GOLES_LOCAL_FIELD_ID)
+					.setLabel(`Goles adicionales de ${partido.equipoLocalNombre} en ET`)
+					.setPlaceholder(
+						existing
+							? String(existing.golesLocalAdicionales)
+							: "Ej: 0, 1, 2...",
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
+				new TextInputBuilder()
+					.setCustomId(PREDICCION_ET_GOLES_VISITANTE_FIELD_ID)
+					.setLabel(
+						`Goles adicionales de ${partido.equipoVisitanteNombre} en ET`,
+					)
+					.setPlaceholder(
+						existing
+							? String(existing.golesVisitanteAdicionales)
+							: "Ej: 0, 1, 2...",
+					)
+					.setStyle(TextInputStyle.Short)
+					.setRequired(true)
+					.setMinLength(1)
+					.setMaxLength(2),
+			),
+		);
+
+	await interaction.showModal(modal);
+}
+
+export async function handlePrediccionEtAdminModalSubmitInteraction(
+	interaction: ModalSubmitInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (
+		!interaction.customId.startsWith(`${PREDICCION_ET_ADMIN_MODAL_CUSTOM_ID}:`)
+	)
+		return;
+
+	const rest = interaction.customId.slice(
+		PREDICCION_ET_ADMIN_MODAL_CUSTOM_ID.length + 1,
+	);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const usuarioId = rest.slice(0, lastColon);
+	const partidoId = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(partidoId) || !usuarioId) return;
+
+	const golesLocalParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(PREDICCION_ET_GOLES_LOCAL_FIELD_ID),
+	);
+	const golesVisitanteParsed = golesSchema.safeParse(
+		interaction.fields.getTextInputValue(
+			PREDICCION_ET_GOLES_VISITANTE_FIELD_ID,
+		),
+	);
+
+	if (!golesLocalParsed.success || !golesVisitanteParsed.success) {
+		await interaction.reply({
+			content: "Goles inválidos. Ingresa un número entre 0 y 9.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const golesLocal = golesLocalParsed.data;
+	const golesVisitante = golesVisitanteParsed.data;
+
+	const partido = await appContext.services.partidos.verInformacionPartido({
+		id: partidoId,
+	});
+	if (!partido) {
+		await interaction.reply({
+			content: "Partido no encontrado.",
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const empate = golesLocal === golesVisitante;
+	const golesDisplay = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} **+${golesLocal}** — **+${golesVisitante}** ${partido.equipoVisitanteSiglas} ${partido.equipoVisitanteBandera}`;
+
+	if (empate) {
+		await interaction.reply({
+			content: [
+				`🕐 **Apuesta ET (Admin)** — ${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera} para <@${usuarioId}>`,
+				`${golesDisplay}`,
+				`Empate en ET → **¿Quién gana los penales?**`,
+			].join("\n"),
+			components: [
+				{
+					type: 1,
+					components: [
+						{
+							type: 2,
+							style: 1,
+							label: `🏆 ${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`,
+							custom_id: `${PREDICCION_ET_ADMIN_PENALES_PREFIX}${usuarioId}:${partidoId}:${partido.equipoLocalId}:${golesLocal}:${golesVisitante}`,
+						},
+						{
+							type: 2,
+							style: 1,
+							label: `🏆 ${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`,
+							custom_id: `${PREDICCION_ET_ADMIN_PENALES_PREFIX}${usuarioId}:${partidoId}:${partido.equipoVisitanteId}:${golesLocal}:${golesVisitante}`,
+						},
+					],
+				},
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+			] as any,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferReply({ ephemeral: true });
+	try {
+		await appContext.services.prediccionesEt.guardarPrediccionEt({
+			usuarioId,
+			partidoId,
+			golesLocalAdicionales: golesLocal,
+			golesVisitanteAdicionales: golesVisitante,
+			penalesGanadorId: null,
+		});
+		await interaction.editReply(
+			`✅ Apuesta ET guardada para <@${usuarioId}>: ${golesDisplay}`,
+		);
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${usuarioId}> ha apostado el **Tiempo Extra** de **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+		);
+	} catch (error) {
+		await interaction.editReply(
+			`❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+		);
+	}
+}
+
+export async function handlePrediccionEtPenalesAdminButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PREDICCION_ET_ADMIN_PENALES_PREFIX))
+		return;
+
+	const rest = interaction.customId.slice(
+		PREDICCION_ET_ADMIN_PENALES_PREFIX.length,
+	);
+	// format: usuarioId:partidoId:equipoId:golesLocal:golesVisitante
+	// usuarioId may contain colons (Discord IDs are numeric, so safe to split from right)
+	const parts = rest.split(":");
+	if (parts.length < 5) return;
+	const [
+		golesVisitanteStr,
+		golesLocalStr,
+		equipoIdStr,
+		partidoIdStr,
+		...userParts
+	] = parts.reverse();
+	const usuarioId = userParts.reverse().join(":");
+	const partidoId = Number(partidoIdStr);
+	const equipoId = Number(equipoIdStr);
+	const golesLocal = Number(golesLocalStr);
+	const golesVisitante = Number(golesVisitanteStr);
+
+	if (
+		Number.isNaN(partidoId) ||
+		Number.isNaN(equipoId) ||
+		Number.isNaN(golesLocal) ||
+		Number.isNaN(golesVisitante) ||
+		!usuarioId
+	)
+		return;
+
+	await interaction.deferUpdate();
+
+	try {
+		const partido = await appContext.services.partidos.verInformacionPartido({
+			id: partidoId,
+		});
+		await appContext.services.prediccionesEt.guardarPrediccionEt({
+			usuarioId,
+			partidoId,
+			golesLocalAdicionales: golesLocal,
+			golesVisitanteAdicionales: golesVisitante,
+			penalesGanadorId: equipoId,
+		});
+
+		const esLocal = equipoId === partido?.equipoLocalId;
+		const penalesBandera = esLocal
+			? (partido?.equipoLocalBandera ?? "")
+			: (partido?.equipoVisitanteBandera ?? "");
+		const penalesSiglas = esLocal
+			? (partido?.equipoLocalSiglas ?? "")
+			: (partido?.equipoVisitanteSiglas ?? "");
+		const golesDisplay = `${partido?.equipoLocalBandera} ${partido?.equipoLocalSiglas} **+${golesLocal}** — **+${golesVisitante}** ${partido?.equipoVisitanteSiglas} ${partido?.equipoVisitanteBandera}`;
+
+		await interaction.editReply({
+			content: `✅ Apuesta ET guardada para <@${usuarioId}>: ${golesDisplay} · Penales → **${penalesBandera} ${penalesSiglas}**`,
+			components: [],
+		});
+		await sendAnnouncementChannel(
+			interaction.client,
+			`_🕐 ¡<@${usuarioId}> ha apostado el **Tiempo Extra** de **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} **vs.** **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera}!_`,
+		);
 	} catch (error) {
 		await interaction.followUp({
 			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -629,11 +913,23 @@ export async function handlePrediccionesDateSelectInteraction(
 			date: selectedDate,
 		});
 
+	const etPrediccionesMap = new Map<number, VerPrediccionEtRow>();
+	await Promise.all(
+		predicciones.map(async (p) => {
+			const et = await appContext.services.prediccionesEt.verPrediccionEt({
+				usuarioId: interaction.user.id,
+				partidoId: p.partidoId,
+			});
+			if (et) etPrediccionesMap.set(p.partidoId, et);
+		}),
+	);
+
 	await interaction.editReply({
 		components: buildMisPrediccionesComponents(
 			selectedDate,
 			predicciones,
 			fechas,
+			etPrediccionesMap,
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});

@@ -2393,15 +2393,6 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						goleadorKO,
 					});
 
-					const lineas = resumen.resultados
-						.filter((r) => r.puntosGanados > 0)
-						.sort((a, b) => b.puntosGanados - a.puntosGanados)
-						.slice(0, 10)
-						.map(
-							(r) =>
-								`**${r.username}**: +${r.puntosGanados}pts (${r.aciertos.join(", ")})`,
-						);
-
 					await interaction.editReply({
 						content: `✅ Awards Eliminatorias actualizados. ${resumen.totalUsuarios} usuarios procesados.`,
 					});

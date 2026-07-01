@@ -15,9 +15,12 @@ import {
 	handlePartidosAdminDateSelectInteraction,
 	handlePartidosButtonInteraction,
 	handlePartidosDateSelectInteraction,
+	handlePartidosEtAdminButtonInteraction,
 	handlePartidosEtButtonInteraction,
 	handlePrediccionAdminModalSubmitInteraction,
+	handlePrediccionEtAdminModalSubmitInteraction,
 	handlePrediccionEtModalSubmitInteraction,
+	handlePrediccionEtPenalesAdminButtonInteraction,
 	handlePrediccionEtPenalesButtonInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
@@ -93,9 +96,14 @@ export function registerDiscordEventHandlers(
 				await handlePartidosButtonInteraction(interaction, appContext);
 				await handlePartidosEtButtonInteraction(interaction, appContext);
 				await handlePartidosAdminButtonInteraction(interaction, appContext);
+				await handlePartidosEtAdminButtonInteraction(interaction, appContext);
 				await handleTimbaButtonInteraction(interaction, appContext);
 				await handleAwardsKOButtonInteraction(interaction, appContext);
 				await handlePrediccionEtPenalesButtonInteraction(
+					interaction,
+					appContext,
+				);
+				await handlePrediccionEtPenalesAdminButtonInteraction(
 					interaction,
 					appContext,
 				);
@@ -105,6 +113,10 @@ export function registerDiscordEventHandlers(
 			if (interaction.isModalSubmit()) {
 				await handlePrediccionModalSubmitInteraction(interaction, appContext);
 				await handlePrediccionEtModalSubmitInteraction(interaction, appContext);
+				await handlePrediccionEtAdminModalSubmitInteraction(
+					interaction,
+					appContext,
+				);
 				await handlePrediccionAdminModalSubmitInteraction(
 					interaction,
 					appContext,
