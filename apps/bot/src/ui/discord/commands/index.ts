@@ -47,6 +47,7 @@ import {
 	buildAlertaAuraPoints,
 	buildAlertaFinPartido,
 	buildAlertaGol,
+	buildAlertaInicioSuplementario,
 	buildAlertaMedioTiempo,
 	buildAlertaSupleCreado,
 } from "../utils/match-announcement";
@@ -1064,6 +1065,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								interaction.client,
 								buildAlertaSupleCreado(info, predicciones, sinPrediccion),
 							);
+							const mensajeAura = buildAlertaAuraPoints(puntajes);
+							if (mensajeAura) {
+								await sendAlertsChannel(interaction.client, mensajeAura);
+							}
 							await sendAlertsChannel(
 								interaction.client,
 								`⏱️ _Se abrió el **Suplementario**. Tienen hasta que empiece para apostar._`,
@@ -1227,6 +1232,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					}
 
 					if (timbas.length > 0) {
+						await sendAlertsChannel(
+							interaction.client,
+							`👑 _Resolución de **Timba Times**:_`,
+						);
 						await interaction.followUp({
 							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 							components: buildTimbaResolucionMedioTiempoComponents(
@@ -1282,7 +1291,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					]);
 
 					const timbasCanceladas = todasLasTimbas.filter(
-						(t) => t.estado === "abierta",
+						(t) => t.estado === "abierta" || t.estado === "contraoferta",
+					);
+					const timbasCerradas = todasLasTimbas.filter(
+						(t) => t.estado === "cerrada",
 					);
 
 					await Promise.all([
@@ -1323,6 +1335,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							lineas.join("\n"),
 						);
 					}
+
+					if (timbasCerradas.length > 0) {
+						const lineas = [
+							`_⚔️ **Timba Times pactadas en el medio tiempo** (${siglas})_`,
+							...timbasCerradas.map(
+								(t) =>
+									`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
+							),
+						];
+						await sendAlertsChannel(interaction.client, lineas.join("\n"));
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -1362,13 +1385,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const partidoId = interaction.options.getInteger("partido_id", true);
 				await interaction.deferReply({ ephemeral: true });
 				try {
-					await appContext.services.partidos.iniciarSuplementario(partidoId);
-
-					const info = await appContext.services.partidos.verInformacionPartido(
-						{
+					const [
+						info,
+						predicciones,
+						sinPrediccion,
+						todasLasTimbas,
+						timbasCerradas,
+					] = await Promise.all([
+						appContext.services.partidos.verInformacionPartido({
 							id: partidoId,
-						},
+						}),
+						appContext.services.predicciones.verPrediccionesPorPartido({
+							partidoId,
+						}),
+						appContext.services.predicciones.verParticipantesSinPrediccion({
+							partidoId,
+						}),
+						appContext.services.timba.verTimbasPorPartido(partidoId),
+						appContext.services.timba.verTimbasCerradasPorPartido(partidoId),
+					]);
+
+					const timbasCanceladas = todasLasTimbas.filter(
+						(t) => t.estado === "abierta" || t.estado === "contraoferta",
 					);
+
+					await Promise.all([
+						appContext.services.partidos.iniciarSuplementario(partidoId),
+						appContext.services.timba.cancelarTimbasAbiertas(partidoId),
+					]);
+
 					const nombrePartido = info
 						? `**${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${info.partidoOriginalId != null ? " (ET)" : ""}**`
 						: `**Partido #${partidoId}**`;
@@ -1376,10 +1421,44 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await interaction.editReply({
 						content: `⏱️ Suplementario iniciado: ${nombrePartido}. Las apuestas están cerradas.`,
 					});
-					await sendAlertsChannel(
-						interaction.client,
-						`⏱️ _¡Empieza el suplementario de ${nombrePartido}! Las apuestas están cerradas._`,
-					);
+
+					if (info) {
+						await sendAlertsChannel(
+							interaction.client,
+							buildAlertaInicioSuplementario(info, predicciones, sinPrediccion),
+						);
+
+						const partido = `${info.equipoLocalSiglas} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteSiglas} ${info.equipoVisitanteBandera}`;
+						if (timbasCerradas.length > 0) {
+							const lineas = [
+								`_⚔️ **Timba Times en juego** (${partido})_`,
+								...timbasCerradas.map(
+									(t) =>
+										`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
+								),
+							];
+							await sendAlertsChannel(interaction.client, lineas.join("\n"));
+						} else {
+							await sendAlertsChannel(
+								interaction.client,
+								`_🎰 No hay Timba Times para ${partido}._`,
+							);
+						}
+
+						if (timbasCanceladas.length > 0) {
+							const lineas = [
+								`🚫 _**Timba Times canceladas** (${partido}):_`,
+								...timbasCanceladas.map(
+									(t) =>
+										`• <@${t.jugador_1Id}> — **${t.puntosPropuestos} 💠** — "${t.descripcion}"`,
+								),
+							];
+							await sendAnnouncementChannel(
+								interaction.client,
+								lineas.join("\n"),
+							);
+						}
+					}
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ Error: ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -1506,11 +1585,31 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						}),
 					]);
 
+					const timbas =
+						await appContext.services.timba.verTimbasMedioTiempoPorPartido(
+							partidoId,
+						);
+
 					if (info) {
 						await sendAlertsChannel(
 							interaction.client,
 							buildAlertaMedioTiempo(info, predicciones, sinPrediccion, true),
 						);
+					}
+
+					if (timbas.length > 0) {
+						await sendAlertsChannel(
+							interaction.client,
+							`👑 _Resolución de **Timba Times**:_`,
+						);
+						await interaction.followUp({
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							components: buildTimbaResolucionMedioTiempoComponents(
+								timbas.slice(0, 3),
+								partidoId,
+							) as any,
+							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+						});
 					}
 				} catch (error) {
 					await interaction.editReply({

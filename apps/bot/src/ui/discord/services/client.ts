@@ -24,6 +24,7 @@ import {
 	handlePrediccionEtPenalesButtonInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
+	handlePrediccionSuplePenalesButtonInteraction,
 	handleTimbaAdminModalSubmitInteraction,
 	handleTimbaButtonInteraction,
 	handleTimbaModalSubmitInteraction,
@@ -104,6 +105,10 @@ export function registerDiscordEventHandlers(
 					appContext,
 				);
 				await handlePrediccionEtPenalesAdminButtonInteraction(
+					interaction,
+					appContext,
+				);
+				await handlePrediccionSuplePenalesButtonInteraction(
 					interaction,
 					appContext,
 				);

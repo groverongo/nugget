@@ -12,7 +12,7 @@ import {
 	cancelarContraofertasEnCascadaPorTimba,
 	cancelarContraofertasPorTimba,
 	cancelarTimba,
-	cancelarTimbasAbiertasPorPartido,
+	cancelarTimbasContraofertaAbiertasPorPartido,
 	checkEmparejamientoTimba,
 	crearContraoferta,
 	crearTimba,
@@ -132,7 +132,9 @@ export class TimbaRepository implements ITimbaRepository {
 	}
 
 	cancelarTimbasAbiertasPorPartido(partidoId: number): Promise<void> {
-		return cancelarTimbasAbiertasPorPartido(this.pool, { partidoId });
+		return cancelarTimbasContraofertaAbiertasPorPartido(this.pool, {
+			partidoId,
+		});
 	}
 
 	verContraofertasMensajesPorTimba(

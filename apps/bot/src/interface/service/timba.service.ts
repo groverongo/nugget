@@ -133,6 +133,8 @@ export interface ITimbaService {
 		partidoId: number,
 	): Promise<VerPartidoParaTimbaRow | null>;
 
+	verTimba(timbaId: number): Promise<VerTimbaRow | null>;
+
 	crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult>;
 
 	aceptarTimba(args: AceptarTimbaInput): Promise<AceptarTimbaResult>;

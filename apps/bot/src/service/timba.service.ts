@@ -3,6 +3,7 @@ import type {
 	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
+	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
@@ -39,6 +40,10 @@ export class TimbaService implements ITimbaService {
 		partidoId: number,
 	): Promise<VerPartidoParaTimbaRow | null> {
 		return this.timbaRepo.verPartidoParaTimba(partidoId);
+	}
+
+	verTimba(timbaId: number): Promise<VerTimbaRow | null> {
+		return this.timbaRepo.verTimba(timbaId);
 	}
 
 	async crearTimba(args: CrearTimbaInput): Promise<CrearTimbaResult> {
