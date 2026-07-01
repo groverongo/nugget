@@ -40,7 +40,7 @@ function formatPartidoLine(partido: PartidoPorFecha, esSuple = false): string {
 			: "";
 
 	const timestamp = partido.fechaPartido
-		? partido.fechaPartido.getTime() / 1_000
+		? Math.floor(partido.fechaPartido.getTime() / 1_000)
 		: null;
 
 	const local = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`;

@@ -84,7 +84,7 @@ function formatPrediccionLine(
 	et?: VerPrediccionEtRow,
 ): string {
 	const fechaPartido = prediccion.fechaPartido
-		? `<t:${prediccion.fechaPartido.getTime() / 1_000}:t>`
+		? `<t:${Math.floor(prediccion.fechaPartido.getTime() / 1_000)}:t>`
 		: "Hora pendiente";
 
 	const emoji = getPrediccionEmoji(prediccion);

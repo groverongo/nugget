@@ -18,16 +18,14 @@ function groupAndSort(
 	predicciones: VerPrediccionesPorPartidoRow[],
 	localId?: number | null,
 	localBandera?: string,
-	localSiglas?: string,
 	visitanteBandera?: string,
-	visitanteSiglas?: string,
 ): Grouped[] {
 	const map = new Map<string, Grouped>();
 	for (const p of predicciones) {
 		const scoreLabel = `${p.prediccionGolesLocal}-${p.prediccionGolesVisitante}`;
 		const penalesLabel =
 			p.prediccionPenalesGanadorId != null && localId != null
-				? ` (${p.prediccionPenalesGanadorId === localId ? `${localBandera} ${localSiglas}` : `${visitanteBandera} ${visitanteSiglas}`})`
+				? ` (${p.prediccionPenalesGanadorId === localId ? localBandera : visitanteBandera})`
 				: "";
 		const label = `${scoreLabel}${penalesLabel}`;
 		const mapKey = `${scoreLabel}-${p.prediccionPenalesGanadorId ?? ""}`;
@@ -58,6 +56,53 @@ function sinPrediccionLine(
 	return `📵 Sin apostar: ${menciones}`;
 }
 
+function clasificarPredicciones(
+	grouped: Grouped[],
+	gL: number,
+	gV: number,
+	penalesGanadorId: number | null | undefined,
+): { lineas: string[]; ganadores: string[]; hayGanadores: boolean } {
+	const hayGanadores = grouped.some(({ gL: pL, gV: pV, penalesId }) => {
+		if (pL !== gL || pV !== gV) return false;
+		if (penalesGanadorId != null) return penalesId === penalesGanadorId;
+		return true;
+	});
+
+	const ganadores: string[] = [];
+	const resultadoReal = gL > gV ? "local" : gL < gV ? "visitante" : "empate";
+	const lineas: string[] = [];
+
+	for (const { label, menciones, gL: pL, gV: pV, penalesId } of grouped) {
+		const scoreMatch = pL === gL && pV === gV;
+		const esExacto =
+			scoreMatch &&
+			(penalesGanadorId == null || penalesId === penalesGanadorId);
+		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
+		const mismaDiferencia = pL - pV === gL - gV;
+		// En supple con empate+penales: penales incorrectos → fallado (no buenIntento)
+		const esBuenIntento =
+			!esExacto &&
+			resultadoPred === resultadoReal &&
+			mismaDiferencia &&
+			(penalesGanadorId == null || pL !== pV || penalesId === penalesGanadorId);
+
+		let emoji: string;
+		if (!hayGanadores) {
+			emoji = "⏹️";
+		} else if (esExacto) {
+			emoji = "✅";
+			ganadores.push(...menciones);
+		} else if (esBuenIntento) {
+			emoji = "⚡";
+		} else {
+			emoji = "❌";
+		}
+		lineas.push(`${label}: ${menciones.join("/")} ${emoji}`);
+	}
+
+	return { lineas, ganadores, hayGanadores };
+}
+
 export function buildAlertaMedioTiempo(
 	info: VerInformacionPartidoRow,
 	predicciones: VerPrediccionesPorPartidoRow[],
@@ -82,9 +127,7 @@ export function buildAlertaMedioTiempo(
 		predicciones,
 		info.equipoLocalId,
 		info.equipoLocalBandera,
-		info.equipoLocalSiglas,
 		info.equipoVisitanteBandera,
-		info.equipoVisitanteSiglas,
 	);
 	const ganadoresActuales: string[] = [];
 
@@ -138,47 +181,15 @@ export function buildAlertaFinPartido(
 		predicciones,
 		info.equipoLocalId,
 		info.equipoLocalBandera,
-		info.equipoLocalSiglas,
 		info.equipoVisitanteBandera,
-		info.equipoVisitanteSiglas,
 	);
 
-	const hayGanadores = grouped.some(({ gL: pL, gV: pV, penalesId }) => {
-		if (pL !== gL || pV !== gV) return false;
-		if (penalesGanadorId != null) return penalesId === penalesGanadorId;
-		return true;
-	});
-
-	const ganadores: string[] = [];
-	const resultadoReal = gL > gV ? "local" : gL < gV ? "visitante" : "empate";
-
-	for (const { label, menciones, gL: pL, gV: pV, penalesId } of grouped) {
-		const scoreMatch = pL === gL && pV === gV;
-		const esExacto =
-			scoreMatch &&
-			(penalesGanadorId == null || penalesId === penalesGanadorId);
-		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
-		const mismaDiferencia = pL - pV === gL - gV;
-		// En supple con empate+penales: penales incorrectos → fallado (no buenIntento)
-		const esBuenIntento =
-			!esExacto &&
-			resultadoPred === resultadoReal &&
-			mismaDiferencia &&
-			(penalesGanadorId == null || pL !== pV || penalesId === penalesGanadorId);
-
-		let emoji: string;
-		if (!hayGanadores) {
-			emoji = "⏹️";
-		} else if (esExacto) {
-			emoji = "✅";
-			ganadores.push(...menciones);
-		} else if (esBuenIntento) {
-			emoji = "⚡";
-		} else {
-			emoji = "❌";
-		}
-		lineas.push(`${label}: ${menciones.join("/")} ${emoji}`);
-	}
+	const {
+		lineas: lineasPredicciones,
+		ganadores,
+		hayGanadores,
+	} = clasificarPredicciones(grouped, gL, gV, penalesGanadorId);
+	lineas.push(...lineasPredicciones);
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
 	if (sinLine) lineas.push(sinLine);
@@ -224,34 +235,65 @@ export function buildAlertaSupleCreado(
 		predicciones,
 		info.equipoLocalId,
 		info.equipoLocalBandera,
-		info.equipoLocalSiglas,
 		info.equipoVisitanteBandera,
-		info.equipoVisitanteSiglas,
 	);
 
-	const vivos: string[] = [];
-
-	for (const { label, menciones, gL: pL, gV: pV } of grouped) {
-		const scoreMatch = pL === gL && pV === gV;
-		let emoji: string;
-		if (scoreMatch) {
-			emoji = "⏺️";
-			vivos.push(...menciones);
-		} else {
-			emoji = "❌";
-		}
-		lineas.push(`${label}: ${menciones.join("/")} ${emoji}`);
-	}
+	const {
+		lineas: lineasPredicciones,
+		ganadores,
+		hayGanadores,
+	} = clasificarPredicciones(grouped, gL, gV, null);
+	lineas.push(...lineasPredicciones);
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
 	if (sinLine) lineas.push(sinLine);
 
 	lineas.push("");
-	if (vivos.length > 0) {
-		lineas.push(`⏺️ *Con chances: ${vivos.join(", ")}*`);
+
+	const extras: string[] = [];
+	if (info.extraPartidazo) extras.push("**Partidazo 💥**");
+	if (info.extraMilagro) extras.push("**Milagro ✝️**");
+	if (info.extraBatacazo) extras.push("**Batacazo 🐴**");
+	if (info.extraElElegido) extras.push("**El Elegido 👑**");
+	if (extras.length > 0) lineas.push(extras.join(" · "));
+
+	if (!hayGanadores) {
+		lineas.push(`⏹️ *Nadie atinó el 90' exacto.*`);
 	} else {
-		lineas.push(`❌ *Nadie atinó el 90' exacto.*`);
+		lineas.push(`✅ *¡Bravo! Atinaron el 90':* ${ganadores.join(", ")}`);
 	}
+
+	return lineas.join("\n");
+}
+
+export function buildAlertaInicioSuplementario(
+	info: VerInformacionPartidoRow,
+	predicciones: VerPrediccionesPorPartidoRow[],
+	sinPrediccion: VerParticipantesSinPrediccionRow[],
+): string {
+	const lineas = [
+		"⏱️ **¡EMPIEZA EL TIEMPO EXTRA!**",
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		"*Ya no más apuestas* 🙅",
+	];
+
+	if (predicciones.length === 0) {
+		lineas.push("_Nadie apostó en este suplementario._");
+		return lineas.join("\n");
+	}
+
+	const grouped = groupAndSort(
+		predicciones,
+		info.equipoLocalId,
+		info.equipoLocalBandera,
+		info.equipoVisitanteBandera,
+	);
+	for (const { label, menciones } of grouped) {
+		lineas.push(`${label}: ${menciones.join("/")}`);
+	}
+
+	const sinLine = sinPrediccionLine(sinPrediccion);
+	if (sinLine) lineas.push(sinLine);
 
 	return lineas.join("\n");
 }

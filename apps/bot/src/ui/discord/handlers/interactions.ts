@@ -44,10 +44,13 @@ import {
 	buildContraofertaComponent,
 	buildMisTimbasComponents,
 	buildTimbaAceptadaComponent,
+	buildTimbaAceptarConfirmacionContent,
 	buildTimbaCreacionComponent,
 	buildTimbaResolucionComponents,
 	buildTimbaResolucionMedioTiempoComponents,
 	MIS_TIMBAS_DATE_SELECT_CUSTOM_ID,
+	TIMBA_ACEPTAR_CANCELAR_PREFIX,
+	TIMBA_ACEPTAR_CONFIRMAR_PREFIX,
 	TIMBA_ACEPTAR_PREFIX,
 	TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX,
 	TIMBA_CONTRAOFERTA_PREFIX,
@@ -70,7 +73,7 @@ const PREDICCION_MODAL_CUSTOM_ID = "prediccion:create";
 const PREDICCION_ADMIN_MODAL_CUSTOM_ID = "prediccion:create-admin";
 const PREDICCION_GOLES_LOCAL_FIELD_ID = "goles-local";
 const PREDICCION_GOLES_VISITANTE_FIELD_ID = "goles-visitante";
-const PREDICCION_PENALES_GANADOR_FIELD_ID = "penales-ganador";
+const PREDICCION_SUPLE_PENALES_PREFIX = "prediccion:suple-penales:";
 const PREDICCION_ET_MODAL_CUSTOM_ID = "prediccion-et:create";
 const PREDICCION_ET_GOLES_LOCAL_FIELD_ID = "et-goles-local";
 const PREDICCION_ET_GOLES_VISITANTE_FIELD_ID = "et-goles-visitante";
@@ -90,14 +93,18 @@ function buildPrediccionModal(
 	nombreEquipoVisitante: string,
 	esSuple = false,
 ): ModalBuilder {
-	const modal = new ModalBuilder()
+	return new ModalBuilder()
 		.setCustomId(`${PREDICCION_MODAL_CUSTOM_ID}:${partidoId}`)
-		.setTitle(esSuple ? "Predecir suplementario" : "Registrar predicción")
+		.setTitle(esSuple ? "Predecir suplementario (ET)" : "Registrar predicción")
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_LOCAL_FIELD_ID)
-					.setLabel(`Goles de ${nombreEquipoLocal}`)
+					.setLabel(
+						esSuple
+							? `Goles adicionales de ${nombreEquipoLocal}`
+							: `Goles de ${nombreEquipoLocal}`,
+					)
 					.setPlaceholder("Ej: 0, 1, 2...")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
@@ -107,7 +114,11 @@ function buildPrediccionModal(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_GOLES_VISITANTE_FIELD_ID)
-					.setLabel(`Goles de ${nombreEquipoVisitante}`)
+					.setLabel(
+						esSuple
+							? `Goles adicionales de ${nombreEquipoVisitante}`
+							: `Goles de ${nombreEquipoVisitante}`,
+					)
 					.setPlaceholder("Ej: 0, 1, 2...")
 					.setStyle(TextInputStyle.Short)
 					.setRequired(true)
@@ -115,23 +126,6 @@ function buildPrediccionModal(
 					.setMaxLength(2),
 			),
 		);
-
-	if (esSuple) {
-		modal.addComponents(
-			new ActionRowBuilder<TextInputBuilder>().addComponents(
-				new TextInputBuilder()
-					.setCustomId(PREDICCION_PENALES_GANADOR_FIELD_ID)
-					.setLabel("Ganador penales (si predices empate)")
-					.setPlaceholder(`"${nombreEquipoLocal}" o "${nombreEquipoVisitante}"`)
-					.setStyle(TextInputStyle.Short)
-					.setRequired(false)
-					.setMinLength(0)
-					.setMaxLength(50),
-			),
-		);
-	}
-
-	return modal;
 }
 
 function parsePrediccionModalCustomId(customId: string): number | null {
@@ -255,7 +249,9 @@ export async function handlePartidosEtButtonInteraction(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_ET_GOLES_LOCAL_FIELD_ID)
-					.setLabel(`Goles adicionales de ${partido.equipoLocalNombre} en ET`)
+					.setLabel(
+						`Goles ET de ${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`,
+					)
 					.setPlaceholder(
 						existing
 							? String(existing.golesLocalAdicionales)
@@ -270,7 +266,7 @@ export async function handlePartidosEtButtonInteraction(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_ET_GOLES_VISITANTE_FIELD_ID)
 					.setLabel(
-						`Goles adicionales de ${partido.equipoVisitanteNombre} en ET`,
+						`Goles ET de ${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`,
 					)
 					.setPlaceholder(
 						existing
@@ -510,7 +506,9 @@ export async function handlePartidosEtAdminButtonInteraction(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_ET_GOLES_LOCAL_FIELD_ID)
-					.setLabel(`Goles adicionales de ${partido.equipoLocalNombre} en ET`)
+					.setLabel(
+						`Goles ET de ${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`,
+					)
 					.setPlaceholder(
 						existing
 							? String(existing.golesLocalAdicionales)
@@ -525,7 +523,7 @@ export async function handlePartidosEtAdminButtonInteraction(
 				new TextInputBuilder()
 					.setCustomId(PREDICCION_ET_GOLES_VISITANTE_FIELD_ID)
 					.setLabel(
-						`Goles adicionales de ${partido.equipoVisitanteNombre} en ET`,
+						`Goles ET de ${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`,
 					)
 					.setPlaceholder(
 						existing
@@ -774,42 +772,81 @@ export async function handlePrediccionModalSubmitInteraction(
 		return;
 	}
 
-	// Parsear penales_ganador si es suple
-	let penalesGanadorId: number | null = null;
 	const esSuple = partido.partidoOriginalId !== null;
+
 	if (esSuple) {
-		const rawPenales = interaction.fields
-			.getTextInputValue(PREDICCION_PENALES_GANADOR_FIELD_ID)
-			.trim()
-			.toLowerCase();
+		const golesLocalAdicional = golesLocalParsed.data;
+		const golesVisitanteAdicional = golesVisitanteParsed.data;
+		const golesLocal = (partido.golesMinimosLocal ?? 0) + golesLocalAdicional;
+		const golesVisitante =
+			(partido.golesMinimosVisitante ?? 0) + golesVisitanteAdicional;
+		const empate = golesLocalAdicional === golesVisitanteAdicional;
+		const golesDisplay = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} **+${golesLocalAdicional}** — **+${golesVisitanteAdicional}** ${partido.equipoVisitanteSiglas} ${partido.equipoVisitanteBandera}`;
 
-		if (rawPenales) {
-			const localNombre = partido.equipoLocalNombre.toLowerCase();
-			const visitanteNombre = partido.equipoVisitanteNombre.toLowerCase();
-			const localSiglas = partido.equipoLocalSiglas.toLowerCase();
-			const visitanteSiglas = partido.equipoVisitanteSiglas.toLowerCase();
-
-			if (
-				rawPenales === localNombre ||
-				rawPenales === localSiglas ||
-				rawPenales === "local"
-			) {
-				penalesGanadorId = partido.equipoLocalId ?? null;
-			} else if (
-				rawPenales === visitanteNombre ||
-				rawPenales === visitanteSiglas ||
-				rawPenales === "visita" ||
-				rawPenales === "visitante"
-			) {
-				penalesGanadorId = partido.equipoVisitanteId ?? null;
-			} else {
-				await interaction.reply({
-					content: `No reconozco "${rawPenales}" como equipo. Escribe el nombre o siglas del equipo que gana los penales.`,
-					ephemeral: true,
-				});
-				return;
-			}
+		if (empate) {
+			await interaction.reply({
+				content: [
+					`🕐 **Predicción suplementario** — ${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera}`,
+					golesDisplay,
+					`Empate en el suplementario → **¿Quién gana los penales?**`,
+				].join("\n"),
+				components: [
+					{
+						type: 1,
+						components: [
+							{
+								type: 2,
+								style: 1,
+								label: `🏆 ${partido.equipoLocalBandera} ${partido.equipoLocalSiglas}`,
+								custom_id: `${PREDICCION_SUPLE_PENALES_PREFIX}${partidoId}:${partido.equipoLocalId}:${golesLocal}:${golesVisitante}`,
+							},
+							{
+								type: 2,
+								style: 1,
+								label: `🏆 ${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`,
+								custom_id: `${PREDICCION_SUPLE_PENALES_PREFIX}${partidoId}:${partido.equipoVisitanteId}:${golesLocal}:${golesVisitante}`,
+							},
+						],
+					},
+					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+				] as any,
+				ephemeral: true,
+			});
+			return;
 		}
+
+		await interaction.deferReply({ ephemeral: true });
+		try {
+			const resultado =
+				await appContext.services.predicciones.guardarPrediccion({
+					usuarioId: interaction.user.id,
+					partidoId,
+					golesLocal,
+					golesVisitante,
+					penalesGanadorId: null,
+				});
+
+			await interaction.editReply(
+				`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocal}-${golesVisitante}.`,
+			);
+
+			await sendAnnouncementChannel(
+				interaction.client,
+				resultado === "created"
+					? `_🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`
+					: `_✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} **vs.** **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera}!_`,
+			);
+		} catch (error) {
+			logger.error(
+				{ err: error, partidoId, userId: interaction.user.id },
+				"Error al registrar predicción desde Discord",
+			);
+
+			await interaction.editReply(
+				"No se pudo registrar la predicción. Verifica si el partido sigue disponible para pronosticar.",
+			);
+		}
+		return;
 	}
 
 	await interaction.deferReply({ ephemeral: true });
@@ -820,18 +857,11 @@ export async function handlePrediccionModalSubmitInteraction(
 			partidoId,
 			golesLocal: golesLocalParsed.data,
 			golesVisitante: golesVisitanteParsed.data,
-			penalesGanadorId,
+			penalesGanadorId: null,
 		});
 
-		const penalesStr =
-			esSuple && penalesGanadorId !== null
-				? penalesGanadorId === -1
-					? ` (penales: ${partido.equipoLocalNombre})`
-					: ` (penales: ${partido.equipoVisitanteNombre})`
-				: "";
-
 		await interaction.editReply(
-			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}${penalesStr}.`,
+			`Predicción registrada para ${partido.equipoLocalNombre} vs ${partido.equipoVisitanteNombre}: ${golesLocalParsed.data}-${golesVisitanteParsed.data}.`,
 		);
 
 		await sendAnnouncementChannel(
@@ -849,6 +879,74 @@ export async function handlePrediccionModalSubmitInteraction(
 		await interaction.editReply(
 			"No se pudo registrar la predicción. Verifica si el partido sigue disponible para pronosticar.",
 		);
+	}
+}
+
+export async function handlePrediccionSuplePenalesButtonInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PREDICCION_SUPLE_PENALES_PREFIX)) return;
+
+	const rest = interaction.customId.slice(
+		PREDICCION_SUPLE_PENALES_PREFIX.length,
+	);
+	// format: partidoId:equipoId:golesLocal:golesVisitante
+	const parts = rest.split(":");
+	if (parts.length !== 4) return;
+
+	const [partidoIdStr, equipoIdStr, golesLocalStr, golesVisitanteStr] = parts;
+	const partidoId = Number(partidoIdStr);
+	const equipoId = Number(equipoIdStr);
+	const golesLocal = Number(golesLocalStr);
+	const golesVisitante = Number(golesVisitanteStr);
+
+	if (
+		Number.isNaN(partidoId) ||
+		Number.isNaN(equipoId) ||
+		Number.isNaN(golesLocal) ||
+		Number.isNaN(golesVisitante)
+	)
+		return;
+
+	await interaction.deferUpdate();
+
+	try {
+		const partido = await appContext.services.partidos.verInformacionPartido({
+			id: partidoId,
+		});
+		const resultado = await appContext.services.predicciones.guardarPrediccion({
+			usuarioId: interaction.user.id,
+			partidoId,
+			golesLocal,
+			golesVisitante,
+			penalesGanadorId: equipoId,
+		});
+
+		const esLocal = equipoId === partido?.equipoLocalId;
+		const penalesBandera = esLocal
+			? (partido?.equipoLocalBandera ?? "")
+			: (partido?.equipoVisitanteBandera ?? "");
+		const penalesSiglas = esLocal
+			? (partido?.equipoLocalSiglas ?? "")
+			: (partido?.equipoVisitanteSiglas ?? "");
+
+		await interaction.editReply({
+			content: `✅ Predicción registrada: ${golesLocal}-${golesVisitante} · Penales → **${penalesBandera} ${penalesSiglas}**`,
+			components: [],
+		});
+
+		await sendAnnouncementChannel(
+			interaction.client,
+			resultado === "created"
+				? `_🎯 ¡<@${interaction.user.id}> ha enviado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} **vs.** **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera}!_`
+				: `_✏️ ¡<@${interaction.user.id}> ha actualizado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} **vs.** **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera}!_`,
+		);
+	} catch (error) {
+		await interaction.followUp({
+			content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+			ephemeral: true,
+		});
 	}
 }
 
@@ -1445,6 +1543,38 @@ export async function sendComponentsToAnnouncementChannel(
 	return null;
 }
 
+export async function editAnnouncementMessageComponents(
+	client: DiscordClient,
+	messageId: string,
+	components: APIMessageTopLevelComponent[],
+): Promise<void> {
+	const channelId = config.discord.announcements.channel.id;
+	if (!channelId) return;
+
+	try {
+		const channel =
+			(client.channels.cache.get(channelId) as TextBasedChannel | undefined) ??
+			((await client.channels.fetch(channelId)) as TextBasedChannel | null) ??
+			undefined;
+
+		if (channel && "messages" in channel) {
+			const message = await (
+				channel as import("discord.js").TextChannel
+			).messages.fetch(messageId);
+			await message.edit({
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch in discord.js
+				components: components as any,
+				flags: MessageFlags.IsComponentsV2,
+			});
+		}
+	} catch (error) {
+		logger.error(
+			{ err: error, channelId, messageId },
+			"Error editando mensaje del canal de anuncios",
+		);
+	}
+}
+
 export function buildTimbaModal(
 	partidoId: number,
 	puntosMaximoFase: number,
@@ -1976,34 +2106,41 @@ export async function handleTimbaButtonInteraction(
 		return;
 	}
 
-	if (customId.startsWith(TIMBA_ACEPTAR_PREFIX)) {
-		const timbaId = Number(customId.slice(TIMBA_ACEPTAR_PREFIX.length));
-		if (Number.isNaN(timbaId)) return;
+	if (customId.startsWith(TIMBA_ACEPTAR_CANCELAR_PREFIX)) {
+		await interaction.update({
+			content: "❌ Cancelaste la aceptación del reto.",
+			components: [],
+		});
+		return;
+	}
 
-		const member =
-			interaction.guild?.members.cache.get(interaction.user.id) ??
-			(await interaction.guild?.members.fetch(interaction.user.id));
-		if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
-			await interaction.reply({
-				content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
-				ephemeral: true,
-			});
-			return;
-		}
+	if (customId.startsWith(TIMBA_ACEPTAR_CONFIRMAR_PREFIX)) {
+		const timbaId = Number(
+			customId.slice(TIMBA_ACEPTAR_CONFIRMAR_PREFIX.length),
+		);
+		if (Number.isNaN(timbaId)) return;
 
 		await interaction.deferUpdate();
 
 		try {
+			const timbaPrevia = await appContext.services.timba.verTimba(timbaId);
 			const result = await appContext.services.timba.aceptarTimba({
 				timbaId,
 				jugador2Id: interaction.user.id,
 			});
 
 			await interaction.editReply({
-				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				components: buildTimbaAceptadaComponent(result) as any,
-				flags: MessageFlags.IsComponentsV2,
+				content: "✅ ¡Aceptaste el reto!",
+				components: [],
 			});
+
+			if (timbaPrevia?.discordMessageId) {
+				await editAnnouncementMessageComponents(
+					interaction.client,
+					timbaPrevia.discordMessageId,
+					buildTimbaAceptadaComponent(result),
+				);
+			}
 
 			await Promise.all([
 				sendAnnouncementChannel(
@@ -2022,11 +2159,54 @@ export async function handleTimbaButtonInteraction(
 				),
 			]);
 		} catch (error) {
-			await interaction.followUp({
+			await interaction.editReply({
 				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la timba."}`,
-				ephemeral: true,
+				components: [],
 			});
 		}
+		return;
+	}
+
+	if (customId.startsWith(TIMBA_ACEPTAR_PREFIX)) {
+		const timbaId = Number(customId.slice(TIMBA_ACEPTAR_PREFIX.length));
+		if (Number.isNaN(timbaId)) return;
+
+		const member =
+			interaction.guild?.members.cache.get(interaction.user.id) ??
+			(await interaction.guild?.members.fetch(interaction.user.id));
+		if (!member?.roles.cache.has(POLLERO_ROLE_ID)) {
+			await interaction.reply({
+				content: "Primero usa `/predecir-awards` para unirte a la polla 🐔",
+				ephemeral: true,
+			});
+			return;
+		}
+
+		const timba = await appContext.services.timba.verTimba(timbaId);
+		if (!timba) {
+			await interaction.reply({
+				content: "❌ Timba no encontrada.",
+				ephemeral: true,
+			});
+			return;
+		}
+		if (timba.estado !== "abierta") {
+			await interaction.reply({
+				content: "❌ Esta timba ya no está disponible.",
+				ephemeral: true,
+			});
+			return;
+		}
+		if (timba.jugador_1Id === interaction.user.id) {
+			await interaction.reply({
+				content: "❌ No puedes aceptar tu propio reto.",
+				ephemeral: true,
+			});
+			return;
+		}
+
+		const { content, components } = buildTimbaAceptarConfirmacionContent(timba);
+		await interaction.reply({ content, components, ephemeral: true });
 		return;
 	}
 

@@ -290,7 +290,7 @@ export class MatchScheduler {
 		if (!info) return;
 
 		const timbasCanceladas = todasLasTimbas.filter(
-			(t) => t.estado === "abierta",
+			(t) => t.estado === "abierta" || t.estado === "contraoferta",
 		);
 
 		await Promise.all([

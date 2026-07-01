@@ -1,11 +1,13 @@
 import type {
 	VerMisTimbasPorFechaRow,
+	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasMedioTiempoPorPartidoRow,
 	VerTimbasPorPartidoRow,
 } from "@sqlc/timba_sql";
 import type { APIMessageTopLevelComponent } from "discord.js";
 import {
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ContainerBuilder,
@@ -24,6 +26,8 @@ import type {
 import { fechaADiscordTimestamp } from "../utils/fecha";
 
 export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
+export const TIMBA_ACEPTAR_CONFIRMAR_PREFIX = "timba:aceptar:confirmar:";
+export const TIMBA_ACEPTAR_CANCELAR_PREFIX = "timba:aceptar:cancelar:";
 export const TIMBA_CONTRAOFERTA_PREFIX = "timba:contraoferta:";
 export const TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX = "timba:contraoferta:aceptar:";
 export const TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX =
@@ -85,6 +89,36 @@ export function buildTimbaCreacionComponent(
 	);
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 	return [container.toJSON() as any];
+}
+
+export function buildTimbaAceptarConfirmacionContent(timba: VerTimbaRow): {
+	content: string;
+	components: ActionRowBuilder<ButtonBuilder>[];
+} {
+	const simetrico = timba.puntosPropuestos === timba.puntosArriesgados;
+	const puntosLine = simetrico
+		? `**${puntosStr(timba.puntosArriesgados)}**`
+		: `**${puntosStr(timba.puntosArriesgados)}** (${timba.jugador_1Nombre} arriesga ${puntosStr(timba.puntosPropuestos)})`;
+
+	return {
+		content: [
+			`🎰 ¿Confirmas aceptar el reto de **${timba.jugador_1Nombre}**?`,
+			`*${timba.equipoLocalSiglas} ${timba.equipoLocalBandera} vs. ${timba.equipoVisitanteSiglas} ${timba.equipoVisitanteBandera}* — _"${timba.descripcion}"_`,
+			`💠 Arriesgas ${puntosLine}`,
+		].join("\n"),
+		components: [
+			new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setCustomId(`${TIMBA_ACEPTAR_CONFIRMAR_PREFIX}${timba.id}`)
+					.setLabel("Sí, confirmar ✅")
+					.setStyle(ButtonStyle.Success),
+				new ButtonBuilder()
+					.setCustomId(`${TIMBA_ACEPTAR_CANCELAR_PREFIX}${timba.id}`)
+					.setLabel("Cancelar")
+					.setStyle(ButtonStyle.Secondary),
+			),
+		],
+	};
 }
 
 export function buildContraofertaComponent(
@@ -307,7 +341,7 @@ function formatMiTimbaLine(timba: MiTimbaPorFecha, usuarioId: string): string {
 		? timba.jugador_2Nombre || "Sin aceptar"
 		: timba.jugador_1Nombre;
 	const fechaPartido = timba.fechaPartido
-		? `<t:${timba.fechaPartido.getTime() / 1_000}:t>`
+		? `<t:${Math.floor(timba.fechaPartido.getTime() / 1_000)}:t>`
 		: "Hora pendiente";
 
 	return [
