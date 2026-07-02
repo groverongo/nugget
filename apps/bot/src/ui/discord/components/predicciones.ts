@@ -12,12 +12,24 @@ import {
 } from "discord.js";
 import type { VerPrediccionEtRow } from "../../../../db/sqlcgen/predicciones_et_sql";
 import type { VerMisPrediccionesPorFechaRow } from "../../../../db/sqlcgen/predicciones_sql";
-import { fechaADiscordTimestamp } from "../utils/fecha";
+import { etLabel, fechaADiscordTimestamp } from "../utils/fecha";
 import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
 
 type MiPrediccionPorFecha = VerMisPrediccionesPorFechaRow;
+
+function penalesFlag(
+	penalesGanadorId: number | null,
+	prediccion: MiPrediccionPorFecha,
+): string {
+	if (penalesGanadorId === null) return "";
+	const bandera =
+		penalesGanadorId === prediccion.equipoLocalId
+			? prediccion.equipoLocalBandera
+			: prediccion.equipoVisitanteBandera;
+	return ` (${bandera})`;
+}
 
 function formatMarcadorReal(prediccion: MiPrediccionPorFecha): string {
 	if (
@@ -27,15 +39,46 @@ function formatMarcadorReal(prediccion: MiPrediccionPorFecha): string {
 		return "Sin resultado final";
 	}
 
-	return `Resultado: ${prediccion.partidoGolesLocal}-${prediccion.partidoGolesVisitante}`;
+	const penalesStr = penalesFlag(
+		prediccion.partidoPenalesGanadorId,
+		prediccion,
+	);
+	return `Resultado: ${prediccion.partidoGolesLocal}-${prediccion.partidoGolesVisitante}${penalesStr}`;
 }
 
 function getPrediccionEmoji(prediccion: MiPrediccionPorFecha): string {
 	if (prediccion.estado === "finalizado") {
-		return prediccion.partidoGolesLocal === prediccion.prediccionGolesLocal &&
-			prediccion.partidoGolesVisitante === prediccion.prediccionGolesVisitante
-			? "✅"
-			: "❌";
+		if (
+			prediccion.partidoGolesLocal === null ||
+			prediccion.partidoGolesVisitante === null
+		) {
+			return "";
+		}
+
+		const gL = prediccion.partidoGolesLocal;
+		const gV = prediccion.partidoGolesVisitante;
+		const pL = prediccion.prediccionGolesLocal;
+		const pV = prediccion.prediccionGolesVisitante;
+
+		const scoreMatch = pL === gL && pV === gV;
+		const esExacto =
+			scoreMatch &&
+			(prediccion.partidoPenalesGanadorId === null ||
+				prediccion.prediccionPenalesGanadorId ===
+					prediccion.partidoPenalesGanadorId);
+		if (esExacto) return "✅";
+
+		const resultadoReal = gL > gV ? "local" : gL < gV ? "visitante" : "empate";
+		const resultadoPred = pL > pV ? "local" : pL < pV ? "visitante" : "empate";
+		const mismaDiferencia = pL - pV === gL - gV;
+		const esBuenIntento =
+			resultadoPred === resultadoReal &&
+			mismaDiferencia &&
+			(prediccion.partidoPenalesGanadorId === null ||
+				pL !== pV ||
+				prediccion.prediccionPenalesGanadorId ===
+					prediccion.partidoPenalesGanadorId);
+		return esBuenIntento ? "⚡" : "❌";
 	}
 
 	if (prediccion.estado === "en_vivo" || prediccion.estado === "medio_tiempo") {
@@ -89,10 +132,14 @@ function formatPrediccionLine(
 
 	const emoji = getPrediccionEmoji(prediccion);
 	const emojiSuffix = emoji ? ` ${emoji}` : "";
+	const prediccionPenalesStr = penalesFlag(
+		prediccion.prediccionPenalesGanadorId,
+		prediccion,
+	);
 
 	const lines = [
-		`### ${prediccion.equipoLocalNombre} ${prediccion.equipoLocalBandera} vs. ${prediccion.equipoVisitanteNombre} ${prediccion.equipoVisitanteBandera}`,
-		`**Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}**${emojiSuffix}`,
+		`### ${prediccion.equipoLocalNombre} ${prediccion.equipoLocalBandera} vs. ${prediccion.equipoVisitanteNombre} ${prediccion.equipoVisitanteBandera}${etLabel(prediccion.partidoOriginalId)}`,
+		`**Mi predicción: ${prediccion.prediccionGolesLocal}-${prediccion.prediccionGolesVisitante}${prediccionPenalesStr}**${emojiSuffix}`,
 	];
 	if (et) lines.push(formatEtLine(et, prediccion));
 	lines.push(
@@ -169,12 +216,15 @@ export function buildMisPrediccionesComponents(
 				.setCustomId(PREDICCIONES_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas.map((optionDate) =>
-						new StringSelectMenuOptionBuilder()
-							.setLabel(optionDate)
-							.setValue(optionDate)
-							.setDefault(optionDate === date),
-					),
+					fechas
+						.slice()
+						.reverse()
+						.map((optionDate) =>
+							new StringSelectMenuOptionBuilder()
+								.setLabel(optionDate)
+								.setValue(optionDate)
+								.setDefault(optionDate === date),
+						),
 				),
 		),
 	);

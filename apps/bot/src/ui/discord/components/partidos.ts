@@ -47,7 +47,7 @@ function formatPartidoLine(partido: PartidoPorFecha, esSuple = false): string {
 	const visitante = `${partido.equipoVisitanteBandera} ${partido.equipoVisitanteSiglas}`;
 	const hora = timestamp ? `<t:${timestamp}:t>` : "";
 	const regresivo = timestamp ? ` — <t:${timestamp}:R>` : "";
-	const etSuffix = esSuple ? " **(ET)**" : "";
+	const etSuffix = esSuple ? " **(ET)** ⏱️" : "";
 
 	return `${local} vs ${visitante}${etSuffix}${marcador} (${hora})${regresivo}`;
 }
@@ -109,9 +109,7 @@ export function buildPartidosComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						esSuple
-							? `⏱️ ${formatPartidoLine(partido, true)}`
-							: formatPartidoLine(partido),
+						formatPartidoLine(partido, esSuple),
 					),
 				)
 				.setButtonAccessory(button),
@@ -141,12 +139,15 @@ export function buildPartidosComponents(
 				.setCustomId(PARTIDOS_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas.map((optionDate) =>
-						new StringSelectMenuOptionBuilder()
-							.setLabel(optionDate)
-							.setValue(optionDate)
-							.setDefault(optionDate === date),
-					),
+					fechas
+						.slice()
+						.reverse()
+						.map((optionDate) =>
+							new StringSelectMenuOptionBuilder()
+								.setLabel(optionDate)
+								.setValue(optionDate)
+								.setDefault(optionDate === date),
+						),
 				),
 		),
 	);
@@ -164,6 +165,12 @@ export function buildAlertaDiariaPartidosComponents(
 	);
 
 	for (const partido of partidos.slice(0, PARTIDOS_MAX_BUTTONS)) {
+		const esSuple = partido.partidoOriginalId !== null;
+		const esElegibleEt =
+			!esSuple &&
+			(partido.estado === "programado" || partido.estado === "en_vivo") &&
+			!partido.faseNombre.toLowerCase().includes("grupo");
+
 		container.addSectionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
@@ -178,6 +185,19 @@ export function buildAlertaDiariaPartidosComponents(
 						.setStyle(ButtonStyle.Primary),
 				),
 		);
+
+		if (esElegibleEt) {
+			container.addActionRowComponents(
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder()
+						.setCustomId(
+							`${PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX}${partido.partidoId}`,
+						)
+						.setLabel("🕐 Apostar ET")
+						.setStyle(ButtonStyle.Secondary),
+				),
+			);
+		}
 
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
@@ -251,9 +271,7 @@ export function buildPartidosAdminComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						esSuple
-							? `⏱️ ${formatPartidoLine(partido, true)}`
-							: formatPartidoLine(partido),
+						formatPartidoLine(partido, esSuple),
 					),
 				)
 				.setButtonAccessory(button),
@@ -285,12 +303,15 @@ export function buildPartidosAdminComponents(
 				)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas.map((optionDate) =>
-						new StringSelectMenuOptionBuilder()
-							.setLabel(optionDate)
-							.setValue(optionDate)
-							.setDefault(optionDate === date),
-					),
+					fechas
+						.slice()
+						.reverse()
+						.map((optionDate) =>
+							new StringSelectMenuOptionBuilder()
+								.setLabel(optionDate)
+								.setValue(optionDate)
+								.setDefault(optionDate === date),
+						),
 				),
 		),
 	);

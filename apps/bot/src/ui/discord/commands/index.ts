@@ -20,6 +20,7 @@ import {
 	buildVerTimbasComponent,
 } from "../components/timba";
 import {
+	buildEtPrediccionesMap,
 	buildTimbaAdminModal,
 	buildTimbaModal,
 	deleteAnnouncementMessages,
@@ -1341,7 +1342,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							`_⚔️ **Timba Times pactadas en el medio tiempo** (${siglas})_`,
 							...timbasCerradas.map(
 								(t) =>
-									`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
+									`• 🗡️ <@${t.jugador_1Id}> 🆚 🛡️ <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
 							),
 						];
 						await sendAlertsChannel(interaction.client, lineas.join("\n"));
@@ -1434,7 +1435,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								`_⚔️ **Timba Times en juego** (${partido})_`,
 								...timbasCerradas.map(
 									(t) =>
-										`• <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
+										`• 🗡️ <@${t.jugador_1Id}> 🆚 🛡️ <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
 								),
 							];
 							await sendAlertsChannel(interaction.client, lineas.join("\n"));
@@ -1865,11 +1866,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						date: fechaSeleccionada,
 					});
 
+				const etPrediccionesMap = await buildEtPrediccionesMap(
+					predicciones,
+					interaction.user.id,
+					appContext,
+				);
+
 				await interaction.editReply({
 					components: buildMisPrediccionesComponents(
 						fechaSeleccionada,
 						predicciones,
 						fechas,
+						etPrediccionesMap,
 					),
 					flags: MessageFlags.IsComponentsV2,
 				});
@@ -3139,13 +3147,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					.toLowerCase();
 				const opciones = timbas
 					.filter((t) =>
-						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion} ${t.jugador1Nombre}`
+						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion} ${t.jugador_1Nombre}`
 							.toLowerCase()
 							.includes(q),
 					)
 					.slice(0, 25)
 					.map((t) => {
-						const label = `#${t.id} [${t.estado}] ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} — "${t.descripcion}" (${t.jugador1Nombre})`;
+						const label = `#${t.id} [${t.estado}] ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} — "${t.descripcion}" (${t.jugador_1Nombre})`;
 						return {
 							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
 							value: t.id,
@@ -3164,10 +3172,17 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `✅ Timba #${timbaId} anulada y eliminada.`,
 					});
 					const partido = `${anulada.equipoLocalNombre} ${anulada.equipoLocalBandera} vs. ${anulada.equipoVisitanteNombre} ${anulada.equipoVisitanteBandera}`;
-					await sendAnnouncementChannel(
-						interaction.client,
-						`🚫 *¡Se canceló una timba de <@${anulada.jugador_1Id}> para el partido ${partido}! - "${anulada.descripcion}"*`,
-					);
+					await Promise.all([
+						sendAnnouncementChannel(
+							interaction.client,
+							`🚫 *¡Se canceló una timba de <@${anulada.jugador_1Id}> para el partido ${partido}! - "${anulada.descripcion}"*`,
+						),
+						anulada.discordMessageId
+							? deleteAnnouncementMessages(interaction.client, [
+									anulada.discordMessageId,
+								])
+							: Promise.resolve(),
+					]);
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
@@ -3368,17 +3383,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						appContext.services.recuento.verAwardsParaRecuento(),
 					]);
 					const equipo = eliminados.find((e) => e.id === equipoId);
-					// eliminados ordenado por eliminado_at ASC → primero = primera selección eliminada
-					const firstEliminadoId = eliminados[0]?.id ?? equipoId;
 					if (equipo) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaEliminacion(
-								equipo,
-								awards,
-								equipoId,
-								firstEliminadoId,
-							),
+							buildAlertaEliminacion(equipo, awards, equipoId),
 						);
 					}
 				} else {

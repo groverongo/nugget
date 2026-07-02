@@ -310,8 +310,9 @@ UPDATE partidos SET
     extra_partidazo = $4,
     extra_batacazo = $5,
     extra_el_elegido = $6,
+    penales_ganador_id = $7,
     estado = 'finalizado'
-WHERE id = $7`;
+WHERE id = $8`;
 
 export interface ActualizarPartidoFinalizadoArgs {
     golesLocal: number | null;
@@ -320,13 +321,14 @@ export interface ActualizarPartidoFinalizadoArgs {
     extraPartidazo: boolean;
     extraBatacazo: boolean;
     extraElElegido: boolean;
+    penalesGanadorId: number | null;
     id: number;
 }
 
 export async function actualizarPartidoFinalizado(client: Client, args: ActualizarPartidoFinalizadoArgs): Promise<void> {
     await client.query({
         text: actualizarPartidoFinalizadoQuery,
-        values: [args.golesLocal, args.golesVisitante, args.extraMilagro, args.extraPartidazo, args.extraBatacazo, args.extraElElegido, args.id],
+        values: [args.golesLocal, args.golesVisitante, args.extraMilagro, args.extraPartidazo, args.extraBatacazo, args.extraElElegido, args.penalesGanadorId, args.id],
         rowMode: "array"
     });
 }

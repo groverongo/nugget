@@ -51,6 +51,9 @@ ORDER BY (prediccion.goles_local + prediccion.goles_visitante) DESC, prediccion.
 SELECT
     p.usuario_id,
     u.username,
+    p.resultado,
+    p.puntos_base,
+    p.puntos_en_racha,
     p.puntos_total AS puntos_ganados,
     u.puntos AS puntos_acumulados
 FROM prediccion p
@@ -183,16 +186,16 @@ WHERE pe.partido_id = $1 AND u.participante = TRUE
 ORDER BY COALESCE(pe.puntos_total, 0) DESC, u.username;
 
 -- name: VerMisPrediccionesPorFecha :many
-SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_bandera, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_bandera, equipo_visitante_puntos_fifa, equipo_visitante_grupo
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, prediccion_penales_ganador_id, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, partido_penales_ganador_id, partido_original_id, estado, equipo_local_nombre, equipo_local_bandera, equipo_local_siglas, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_bandera, equipo_visitante_siglas, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
-    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
+    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante, penales_ganador_id AS prediccion_penales_ganador_id
     FROM prediccion
     WHERE usuario_id = $1
 ) pe
 INNER JOIN (
-    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.bandera AS equipo_local_bandera, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.bandera AS equipo_visitante_bandera, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
+    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, penales_ganador_id AS partido_penales_ganador_id, partido_original_id, estado, el.nombre AS equipo_local_nombre, el.bandera AS equipo_local_bandera, el.siglas AS equipo_local_siglas, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.bandera AS equipo_visitante_bandera, ev.siglas AS equipo_visitante_siglas, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
     FROM (
-        SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, estado
+        SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, penales_ganador_id, partido_original_id, estado
         FROM partidos
         WHERE DATE(fecha_partido - INTERVAL '5 hours') = DATE($2)
     ) pa

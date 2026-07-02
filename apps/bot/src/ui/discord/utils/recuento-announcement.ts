@@ -28,7 +28,6 @@ function getPremioParaPuesto(
 function buildAwardsSection(
 	awards: VerAwardsParaRecuentoRow[],
 	eliminadosIds: Set<number>,
-	firstEliminadoId?: number | null,
 ): string[] {
 	if (awards.length === 0) return [];
 
@@ -41,7 +40,6 @@ function buildAwardsSection(
 		isEliminated: (r: VerAwardsParaRecuentoRow) => boolean;
 	};
 
-	// Awards regulares: si tu equipo fue eliminado → ❌ (perdiste la award)
 	const regularDefs: AwardDef[] = [
 		{
 			label: AWARD_LABELS.campeon,
@@ -77,6 +75,12 @@ function buildAwardsSection(
 				r.mejorGolEquipoId !== null && eliminadosIds.has(r.mejorGolEquipoId),
 		},
 		{
+			label: AWARD_LABELS.seleccionDecepcion,
+			isEliminated: (r) =>
+				r.seleccionDecepcionId !== null &&
+				eliminadosIds.has(r.seleccionDecepcionId),
+		},
+		{
 			label: AWARD_LABELS.seleccionSorpresa,
 			isEliminated: (r) =>
 				r.seleccionSorpresaId !== null &&
@@ -97,37 +101,6 @@ function buildAwardsSection(
 		}
 	}
 
-	// Selección decepción: gana quien acertó la PRIMERA selección eliminada
-	// Si tu selección = primera eliminada → ✅
-	// Cualquier otra selección (aún viva o eliminada después) → ❌
-	const decepcionGanadores = awards
-		.filter(
-			(r) =>
-				r.seleccionDecepcionId !== null &&
-				firstEliminadoId != null &&
-				r.seleccionDecepcionId === firstEliminadoId,
-		)
-		.map((r) => `<@${r.usuarioId}>`);
-	const decepcionPerdedores = awards
-		.filter(
-			(r) =>
-				r.seleccionDecepcionId !== null &&
-				r.seleccionDecepcionId !== firstEliminadoId,
-		)
-		.map((r) => `<@${r.usuarioId}>`);
-
-	if (decepcionGanadores.length > 0 || decepcionPerdedores.length > 0) {
-		hayMuertas = true;
-		const parts: string[] = [];
-		if (decepcionGanadores.length > 0)
-			parts.push(`${decepcionGanadores.join("/")} ✅`);
-		if (decepcionPerdedores.length > 0)
-			parts.push(`${decepcionPerdedores.join("/")} ❌`);
-		lineas.push(
-			`- ***${AWARD_LABELS.seleccionDecepcion}:*** ${parts.join(" · ")}`,
-		);
-	}
-
 	if (!hayMuertas) {
 		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
@@ -139,17 +112,12 @@ export function buildAlertaEliminacion(
 	equipo: { nombre: string; bandera: string },
 	awards: VerAwardsParaRecuentoRow[],
 	equipoId: number,
-	firstEliminadoId: number,
 ): string {
 	const lineas: string[] = [
 		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
 	];
 
-	const afectadas = buildAwardsSection(
-		awards,
-		new Set([equipoId]),
-		firstEliminadoId,
-	);
+	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
 	if (
 		afectadas.length > 0 &&
 		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
@@ -216,8 +184,6 @@ export function buildRecuento(datos: DatosRecuento): string {
 			: "0%";
 
 	const eliminadosIds = new Set(eliminados.map((e) => e.id));
-	// eliminados está ordenado por eliminado_at ASC → el primero fue el primero en caer
-	const firstEliminadoId = eliminados[0]?.id ?? null;
 
 	const lineas: string[] = [
 		`⚽ 🏆  ***RECUENTO: POLLITA FWC 2026***`,
@@ -235,11 +201,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 	}
 
 	// Awards
-	const awardsLineas = buildAwardsSection(
-		awards,
-		eliminadosIds,
-		firstEliminadoId,
-	);
+	const awardsLineas = buildAwardsSection(awards, eliminadosIds);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
 		if (eliminados.length > 0) {

@@ -79,6 +79,7 @@ export type AnularTimbaResult = Pick<
 	| "equipoVisitanteNombre"
 	| "equipoVisitanteBandera"
 	| "descripcion"
+	| "discordMessageId"
 >;
 
 export interface ResolverTimbaInput {

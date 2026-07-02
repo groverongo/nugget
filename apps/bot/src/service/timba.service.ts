@@ -262,6 +262,7 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
 			equipoVisitanteBandera: timba.equipoVisitanteBandera,
 			descripcion: timba.descripcion,
+			discordMessageId: timba.discordMessageId,
 		};
 	}
 

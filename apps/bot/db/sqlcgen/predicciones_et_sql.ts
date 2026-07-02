@@ -113,3 +113,4 @@ export async function eliminarPrediccionesEtPorPartido(client: Client, args: Eli
         rowMode: "array"
     });
 }
+
