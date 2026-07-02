@@ -91,8 +91,9 @@ UPDATE partidos SET
     extra_partidazo = $4,
     extra_batacazo = $5,
     extra_el_elegido = $6,
+    penales_ganador_id = $7,
     estado = 'finalizado'
-WHERE id = $7;
+WHERE id = $8;
 
 -- name: ActualizarPartidoMedioTiempo :exec
 UPDATE partidos SET

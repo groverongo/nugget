@@ -293,54 +293,6 @@ export async function verTimbasCerradasPorPartido(client: Client, args: VerTimba
     });
 }
 
-export const verTodasLasTimbasQuery = `-- name: VerTodasLasTimbas :many
-SELECT
-    t.id,
-    t.estado,
-    t.descripcion,
-    t.puntos_propuestos,
-    t.jugador_1_id,
-    u1.username AS jugador_1_nombre,
-    el.nombre AS equipo_local_nombre,
-    ev.nombre AS equipo_visitante_nombre
-FROM timba_time t
-JOIN usuarios u1 ON u1.id = t.jugador_1_id
-JOIN partidos p ON p.id = t.partido_id
-JOIN estatico_equipos el ON el.id = p.equipo_local_id
-JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
-ORDER BY t.id DESC`;
-
-export interface VerTodasLasTimbasRow {
-    id: number;
-    estado: string;
-    descripcion: string;
-    puntosPropuestos: number;
-    jugador_1Id: string;
-    jugador1Nombre: string;
-    equipoLocalNombre: string;
-    equipoVisitanteNombre: string;
-}
-
-export async function verTodasLasTimbas(client: Client): Promise<VerTodasLasTimbasRow[]> {
-    const result = await client.query({
-        text: verTodasLasTimbasQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map((row: unknown[]) => {
-        return {
-            id: row[0] as number,
-            estado: row[1] as string,
-            descripcion: row[2] as string,
-            puntosPropuestos: row[3] as number,
-            jugador_1Id: row[4] as string,
-            jugador1Nombre: row[5] as string,
-            equipoLocalNombre: row[6] as string,
-            equipoVisitanteNombre: row[7] as string,
-        };
-    });
-}
-
 export const verMisTimbasQuery = `-- name: VerMisTimbas :many
 SELECT
     t.id,
@@ -662,6 +614,54 @@ export async function guardarMensajeTimba(client: Client, args: GuardarMensajeTi
         text: guardarMensajeTimbaQuery,
         values: [args.id, args.discordMessageId],
         rowMode: "array"
+    });
+}
+
+export const verTodasLasTimbasQuery = `-- name: VerTodasLasTimbas :many
+SELECT
+    t.id,
+    t.estado,
+    t.descripcion,
+    t.puntos_propuestos,
+    t.jugador_1_id,
+    u1.username AS jugador_1_nombre,
+    el.nombre AS equipo_local_nombre,
+    ev.nombre AS equipo_visitante_nombre
+FROM timba_time t
+JOIN usuarios u1 ON u1.id = t.jugador_1_id
+JOIN partidos p ON p.id = t.partido_id
+JOIN estatico_equipos el ON el.id = p.equipo_local_id
+JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
+ORDER BY t.id DESC`;
+
+export interface VerTodasLasTimbasRow {
+    id: number;
+    estado: string;
+    descripcion: string;
+    puntosPropuestos: number;
+    jugador_1Id: string;
+    jugador_1Nombre: string;
+    equipoLocalNombre: string;
+    equipoVisitanteNombre: string;
+}
+
+export async function verTodasLasTimbas(client: Client): Promise<VerTodasLasTimbasRow[]> {
+    const result = await client.query({
+        text: verTodasLasTimbasQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            estado: row[1],
+            descripcion: row[2],
+            puntosPropuestos: row[3],
+            jugador_1Id: row[4],
+            jugador_1Nombre: row[5],
+            equipoLocalNombre: row[6],
+            equipoVisitanteNombre: row[7]
+        };
     });
 }
 

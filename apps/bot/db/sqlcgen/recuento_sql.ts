@@ -177,7 +177,7 @@ export const verEquiposEliminadosQuery = `-- name: VerEquiposEliminados :many
 SELECT id, nombre, siglas, bandera
 FROM estatico_equipos
 WHERE eliminado = TRUE
-ORDER BY nombre ASC`;
+ORDER BY eliminado_at ASC NULLS LAST`;
 
 export interface VerEquiposEliminadosRow {
     id: number;
@@ -203,7 +203,7 @@ export async function verEquiposEliminados(client: Client): Promise<VerEquiposEl
 }
 
 export const marcarEquipoEliminadoQuery = `-- name: MarcarEquipoEliminado :exec
-UPDATE estatico_equipos SET eliminado = TRUE WHERE id = $1`;
+UPDATE estatico_equipos SET eliminado = TRUE, eliminado_at = NOW() WHERE id = $1`;
 
 export interface MarcarEquipoEliminadoArgs {
     id: number;
@@ -218,7 +218,7 @@ export async function marcarEquipoEliminado(client: Client, args: MarcarEquipoEl
 }
 
 export const marcarEquipoNoEliminadoQuery = `-- name: MarcarEquipoNoEliminado :exec
-UPDATE estatico_equipos SET eliminado = FALSE WHERE id = $1`;
+UPDATE estatico_equipos SET eliminado = FALSE, eliminado_at = NULL WHERE id = $1`;
 
 export interface MarcarEquipoNoEliminadoArgs {
     id: number;

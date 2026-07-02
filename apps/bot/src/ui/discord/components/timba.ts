@@ -239,7 +239,7 @@ export function buildTimbaResolucionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
+						`🗡️ <@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
 					),
 				)
 				.setButtonAccessory(
@@ -253,7 +253,7 @@ export function buildTimbaResolucionComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
+						`🛡️ <@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
 					),
 				)
 				.setButtonAccessory(
@@ -436,7 +436,7 @@ export function buildTimbaResolucionMedioTiempoComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
+						`🗡️ <@${timba.jugador_1Id}> (${timba.jugador_1Nombre}) — gana **${timba.puntosArriesgados} 💠**`,
 					),
 				)
 				.setButtonAccessory(
@@ -452,7 +452,7 @@ export function buildTimbaResolucionMedioTiempoComponents(
 			new SectionBuilder()
 				.addTextDisplayComponents(
 					new TextDisplayBuilder().setContent(
-						`<@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
+						`🛡️ <@${timba.jugador_2Id}> (${timba.jugador_2Nombre}) — gana **${timba.puntosPropuestos} 💠**`,
 					),
 				)
 				.setButtonAccessory(

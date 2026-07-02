@@ -191,6 +191,9 @@ export const verPuntajesPartidoQuery = `-- name: VerPuntajesPartido :many
 SELECT
     p.usuario_id,
     u.username,
+    p.resultado,
+    p.puntos_base,
+    p.puntos_en_racha,
     p.puntos_total AS puntos_ganados,
     u.puntos AS puntos_acumulados
 FROM prediccion p
@@ -205,6 +208,9 @@ export interface VerPuntajesPartidoArgs {
 export interface VerPuntajesPartidoRow {
     usuarioId: string;
     username: string;
+    resultado: string;
+    puntosBase: number;
+    puntosEnRacha: number;
     puntosGanados: number;
     puntosAcumulados: number;
 }
@@ -219,8 +225,11 @@ export async function verPuntajesPartido(client: Client, args: VerPuntajesPartid
         return {
             usuarioId: row[0],
             username: row[1],
-            puntosGanados: row[2],
-            puntosAcumulados: row[3]
+            resultado: row[2],
+            puntosBase: row[3],
+            puntosEnRacha: row[4],
+            puntosGanados: row[5],
+            puntosAcumulados: row[6]
         };
     });
 }
@@ -634,16 +643,16 @@ export async function verPrediccionesResumenPartido(client: Client, args: VerPre
 }
 
 export const verMisPrediccionesPorFechaQuery = `-- name: VerMisPrediccionesPorFecha :many
-SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_bandera, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_bandera, equipo_visitante_puntos_fifa, equipo_visitante_grupo
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, prediccion_penales_ganador_id, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, partido_penales_ganador_id, partido_original_id, estado, equipo_local_nombre, equipo_local_bandera, equipo_local_siglas, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_bandera, equipo_visitante_siglas, equipo_visitante_puntos_fifa, equipo_visitante_grupo
 FROM (
-    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante
+    SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante, penales_ganador_id AS prediccion_penales_ganador_id
     FROM prediccion
     WHERE usuario_id = $1
 ) pe
 INNER JOIN (
-    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, estado, el.nombre AS equipo_local_nombre, el.bandera AS equipo_local_bandera, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.bandera AS equipo_visitante_bandera, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
+    SELECT pa.id AS partido_id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local AS partido_goles_local, goles_visitante AS partido_goles_visitante, penales_ganador_id AS partido_penales_ganador_id, partido_original_id, estado, el.nombre AS equipo_local_nombre, el.bandera AS equipo_local_bandera, el.siglas AS equipo_local_siglas, el.puntos_fifa AS equipo_local_puntos_fifa, el.grupo AS equipo_local_grupo, ev.nombre AS equipo_visitante_nombre, ev.bandera AS equipo_visitante_bandera, ev.siglas AS equipo_visitante_siglas, ev.puntos_fifa AS equipo_visitante_puntos_fifa, ev.grupo AS equipo_visitante_grupo
     FROM (
-        SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, estado
+        SELECT id, equipo_local_id, equipo_visitante_id, fecha_partido, goles_local, goles_visitante, penales_ganador_id, partido_original_id, estado
         FROM partidos
         WHERE DATE(fecha_partido - INTERVAL '5 hours') = DATE($2)
     ) pa
@@ -661,18 +670,23 @@ export interface VerMisPrediccionesPorFechaRow {
     partidoId: number;
     prediccionGolesLocal: number;
     prediccionGolesVisitante: number;
+    prediccionPenalesGanadorId: number | null;
     equipoLocalId: number | null;
     equipoVisitanteId: number | null;
     fechaPartido: Date | null;
     partidoGolesLocal: number | null;
     partidoGolesVisitante: number | null;
+    partidoPenalesGanadorId: number | null;
+    partidoOriginalId: number | null;
     estado: string;
     equipoLocalNombre: string;
     equipoLocalBandera: string;
+    equipoLocalSiglas: string;
     equipoLocalPuntosFifa: string | null;
     equipoLocalGrupo: string;
     equipoVisitanteNombre: string;
     equipoVisitanteBandera: string;
+    equipoVisitanteSiglas: string;
     equipoVisitantePuntosFifa: string | null;
     equipoVisitanteGrupo: string;
 }
@@ -688,20 +702,25 @@ export async function verMisPrediccionesPorFecha(client: Client, args: VerMisPre
             partidoId: row[0],
             prediccionGolesLocal: row[1],
             prediccionGolesVisitante: row[2],
-            equipoLocalId: row[3],
-            equipoVisitanteId: row[4],
-            fechaPartido: row[5],
-            partidoGolesLocal: row[6],
-            partidoGolesVisitante: row[7],
-            estado: row[8],
-            equipoLocalNombre: row[9],
-            equipoLocalBandera: row[10],
-            equipoLocalPuntosFifa: row[11],
-            equipoLocalGrupo: row[12],
-            equipoVisitanteNombre: row[13],
-            equipoVisitanteBandera: row[14],
-            equipoVisitantePuntosFifa: row[15],
-            equipoVisitanteGrupo: row[16]
+            prediccionPenalesGanadorId: row[3],
+            equipoLocalId: row[4],
+            equipoVisitanteId: row[5],
+            fechaPartido: row[6],
+            partidoGolesLocal: row[7],
+            partidoGolesVisitante: row[8],
+            partidoPenalesGanadorId: row[9],
+            partidoOriginalId: row[10],
+            estado: row[11],
+            equipoLocalNombre: row[12],
+            equipoLocalBandera: row[13],
+            equipoLocalSiglas: row[14],
+            equipoLocalPuntosFifa: row[15],
+            equipoLocalGrupo: row[16],
+            equipoVisitanteNombre: row[17],
+            equipoVisitanteBandera: row[18],
+            equipoVisitanteSiglas: row[19],
+            equipoVisitantePuntosFifa: row[20],
+            equipoVisitanteGrupo: row[21]
         };
     });
 }

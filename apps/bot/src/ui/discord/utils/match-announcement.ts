@@ -184,11 +184,12 @@ export function buildAlertaFinPartido(
 		info.equipoVisitanteBandera,
 	);
 
-	const {
-		lineas: lineasPredicciones,
-		ganadores,
-		hayGanadores,
-	} = clasificarPredicciones(grouped, gL, gV, penalesGanadorId);
+	const { lineas: lineasPredicciones, hayGanadores } = clasificarPredicciones(
+		grouped,
+		gL,
+		gV,
+		penalesGanadorId,
+	);
 	lineas.push(...lineasPredicciones);
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
@@ -205,8 +206,6 @@ export function buildAlertaFinPartido(
 
 	if (!hayGanadores) {
 		lineas.push(`⏹️ ***¡No Winner!** Nadie atinó el resultado.*`);
-	} else {
-		lineas.push(`✅ ***¡Bravo!** Ganador(es):* ${ganadores.join(", ")}`);
 	}
 
 	return lineas.join("\n");
@@ -314,16 +313,28 @@ export function buildAlertaGol(
 	].join("\n");
 }
 
+function puntajeLine(p: VerPuntajesPartidoRow): string {
+	const rachaStr = p.puntosEnRacha > 0 ? ` +${p.puntosEnRacha} 🔥` : "";
+	return `• <@${p.usuarioId}> +${p.puntosBase} 💠${rachaStr} (total: ${p.puntosAcumulados})`;
+}
+
 export function buildAlertaAuraPoints(
 	puntajes: VerPuntajesPartidoRow[],
 ): string | null {
 	if (puntajes.length === 0) return null;
 
-	const lineas = [`💠 ***Aura Points** ganados:*`];
-	for (const p of puntajes) {
-		lineas.push(
-			`• <@${p.usuarioId}> ganó **+${p.puntosGanados}** 💠 (total: ${p.puntosAcumulados})`,
-		);
+	const exactos = puntajes.filter((p) => p.resultado === "exacto");
+	const buenosIntentos = puntajes.filter((p) => p.resultado === "buen_intento");
+
+	const lineas: string[] = [];
+	if (exactos.length > 0) {
+		lineas.push(`✅ ***¡Bravo!** Resultado exacto:*`);
+		lineas.push(...exactos.map(puntajeLine));
 	}
-	return lineas.join("\n");
+	if (buenosIntentos.length > 0) {
+		lineas.push(`⚡ ***¡Casi!** Buen intento:*`);
+		lineas.push(...buenosIntentos.map(puntajeLine));
+	}
+
+	return lineas.length > 0 ? lineas.join("\n") : null;
 }

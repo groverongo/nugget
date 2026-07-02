@@ -110,6 +110,7 @@ export class AdminService implements IAdminService {
 				extraPartidazo,
 				extraBatacazo: puntosBatacazo > 0,
 				extraElElegido: puntosElegido > 0,
+				penalesGanadorId,
 			});
 
 			for (const pred of predicciones) {

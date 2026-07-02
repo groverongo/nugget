@@ -214,8 +214,9 @@ async function buildResumenDia(
 					t.ganadorId === t.jugador_1Id
 						? t.puntosArriesgados
 						: t.puntosPropuestos;
+				const ganadorEmoji = t.ganadorId === t.jugador_1Id ? "🗡️" : "🛡️";
 				lineas.push(
-					`• <@${t.ganadorId}> 👑 le robó **${puntosRobados} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
+					`• <@${t.ganadorId}> ${ganadorEmoji} le robó **${puntosRobados} 💠** a <@${perdedorId}> — "${t.descripcion}"`,
 				);
 
 				const existingGanador = ganadores.get(t.ganadorId);
