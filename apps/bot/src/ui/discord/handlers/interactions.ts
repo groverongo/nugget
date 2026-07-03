@@ -382,7 +382,7 @@ export async function handlePrediccionEtModalSubmitInteraction(
 		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -445,7 +445,7 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre} ${partido?.equipoLocalBandera} vs. ${partido?.equipoVisitanteNombre} ${partido?.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
@@ -645,7 +645,7 @@ export async function handlePrediccionEtAdminModalSubmitInteraction(
 		);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -719,7 +719,7 @@ export async function handlePrediccionEtPenalesAdminButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre} ${partido?.equipoLocalBandera} vs. ${partido?.equipoVisitanteNombre} ${partido?.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
