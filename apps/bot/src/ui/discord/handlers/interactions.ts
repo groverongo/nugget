@@ -2140,7 +2140,7 @@ export async function handleTimbaButtonInteraction(
 							components: [
 								{
 									type: 10,
-									content: "🚫 Timba anulada.",
+									content: "🚫 Timba cancelada.",
 								},
 							],
 						},
@@ -2159,7 +2159,7 @@ export async function handleTimbaButtonInteraction(
 			]);
 		} catch (error) {
 			await interaction.followUp({
-				content: `❌ ${error instanceof Error ? error.message : "No se pudo anular la timba."}`,
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo cancelar la timba."}`,
 				ephemeral: true,
 			});
 		}

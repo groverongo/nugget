@@ -98,7 +98,7 @@ export function buildTimbaCreacionComponent(
 			.setButtonAccessory(
 				new ButtonBuilder()
 					.setCustomId(`${TIMBA_ANULAR_PREFIX}${result.timbaId}`)
-					.setLabel("Anular 🚫")
+					.setLabel("Cancelar 🚫")
 					.setStyle(ButtonStyle.Danger),
 			),
 	);
