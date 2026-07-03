@@ -1338,14 +1338,35 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					}
 
 					if (timbasCerradas.length > 0) {
-						const lineas = [
-							`_⚔️ **Timba Times pactadas en el medio tiempo** (${siglas})_`,
-							...timbasCerradas.map(
-								(t) =>
-									`• 🗡️ <@${t.jugador_1Id}> 🆚 🛡️ <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
-							),
-						];
-						await sendAlertsChannel(interaction.client, lineas.join("\n"));
+						const medioTiempoEn = partido?.medioTiempoEn ?? null;
+						const timbaLine = (t: (typeof timbasCerradas)[number]) =>
+							`• 🗡️ <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> 🛡️ — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`;
+
+						const prePartido = medioTiempoEn
+							? timbasCerradas.filter((t) => t.createdAt < medioTiempoEn)
+							: timbasCerradas;
+						const enMedioTiempo = medioTiempoEn
+							? timbasCerradas.filter((t) => t.createdAt >= medioTiempoEn)
+							: [];
+
+						if (prePartido.length > 0) {
+							await sendAlertsChannel(
+								interaction.client,
+								[
+									`_⚔️ **Timba Times en juego (pre-partido)** (${siglas})_`,
+									...prePartido.map(timbaLine),
+								].join("\n"),
+							);
+						}
+						if (enMedioTiempo.length > 0) {
+							await sendAlertsChannel(
+								interaction.client,
+								[
+									`_⚔️ **Timba Times en juego (medio tiempo)** (${siglas})_`,
+									...enMedioTiempo.map(timbaLine),
+								].join("\n"),
+							);
+						}
 					}
 				} catch (error) {
 					await interaction.editReply({
@@ -1435,7 +1456,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								`_⚔️ **Timba Times en juego** (${partido})_`,
 								...timbasCerradas.map(
 									(t) =>
-										`• 🗡️ <@${t.jugador_1Id}> 🆚 🛡️ <@${t.jugador_2Id}> — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
+										`• 🗡️ <@${t.jugador_1Id}> 🆚 <@${t.jugador_2Id}> 🛡️ — **${t.puntosPropuestos === t.puntosArriesgados ? `${t.puntosPropuestos} 💠` : `${t.puntosPropuestos}/${t.puntosArriesgados} 💠`}** — "${t.descripcion}"`,
 								),
 							];
 							await sendAlertsChannel(interaction.client, lineas.join("\n"));
@@ -3172,10 +3193,13 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						content: `✅ Timba #${timbaId} anulada y eliminada.`,
 					});
 					const partido = `${anulada.equipoLocalNombre} ${anulada.equipoLocalBandera} vs. ${anulada.equipoVisitanteNombre} ${anulada.equipoVisitanteBandera}`;
+					const rivalLine = anulada.jugador_2Id
+						? ` vs. <@${anulada.jugador_2Id}>`
+						: "";
 					await Promise.all([
 						sendAnnouncementChannel(
 							interaction.client,
-							`🚫 *¡Se canceló una timba de <@${anulada.jugador_1Id}> para el partido ${partido}! - "${anulada.descripcion}"*`,
+							`🚫 *¡Se canceló una timba de <@${anulada.jugador_1Id}>${rivalLine} para el partido ${partido}! - "${anulada.descripcion}"*`,
 						),
 						anulada.discordMessageId
 							? deleteAnnouncementMessages(interaction.client, [

@@ -74,6 +74,7 @@ export type CancelarTimbaResult = Pick<
 export type AnularTimbaResult = Pick<
 	VerTimbaRow,
 	| "jugador_1Id"
+	| "jugador_2Id"
 	| "equipoLocalNombre"
 	| "equipoLocalBandera"
 	| "equipoVisitanteNombre"
@@ -190,4 +191,8 @@ export interface ITimbaService {
 		contraofertaId: number;
 		jugador1OriginalId: string;
 	}): Promise<CancelarTimbaResult>;
+
+	verTimbaIdPorDiscordMessageId(
+		discordMessageId: string,
+	): Promise<number | null>;
 }

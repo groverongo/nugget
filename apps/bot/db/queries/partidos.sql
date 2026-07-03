@@ -99,7 +99,8 @@ WHERE id = $8;
 UPDATE partidos SET
     goles_local = $1,
     goles_visitante = $2,
-    estado = 'medio_tiempo'
+    estado = 'medio_tiempo',
+    medio_tiempo_en = NOW()
 WHERE id = $3;
 
 -- name: ActualizarPartidoEnVivo :exec
@@ -123,7 +124,8 @@ SELECT
     ev.bandera AS equipo_visitante_bandera,
     partidos.estado,
     partidos.fecha_partido,
-    partidos.partido_original_id
+    partidos.partido_original_id,
+    partidos.medio_tiempo_en
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id

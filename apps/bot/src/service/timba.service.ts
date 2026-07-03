@@ -257,6 +257,7 @@ export class TimbaService implements ITimbaService {
 		await this.timbaRepo.anular({ id: timbaId });
 		return {
 			jugador_1Id: timba.jugador_1Id,
+			jugador_2Id: timba.jugador_2Id,
 			equipoLocalNombre: timba.equipoLocalNombre,
 			equipoLocalBandera: timba.equipoLocalBandera,
 			equipoVisitanteNombre: timba.equipoVisitanteNombre,
@@ -595,22 +596,25 @@ export class TimbaService implements ITimbaService {
 			);
 		}
 
-		// Cancel: parent timba, all its other contraofertas, and sub-contraofertas of accepted
-		await Promise.all([
-			this.timbaRepo.cancelar({ id: contraoferta.timbaOriginalId }),
-			this.timbaRepo.cancelarContraofertasPorTimba(
-				contraoferta.timbaOriginalId,
-			),
-			this.timbaRepo.cancelarContraofertasEnCascadaPorTimba(
-				contraoferta.timbaOriginalId,
-			),
-		]);
+		// Walk the whole chain up to the root timba, plus every sibling
+		// contraoferta at each level and any counters made against the one
+		// being accepted — all of it must die when this contraoferta wins.
+		const cadenaACancelar =
+			await this.timbaRepo.verCadenaContraofertasParaCancelar({
+				timbaOriginalId: contraoferta.timbaOriginalId,
+				contraofertaId: args.contraofertaId,
+			});
 
-		// Accept: jugador1OriginalId becomes J2 of the contraoferta
-		await this.timbaRepo.aceptar({
-			id: args.contraofertaId,
-			jugador_2Id: args.jugador1OriginalId,
-		});
+		await Promise.all([
+			this.timbaRepo.cancelarCadenaContraofertasParaAceptar({
+				timbaOriginalId: contraoferta.timbaOriginalId,
+				contraofertaId: args.contraofertaId,
+			}),
+			this.timbaRepo.aceptar({
+				id: args.contraofertaId,
+				jugador_2Id: args.jugador1OriginalId,
+			}),
+		]);
 
 		return {
 			timbaId: args.contraofertaId,
@@ -626,7 +630,9 @@ export class TimbaService implements ITimbaService {
 			equipoVisitanteNombre: contraoferta.equipoVisitanteNombre,
 			equipoVisitanteBandera: contraoferta.equipoVisitanteBandera,
 			equipoVisitanteSiglas: contraoferta.equipoVisitanteSiglas,
-			cancelledContraofertaMessageIds: [],
+			cancelledContraofertaMessageIds: cadenaACancelar
+				.map((c) => c.discordMessageId)
+				.filter((id): id is string => id !== null),
 		};
 	}
 
@@ -677,5 +683,13 @@ export class TimbaService implements ITimbaService {
 				.map((c) => c.discordMessageId)
 				.filter((id): id is string => id !== null),
 		};
+	}
+
+	async verTimbaIdPorDiscordMessageId(
+		discordMessageId: string,
+	): Promise<number | null> {
+		const row =
+			await this.timbaRepo.verTimbaIdPorDiscordMessageId(discordMessageId);
+		return row?.id ?? null;
 	}
 }

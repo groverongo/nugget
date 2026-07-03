@@ -59,7 +59,8 @@ SELECT
     el.bandera AS equipo_local_bandera,
     ev.siglas AS equipo_visitante_siglas,
     ev.bandera AS equipo_visitante_bandera,
-    t.timba_original_id
+    t.timba_original_id,
+    t.created_at
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
@@ -189,6 +190,9 @@ UPDATE timba_time
 SET discord_message_id = $2
 WHERE id = $1;
 
+-- name: VerTimbaIdPorDiscordMessageId :one
+SELECT id FROM timba_time WHERE discord_message_id = $1;
+
 -- name: VerTodasLasTimbas :many
 SELECT
     t.id,
@@ -271,6 +275,42 @@ SET estado = 'cancelada'
 WHERE timba_original_id IN (
     SELECT id FROM timba_time AS t WHERE t.timba_original_id = $1
 ) AND estado = 'contraoferta';
+
+-- name: VerCadenaContraofertasParaCancelar :many
+WITH RECURSIVE cadena AS (
+    SELECT id, timba_original_id FROM timba_time WHERE id = sqlc.arg('timba_original_id')::INTEGER
+    UNION ALL
+    SELECT t.id, t.timba_original_id
+    FROM timba_time t
+    JOIN cadena c ON t.id = c.timba_original_id
+)
+SELECT DISTINCT t.id, t.discord_message_id
+FROM timba_time t
+WHERE t.estado IN ('abierta', 'contraoferta')
+  AND t.id != sqlc.arg('contraoferta_id')::INTEGER
+  AND (
+    t.id IN (SELECT id FROM cadena)
+    OR t.timba_original_id IN (SELECT id FROM cadena)
+    OR t.timba_original_id = sqlc.arg('contraoferta_id')::INTEGER
+  );
+
+-- name: CancelarCadenaContraofertasParaAceptar :exec
+WITH RECURSIVE cadena AS (
+    SELECT id, timba_original_id FROM timba_time WHERE id = sqlc.arg('timba_original_id')::INTEGER
+    UNION ALL
+    SELECT t.id, t.timba_original_id
+    FROM timba_time t
+    JOIN cadena c ON t.id = c.timba_original_id
+)
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE estado IN ('abierta', 'contraoferta')
+  AND id != sqlc.arg('contraoferta_id')::INTEGER
+  AND (
+    id IN (SELECT id FROM cadena)
+    OR timba_original_id IN (SELECT id FROM cadena)
+    OR timba_original_id = sqlc.arg('contraoferta_id')::INTEGER
+  );
 
 -- name: CancelarTimbasContraofertaAbiertasPorPartido :exec
 UPDATE timba_time

@@ -182,7 +182,8 @@ SELECT
     el.bandera AS equipo_local_bandera,
     ev.siglas AS equipo_visitante_siglas,
     ev.bandera AS equipo_visitante_bandera,
-    t.timba_original_id
+    t.timba_original_id,
+    t.created_at
 FROM timba_time t
 JOIN usuarios u1 ON u1.id = t.jugador_1_id
 LEFT JOIN usuarios u2 ON u2.id = t.jugador_2_id
@@ -213,6 +214,7 @@ export interface VerTimbasPorPartidoRow {
     equipoVisitanteSiglas: string;
     equipoVisitanteBandera: string;
     timbaOriginalId: number | null;
+    createdAt: Date;
 }
 
 export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPartidoArgs): Promise<VerTimbasPorPartidoRow[]> {
@@ -236,7 +238,8 @@ export async function verTimbasPorPartido(client: Client, args: VerTimbasPorPart
             equipoLocalBandera: row[10],
             equipoVisitanteSiglas: row[11],
             equipoVisitanteBandera: row[12],
-            timbaOriginalId: row[13]
+            timbaOriginalId: row[13],
+            createdAt: row[14]
         };
     });
 }
@@ -617,6 +620,32 @@ export async function guardarMensajeTimba(client: Client, args: GuardarMensajeTi
     });
 }
 
+export const verTimbaIdPorDiscordMessageIdQuery = `-- name: VerTimbaIdPorDiscordMessageId :one
+SELECT id FROM timba_time WHERE discord_message_id = $1`;
+
+export interface VerTimbaIdPorDiscordMessageIdArgs {
+    discordMessageId: string | null;
+}
+
+export interface VerTimbaIdPorDiscordMessageIdRow {
+    id: number;
+}
+
+export async function verTimbaIdPorDiscordMessageId(client: Client, args: VerTimbaIdPorDiscordMessageIdArgs): Promise<VerTimbaIdPorDiscordMessageIdRow | null> {
+    const result = await client.query({
+        text: verTimbaIdPorDiscordMessageIdQuery,
+        values: [args.discordMessageId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+
 export const verTodasLasTimbasQuery = `-- name: VerTodasLasTimbas :many
 SELECT
     t.id,
@@ -902,6 +931,79 @@ export async function cancelarContraofertasEnCascadaPorTimba(client: Client, arg
     await client.query({
         text: cancelarContraofertasEnCascadaPorTimbaQuery,
         values: [args.timbaOriginalId],
+        rowMode: "array"
+    });
+}
+
+export const verCadenaContraofertasParaCancelarQuery = `-- name: VerCadenaContraofertasParaCancelar :many
+WITH RECURSIVE cadena AS (
+    SELECT id, timba_original_id FROM timba_time WHERE id = $2::INTEGER
+    UNION ALL
+    SELECT t.id, t.timba_original_id
+    FROM timba_time t
+    JOIN cadena c ON t.id = c.timba_original_id
+)
+SELECT DISTINCT t.id, t.discord_message_id
+FROM timba_time t
+WHERE t.estado IN ('abierta', 'contraoferta')
+  AND t.id != $1::INTEGER
+  AND (
+    t.id IN (SELECT id FROM cadena)
+    OR t.timba_original_id IN (SELECT id FROM cadena)
+    OR t.timba_original_id = $1::INTEGER
+  )`;
+
+export interface VerCadenaContraofertasParaCancelarArgs {
+    contraofertaId: number;
+    timbaOriginalId: number;
+}
+
+export interface VerCadenaContraofertasParaCancelarRow {
+    id: number;
+    discordMessageId: string | null;
+}
+
+export async function verCadenaContraofertasParaCancelar(client: Client, args: VerCadenaContraofertasParaCancelarArgs): Promise<VerCadenaContraofertasParaCancelarRow[]> {
+    const result = await client.query({
+        text: verCadenaContraofertasParaCancelarQuery,
+        values: [args.contraofertaId, args.timbaOriginalId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            discordMessageId: row[1]
+        };
+    });
+}
+
+export const cancelarCadenaContraofertasParaAceptarQuery = `-- name: CancelarCadenaContraofertasParaAceptar :exec
+WITH RECURSIVE cadena AS (
+    SELECT id, timba_original_id FROM timba_time WHERE id = $2::INTEGER
+    UNION ALL
+    SELECT t.id, t.timba_original_id
+    FROM timba_time t
+    JOIN cadena c ON t.id = c.timba_original_id
+)
+UPDATE timba_time
+SET estado = 'cancelada'
+WHERE estado IN ('abierta', 'contraoferta')
+  AND id != $1::INTEGER
+  AND (
+    id IN (SELECT id FROM cadena)
+    OR timba_original_id IN (SELECT id FROM cadena)
+    OR timba_original_id = $1::INTEGER
+  )`;
+
+export interface CancelarCadenaContraofertasParaAceptarArgs {
+    contraofertaId: number;
+    timbaOriginalId: number;
+}
+
+export async function cancelarCadenaContraofertasParaAceptar(client: Client, args: CancelarCadenaContraofertasParaAceptarArgs): Promise<void> {
+    await client.query({
+        text: cancelarCadenaContraofertasParaAceptarQuery,
+        values: [args.contraofertaId, args.timbaOriginalId],
         rowMode: "array"
     });
 }

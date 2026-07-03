@@ -1,6 +1,13 @@
 import { config } from "@support/config";
 import { logger } from "@support/logger";
-import { Client, Events, GatewayIntentBits, REST, Routes } from "discord.js";
+import {
+	Client,
+	Events,
+	GatewayIntentBits,
+	Partials,
+	REST,
+	Routes,
+} from "discord.js";
 import z from "zod";
 import type { AppContext } from "../../../app";
 import { discordCommandPayloads, POLLERO_ROLE_ID } from "../commands";
@@ -26,6 +33,7 @@ import {
 	handlePrediccionModalSubmitInteraction,
 	handlePrediccionSuplePenalesButtonInteraction,
 	handleTimbaAdminModalSubmitInteraction,
+	handleTimbaAnularVotoReaction,
 	handleTimbaButtonInteraction,
 	handleTimbaModalSubmitInteraction,
 } from "../handlers/interactions";
@@ -39,7 +47,12 @@ z.config(z.locales.es());
 
 export function createDiscordClient(): Client {
 	return new Client({
-		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+		intents: [
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMembers,
+			GatewayIntentBits.GuildMessageReactions,
+		],
+		partials: [Partials.Message, Partials.Reaction],
 	});
 }
 
@@ -197,6 +210,17 @@ export function registerDiscordEventHandlers(
 			logger.error(
 				{ err: error, userId: member.id },
 				"Error al salir miembro del servidor",
+			);
+		}
+	});
+
+	client.on(Events.MessageReactionAdd, async (reaction, user) => {
+		try {
+			await handleTimbaAnularVotoReaction(reaction, user, appContext);
+		} catch (error) {
+			logger.error(
+				{ err: error },
+				"Error al manejar una reacción de anulación de timba",
 			);
 		}
 	});

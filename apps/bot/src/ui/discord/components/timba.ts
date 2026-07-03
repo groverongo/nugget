@@ -38,7 +38,10 @@ export const TIMBA_MT_RESOLVER_J1_PREFIX = "timba:mt:resolver:j1:";
 export const TIMBA_MT_RESOLVER_J2_PREFIX = "timba:mt:resolver:j2:";
 export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
 export const TIMBA_MT_SKIP_PREFIX = "timba:mt:skip:";
+export const TIMBA_ANULAR_PREFIX = "timba:anular:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
+export const TIMBA_ANULAR_VOTO_EMOJI = "🪤";
+export const TIMBA_ANULAR_VOTO_DIVISOR = 3;
 
 function puntosStr(puntos: number): string {
 	return `${puntos} ${puntos === 1 ? "punto" : "puntos"}`;
@@ -85,6 +88,18 @@ export function buildTimbaCreacionComponent(
 					.setCustomId(`${TIMBA_CONTRAOFERTA_PREFIX}${result.timbaId}`)
 					.setLabel("Contraoferta 🔄")
 					.setStyle(ButtonStyle.Secondary),
+			),
+	);
+	container.addSectionComponents(
+		new SectionBuilder()
+			.addTextDisplayComponents(
+				new TextDisplayBuilder().setContent("¿Ya no quieres esta timba?"),
+			)
+			.setButtonAccessory(
+				new ButtonBuilder()
+					.setCustomId(`${TIMBA_ANULAR_PREFIX}${result.timbaId}`)
+					.setLabel("Anular 🚫")
+					.setStyle(ButtonStyle.Danger),
 			),
 	);
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
