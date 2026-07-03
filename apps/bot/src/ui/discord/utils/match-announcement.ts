@@ -314,8 +314,14 @@ export function buildAlertaGol(
 }
 
 function puntajeLine(p: VerPuntajesPartidoRow): string {
-	const rachaStr = p.puntosEnRacha > 0 ? ` +${p.puntosEnRacha} 🔥` : "";
-	return `• <@${p.usuarioId}> +${p.puntosBase} 💠${rachaStr} (total: ${p.puntosAcumulados})`;
+	const extras: string[] = [];
+	if (p.puntosEnRacha > 0) extras.push(` +${p.puntosEnRacha} 🔥`);
+	if (p.puntosPartidazo > 0) extras.push(` +${p.puntosPartidazo} 💥`);
+	if (p.puntosMilagro > 0) extras.push(` +${p.puntosMilagro} ✝️`);
+	if (p.puntosBatacazo > 0) extras.push(` +${p.puntosBatacazo} 🐴`);
+	if (p.puntosElElegido > 0) extras.push(` +${p.puntosElElegido} 👑`);
+	if (p.puntosGranFinal > 0) extras.push(` +${p.puntosGranFinal} 🏆`);
+	return `• <@${p.usuarioId}> +${p.puntosBase} 💠${extras.join("")} (total: ${p.puntosAcumulados})`;
 }
 
 export function buildAlertaAuraPoints(

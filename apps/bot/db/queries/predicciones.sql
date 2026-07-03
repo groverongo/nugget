@@ -54,6 +54,11 @@ SELECT
     p.resultado,
     p.puntos_base,
     p.puntos_en_racha,
+    p.puntos_partidazo,
+    p.puntos_milagro,
+    p.puntos_batacazo,
+    p.puntos_el_elegido,
+    p.puntos_gran_final,
     p.puntos_total AS puntos_ganados,
     u.puntos AS puntos_acumulados
 FROM prediccion p

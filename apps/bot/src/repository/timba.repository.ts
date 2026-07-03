@@ -3,12 +3,14 @@ import {
 	type AnularTimbaArgs,
 	aceptarTimba,
 	anularTimba,
+	type CancelarCadenaContraofertasParaAceptarArgs,
 	type CancelarTimbaArgs,
 	type CheckEmparejamientoTimbaArgs,
 	type CrearContraofertaArgs,
 	type CrearContraofertaRow,
 	type CrearTimbaArgs,
 	type CrearTimbaRow,
+	cancelarCadenaContraofertasParaAceptar,
 	cancelarContraofertasEnCascadaPorTimba,
 	cancelarContraofertasPorTimba,
 	cancelarTimba,
@@ -23,23 +25,28 @@ import {
 	resolverTimba,
 	revertirTimba,
 	sumarApuestasActivas,
+	type VerCadenaContraofertasParaCancelarArgs,
+	type VerCadenaContraofertasParaCancelarRow,
 	type VerContraofertasMensajesPorTimbaRow,
 	type VerMisTimbasPorFechaArgs,
 	type VerMisTimbasPorFechaRow,
 	type VerMisTimbasRow,
 	type VerPartidoParaTimbaRow,
+	type VerTimbaIdPorDiscordMessageIdRow,
 	type VerTimbaRow,
 	type VerTimbasCerradasPorPartidoRow,
 	type VerTimbasMedioTiempoPorPartidoRow,
 	type VerTimbasPorPartidoRow,
 	type VerTimbasResueltasPorPartidoRow,
 	type VerTodasLasTimbasRow,
+	verCadenaContraofertasParaCancelar,
 	verContraofertasMensajesPorTimba,
 	verFechasDeTimbasPorUsuario,
 	verMisTimbas,
 	verMisTimbasPorFecha,
 	verPartidoParaTimba,
 	verTimba,
+	verTimbaIdPorDiscordMessageId,
 	verTimbasCerradasPorPartido,
 	verTimbasMedioTiempoPorPartido,
 	verTimbasPorPartido,
@@ -159,6 +166,24 @@ export class TimbaRepository implements ITimbaRepository {
 		return cancelarContraofertasEnCascadaPorTimba(this.pool, {
 			timbaOriginalId,
 		});
+	}
+
+	verCadenaContraofertasParaCancelar(
+		args: VerCadenaContraofertasParaCancelarArgs,
+	): Promise<VerCadenaContraofertasParaCancelarRow[]> {
+		return verCadenaContraofertasParaCancelar(this.pool, args);
+	}
+
+	cancelarCadenaContraofertasParaAceptar(
+		args: CancelarCadenaContraofertasParaAceptarArgs,
+	): Promise<void> {
+		return cancelarCadenaContraofertasParaAceptar(this.pool, args);
+	}
+
+	verTimbaIdPorDiscordMessageId(
+		discordMessageId: string,
+	): Promise<VerTimbaIdPorDiscordMessageIdRow | null> {
+		return verTimbaIdPorDiscordMessageId(this.pool, { discordMessageId });
 	}
 
 	verTimbasMedioTiempoPorPartido(

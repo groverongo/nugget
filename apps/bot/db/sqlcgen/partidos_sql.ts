@@ -337,7 +337,8 @@ export const actualizarPartidoMedioTiempoQuery = `-- name: ActualizarPartidoMedi
 UPDATE partidos SET
     goles_local = $1,
     goles_visitante = $2,
-    estado = 'medio_tiempo'
+    estado = 'medio_tiempo',
+    medio_tiempo_en = NOW()
 WHERE id = $3`;
 
 export interface ActualizarPartidoMedioTiempoArgs {
@@ -436,7 +437,8 @@ SELECT
     ev.bandera AS equipo_visitante_bandera,
     partidos.estado,
     partidos.fecha_partido,
-    partidos.partido_original_id
+    partidos.partido_original_id,
+    partidos.medio_tiempo_en
 FROM partidos
 JOIN estatico_equipos el ON el.id = partidos.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = partidos.equipo_visitante_id
@@ -452,6 +454,7 @@ export interface VerPartidosNoFinalizadosRow {
     estado: string;
     fechaPartido: Date | null;
     partidoOriginalId: number | null;
+    medioTiempoEn: Date | null;
 }
 
 export async function verPartidosNoFinalizados(client: Client): Promise<VerPartidosNoFinalizadosRow[]> {
@@ -469,7 +472,8 @@ export async function verPartidosNoFinalizados(client: Client): Promise<VerParti
             equipoVisitanteBandera: row[4],
             estado: row[5],
             fechaPartido: row[6],
-            partidoOriginalId: row[7]
+            partidoOriginalId: row[7],
+            medioTiempoEn: row[8]
         };
     });
 }

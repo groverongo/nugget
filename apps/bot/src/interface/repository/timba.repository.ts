@@ -1,6 +1,7 @@
 import type {
 	AceptarTimbaArgs,
 	AnularTimbaArgs,
+	CancelarCadenaContraofertasParaAceptarArgs,
 	CancelarTimbaArgs,
 	CheckEmparejamientoTimbaArgs,
 	CrearContraofertaArgs,
@@ -10,11 +11,14 @@ import type {
 	GuardarMensajeTimbaArgs,
 	ResolverTimbaArgs,
 	RevertirTimbaArgs,
+	VerCadenaContraofertasParaCancelarArgs,
+	VerCadenaContraofertasParaCancelarRow,
 	VerContraofertasMensajesPorTimbaRow,
 	VerMisTimbasPorFechaArgs,
 	VerMisTimbasPorFechaRow,
 	VerMisTimbasRow,
 	VerPartidoParaTimbaRow,
+	VerTimbaIdPorDiscordMessageIdRow,
 	VerTimbaRow,
 	VerTimbasCerradasPorPartidoRow,
 	VerTimbasMedioTiempoPorPartidoRow,
@@ -80,6 +84,18 @@ export interface ITimbaRepository {
 	cancelarContraofertasEnCascadaPorTimba(
 		timbaOriginalId: number,
 	): Promise<void>;
+
+	verCadenaContraofertasParaCancelar(
+		args: VerCadenaContraofertasParaCancelarArgs,
+	): Promise<VerCadenaContraofertasParaCancelarRow[]>;
+
+	cancelarCadenaContraofertasParaAceptar(
+		args: CancelarCadenaContraofertasParaAceptarArgs,
+	): Promise<void>;
+
+	verTimbaIdPorDiscordMessageId(
+		discordMessageId: string,
+	): Promise<VerTimbaIdPorDiscordMessageIdRow | null>;
 
 	verTimbasMedioTiempoPorPartido(
 		partidoId: number,

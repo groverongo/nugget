@@ -194,6 +194,11 @@ SELECT
     p.resultado,
     p.puntos_base,
     p.puntos_en_racha,
+    p.puntos_partidazo,
+    p.puntos_milagro,
+    p.puntos_batacazo,
+    p.puntos_el_elegido,
+    p.puntos_gran_final,
     p.puntos_total AS puntos_ganados,
     u.puntos AS puntos_acumulados
 FROM prediccion p
@@ -211,6 +216,11 @@ export interface VerPuntajesPartidoRow {
     resultado: string;
     puntosBase: number;
     puntosEnRacha: number;
+    puntosPartidazo: number;
+    puntosMilagro: number;
+    puntosBatacazo: number;
+    puntosElElegido: number;
+    puntosGranFinal: number;
     puntosGanados: number;
     puntosAcumulados: number;
 }
@@ -228,8 +238,13 @@ export async function verPuntajesPartido(client: Client, args: VerPuntajesPartid
             resultado: row[2],
             puntosBase: row[3],
             puntosEnRacha: row[4],
-            puntosGanados: row[5],
-            puntosAcumulados: row[6]
+            puntosPartidazo: row[5],
+            puntosMilagro: row[6],
+            puntosBatacazo: row[7],
+            puntosElElegido: row[8],
+            puntosGranFinal: row[9],
+            puntosGanados: row[10],
+            puntosAcumulados: row[11]
         };
     });
 }

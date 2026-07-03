@@ -10,12 +10,16 @@ import {
 	type ChatInputCommandInteraction,
 	type Client,
 	MessageFlags,
+	type MessageReaction,
 	ModalBuilder,
 	type ModalSubmitInteraction,
+	type PartialMessageReaction,
+	type PartialUser,
 	type StringSelectMenuInteraction,
 	type TextBasedChannel,
 	TextInputBuilder,
 	TextInputStyle,
+	type User,
 } from "discord.js";
 import type { AppContext } from "../../../app";
 import { discordCommands, POLLERO_ROLE_ID } from "../commands";
@@ -52,6 +56,9 @@ import {
 	TIMBA_ACEPTAR_CANCELAR_PREFIX,
 	TIMBA_ACEPTAR_CONFIRMAR_PREFIX,
 	TIMBA_ACEPTAR_PREFIX,
+	TIMBA_ANULAR_PREFIX,
+	TIMBA_ANULAR_VOTO_DIVISOR,
+	TIMBA_ANULAR_VOTO_EMOJI,
 	TIMBA_CONTRAOFERTA_ACEPTAR_PREFIX,
 	TIMBA_CONTRAOFERTA_PREFIX,
 	TIMBA_CONTRAOFERTA_RECHAZAR_PREFIX,
@@ -375,7 +382,7 @@ export async function handlePrediccionEtModalSubmitInteraction(
 		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -438,7 +445,7 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
@@ -638,7 +645,7 @@ export async function handlePrediccionEtAdminModalSubmitInteraction(
 		);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -712,7 +719,7 @@ export async function handlePrediccionEtPenalesAdminButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
@@ -2035,16 +2042,22 @@ export async function handleTimbaButtonInteraction(
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			await sendAnnouncementChannel(
-				interaction.client,
-				[
-					`_🤝 **¡Contraoferta aceptada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
-					result.puntosPropuestos === result.puntosArriesgados
-						? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
-						: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
-					`"${result.descripcion}"`,
-				].join("\n"),
-			);
+			await Promise.all([
+				sendAnnouncementChannel(
+					interaction.client,
+					[
+						`_🤝 **¡Contraoferta aceptada! ${result.equipoLocalSiglas} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteSiglas} ${result.equipoVisitanteBandera}**_`,
+						result.puntosPropuestos === result.puntosArriesgados
+							? `<@${result.jugador1Id}> 🆚 <@${result.jugador2Id}> — **${result.puntosPropuestos} 💠** en juego`
+							: `<@${result.jugador1Id}> arriesga **${result.puntosPropuestos} 💠** 🆚 <@${result.jugador2Id}> arriesga **${result.puntosArriesgados} 💠**`,
+						`"${result.descripcion}"`,
+					].join("\n"),
+				),
+				deleteAnnouncementMessages(
+					interaction.client,
+					result.cancelledContraofertaMessageIds,
+				),
+			]);
 		} catch (error) {
 			await interaction.followUp({
 				content: `❌ ${error instanceof Error ? error.message : "No se pudo aceptar la contraoferta."}`,
@@ -2068,30 +2081,85 @@ export async function handleTimbaButtonInteraction(
 				jugador1OriginalId: interaction.user.id,
 			});
 
-			const toDelete = [
-				rechazada.discordMessageId,
-				...rechazada.cancelledContraofertaMessageIds,
-			].filter((id): id is string => id !== null);
-			await deleteAnnouncementMessages(interaction.client, toDelete);
-
-			await interaction.editReply({
-				components: [
-					{
-						type: 17,
-						components: [
-							{
-								type: 10,
-								content: "❌ Contraoferta rechazada.",
-							},
-						],
-					},
-					// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
-				] as any,
-				flags: MessageFlags.IsComponentsV2,
-			});
+			// The buttons live on the contraoferta's own message, which this
+			// interaction is attached to — editReply below already turns it
+			// into the rejection notice, so only delete the OTHER messages
+			// (sub-contraofertas), never rechazada.discordMessageId itself.
+			await Promise.all([
+				interaction.editReply({
+					components: [
+						{
+							type: 17,
+							components: [
+								{
+									type: 10,
+									content: "❌ Contraoferta rechazada.",
+								},
+							],
+						},
+						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+					] as any,
+					flags: MessageFlags.IsComponentsV2,
+				}),
+				deleteAnnouncementMessages(
+					interaction.client,
+					rechazada.cancelledContraofertaMessageIds,
+				),
+			]);
 		} catch (error) {
 			await interaction.followUp({
 				content: `❌ ${error instanceof Error ? error.message : "No se pudo rechazar la contraoferta."}`,
+				ephemeral: true,
+			});
+		}
+		return;
+	}
+
+	if (customId.startsWith(TIMBA_ANULAR_PREFIX)) {
+		const timbaId = Number(customId.slice(TIMBA_ANULAR_PREFIX.length));
+		if (Number.isNaN(timbaId)) return;
+
+		await interaction.deferUpdate();
+
+		try {
+			const cancelada = await appContext.services.timba.cancelarTimba({
+				timbaId,
+				jugador1Id: interaction.user.id,
+			});
+
+			// The button lives on the timba's own message, which this
+			// interaction is attached to — editReply below already turns it
+			// into the cancellation notice, so only delete the OTHER messages
+			// (sub-contraofertas), never cancelada.discordMessageId itself.
+			const partido = `${cancelada.equipoLocalNombre} ${cancelada.equipoLocalBandera} vs. ${cancelada.equipoVisitanteNombre} ${cancelada.equipoVisitanteBandera}`;
+			await Promise.all([
+				interaction.editReply({
+					components: [
+						{
+							type: 17,
+							components: [
+								{
+									type: 10,
+									content: "🚫 Timba anulada.",
+								},
+							],
+						},
+						// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+					] as any,
+					flags: MessageFlags.IsComponentsV2,
+				}),
+				sendAnnouncementChannel(
+					interaction.client,
+					`🚫 _¡<@${cancelada.jugador_1Id}> canceló una timba para **${partido}**!_`,
+				),
+				deleteAnnouncementMessages(
+					interaction.client,
+					cancelada.cancelledContraofertaMessageIds,
+				),
+			]);
+		} catch (error) {
+			await interaction.followUp({
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo anular la timba."}`,
 				ephemeral: true,
 			});
 		}
@@ -2302,9 +2370,10 @@ export async function handleTimbaButtonInteraction(
 			ganadorJugador: isJ1 ? "j1" : "j2",
 		});
 
+		const ganadorEmoji = isJ1 ? "🗡️" : "🛡️";
 		await sendAlertsChannel(
 			interaction.client,
-			`* <@${result.ganadorId}> le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
+			`* <@${result.ganadorId}> ${ganadorEmoji} le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 		);
 
 		const remaining =
@@ -2382,9 +2451,10 @@ async function handleTimbaResolucionMedioTiempo(
 				timbaId,
 				ganadorJugador: isMtJ1 ? "j1" : "j2",
 			});
+			const ganadorEmoji = isMtJ1 ? "🗡️" : "🛡️";
 			await sendAlertsChannel(
 				interaction.client,
-				`* <@${result.ganadorId}> le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
+				`* <@${result.ganadorId}> ${ganadorEmoji} le robó **${result.puntosRobados} 💠** a <@${result.perdedorId}> — "${result.descripcion}"`,
 			);
 		}
 
@@ -2422,6 +2492,79 @@ async function handleTimbaResolucionMedioTiempo(
 			content: `❌ ${error instanceof Error ? error.message : "No se pudo procesar la timba."}`,
 			ephemeral: true,
 		});
+	}
+}
+
+export async function handleTimbaAnularVotoReaction(
+	reaction: MessageReaction | PartialMessageReaction,
+	user: User | PartialUser,
+	appContext: AppContext,
+): Promise<void> {
+	if (user.bot) return;
+	if (reaction.emoji.name !== TIMBA_ANULAR_VOTO_EMOJI) return;
+	if (reaction.message.channelId !== config.discord.announcements.channel.id) {
+		return;
+	}
+
+	const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
+	const message = fullReaction.message.partial
+		? await fullReaction.message.fetch()
+		: fullReaction.message;
+
+	const guild = message.guild;
+	if (!guild) return;
+
+	const timbaId = await appContext.services.timba.verTimbaIdPorDiscordMessageId(
+		message.id,
+	);
+	if (timbaId === null) return;
+
+	const timba = await appContext.services.timba.verTimba(timbaId);
+	if (!timba) return;
+	// Votes can nuke an unaccepted offer or an accepted-but-unresolved bet
+	// (no points have moved yet); once "resuelta" points are already
+	// exchanged, so a hard delete would leave them stray — ignore those.
+	if (
+		timba.estado !== "abierta" &&
+		timba.estado !== "contraoferta" &&
+		timba.estado !== "cerrada"
+	) {
+		return;
+	}
+
+	const [totalPolleros, reactors] = await Promise.all([
+		appContext.repositories.usuarios.countParticipantes(),
+		fullReaction.users.fetch(),
+	]);
+	const umbral = Math.ceil(totalPolleros / TIMBA_ANULAR_VOTO_DIVISOR);
+
+	let votosValidos = 0;
+	for (const reactor of reactors.values()) {
+		if (reactor.bot) continue;
+		const member =
+			guild.members.cache.get(reactor.id) ??
+			(await guild.members.fetch(reactor.id).catch(() => null));
+		if (member?.roles.cache.has(POLLERO_ROLE_ID)) votosValidos++;
+	}
+	if (votosValidos < umbral) return;
+
+	try {
+		const anulada = await appContext.services.timba.anularTimba(timbaId);
+		const partido = `${anulada.equipoLocalNombre} ${anulada.equipoLocalBandera} vs. ${anulada.equipoVisitanteNombre} ${anulada.equipoVisitanteBandera}`;
+		const rivalLine = anulada.jugador_2Id
+			? ` vs. <@${anulada.jugador_2Id}>`
+			: "";
+		await Promise.all([
+			sendAnnouncementChannel(
+				message.client,
+				`🪤 _¡La comunidad votó para cancelar la timba de <@${anulada.jugador_1Id}>${rivalLine} para **${partido}**! - "${anulada.descripcion}"_`,
+			),
+			anulada.discordMessageId
+				? deleteAnnouncementMessages(message.client, [anulada.discordMessageId])
+				: Promise.resolve(),
+		]);
+	} catch (error) {
+		logger.error({ err: error, timbaId }, "Error anulando timba por votos");
 	}
 }
 
