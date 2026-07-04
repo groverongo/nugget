@@ -115,7 +115,7 @@ export class PartidosRepository implements IPartidosRepository {
 		args: EquipoJugoPartidoPorFaseArgs,
 	): Promise<boolean> {
 		const resultado = await equipoJugoPartidoPorFase(this.pool, args);
-		return resultado ? resultado.count > 1 : false;
+		return resultado ? resultado.count >= 1 : false;
 	}
 
 	crearPartidoSuplementario(

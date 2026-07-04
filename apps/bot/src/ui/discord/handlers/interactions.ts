@@ -94,6 +94,13 @@ const TIMBA_DESCRIPCION_FIELD_ID = "descripcion";
 const TIMBA_PUNTOS_FIELD_ID = "puntos";
 const TIMBA_PUNTOS_ARRIESGADOS_FIELD_ID = "puntos-arriesgados";
 
+const ET_NO_DISPONIBLE_MENSAJE =
+	"❌ Este partido ya no está en juego, así que **Apostar ET** ya no está disponible. Usa `/partidos` y **Predecir** para registrar el resultado final.";
+
+function esPartidoElegibleParaEt(estado: string): boolean {
+	return estado === "programado" || estado === "en_vivo";
+}
+
 function buildPrediccionModal(
 	partidoId: number,
 	nombreEquipoLocal: string,
@@ -228,6 +235,14 @@ export async function handlePartidosEtButtonInteraction(
 		return;
 	}
 
+	if (!esPartidoElegibleParaEt(partido.estado)) {
+		await interaction.reply({
+			content: ET_NO_DISPONIBLE_MENSAJE,
+			ephemeral: true,
+		});
+		return;
+	}
+
 	const prediccionOriginal =
 		await appContext.services.predicciones.verPrediccionPorUsuarioYPartido({
 			usuarioId: interaction.user.id,
@@ -333,6 +348,14 @@ export async function handlePrediccionEtModalSubmitInteraction(
 		return;
 	}
 
+	if (!esPartidoElegibleParaEt(partido.estado)) {
+		await interaction.reply({
+			content: ET_NO_DISPONIBLE_MENSAJE,
+			ephemeral: true,
+		});
+		return;
+	}
+
 	const empate = golesLocal === golesVisitante;
 	const golesDisplay = `${partido.equipoLocalBandera} ${partido.equipoLocalSiglas} **+${golesLocal}** — **+${golesVisitante}** ${partido.equipoVisitanteSiglas} ${partido.equipoVisitanteBandera}`;
 
@@ -382,7 +405,7 @@ export async function handlePrediccionEtModalSubmitInteraction(
 		await interaction.editReply(`✅ Apuesta ET guardada: ${golesDisplay}`);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -422,6 +445,15 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 		const partido = await appContext.services.partidos.verInformacionPartido({
 			id: partidoId,
 		});
+
+		if (!partido || !esPartidoElegibleParaEt(partido.estado)) {
+			await interaction.editReply({
+				content: ET_NO_DISPONIBLE_MENSAJE,
+				components: [],
+			});
+			return;
+		}
+
 		await appContext.services.prediccionesEt.guardarPrediccionEt({
 			usuarioId: interaction.user.id,
 			partidoId,
@@ -445,7 +477,7 @@ export async function handlePrediccionEtPenalesButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${interaction.user.id}> ha programado su resultado para **${partido?.equipoLocalNombre} ${partido?.equipoLocalBandera} vs. ${partido?.equipoVisitanteNombre} ${partido?.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
@@ -645,7 +677,7 @@ export async function handlePrediccionEtAdminModalSubmitInteraction(
 		);
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre}** ${partido.equipoLocalBandera} vs. **${partido.equipoVisitanteNombre}** ${partido.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido.equipoLocalNombre} ${partido.equipoLocalBandera} vs. ${partido.equipoVisitanteNombre} ${partido.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.editReply(
@@ -719,7 +751,7 @@ export async function handlePrediccionEtPenalesAdminButtonInteraction(
 		});
 		await sendAnnouncementChannel(
 			interaction.client,
-			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre}** ${partido?.equipoLocalBandera} vs. **${partido?.equipoVisitanteNombre}** ${partido?.equipoVisitanteBandera} (ET)!_`,
+			`_🕐 ¡<@${usuarioId}> ha programado su resultado para **${partido?.equipoLocalNombre} ${partido?.equipoLocalBandera} vs. ${partido?.equipoVisitanteNombre} ${partido?.equipoVisitanteBandera} (ET)**!_`,
 		);
 	} catch (error) {
 		await interaction.followUp({
@@ -2140,7 +2172,7 @@ export async function handleTimbaButtonInteraction(
 							components: [
 								{
 									type: 10,
-									content: "🚫 Timba anulada.",
+									content: "🚫 Timba cancelada.",
 								},
 							],
 						},
@@ -2159,7 +2191,7 @@ export async function handleTimbaButtonInteraction(
 			]);
 		} catch (error) {
 			await interaction.followUp({
-				content: `❌ ${error instanceof Error ? error.message : "No se pudo anular la timba."}`,
+				content: `❌ ${error instanceof Error ? error.message : "No se pudo cancelar la timba."}`,
 				ephemeral: true,
 			});
 		}
