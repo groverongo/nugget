@@ -69,6 +69,7 @@ import {
 	TIMBA_MT_RESOLVER_J1_PREFIX,
 	TIMBA_MT_RESOLVER_J2_PREFIX,
 	TIMBA_MT_REVERTIR_PREFIX,
+	TIMBA_MT_SIN_PENDIENTES_PREFIX,
 	TIMBA_MT_SKIP_PREFIX,
 	TIMBA_RESOLVER_J1_PREFIX,
 	TIMBA_RESOLVER_J2_PREFIX,
@@ -2525,6 +2526,35 @@ export async function handleTimbaButtonInteraction(
 		return;
 	}
 
+	if (customId.startsWith(TIMBA_MT_SIN_PENDIENTES_PREFIX)) {
+		const partidoId = Number(
+			customId.slice(TIMBA_MT_SIN_PENDIENTES_PREFIX.length),
+		);
+		if (Number.isNaN(partidoId)) return;
+
+		await interaction.deferUpdate();
+		await sendAlertsChannel(
+			interaction.client,
+			`👑 _Resolución de **Timba Times**: no hay timbas por resolver en este momento._`,
+		);
+		await interaction.editReply({
+			components: [
+				{
+					type: 17,
+					components: [
+						{
+							type: 10,
+							content: "✅ Enviado: no hay timbas por resolver.",
+						},
+					],
+				},
+				// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+			] as any,
+			flags: MessageFlags.IsComponentsV2,
+		});
+		return;
+	}
+
 	const isJ1 = customId.startsWith(TIMBA_RESOLVER_J1_PREFIX);
 	const isJ2 = customId.startsWith(TIMBA_RESOLVER_J2_PREFIX);
 
@@ -2735,7 +2765,7 @@ export async function handleTimbaAnularVotoReaction(
 		await Promise.all([
 			sendAnnouncementChannel(
 				message.client,
-				`🪤 _¡La comunidad votó para cancelar la timba de <@${anulada.jugador_1Id}>${rivalLine} para **${partido}**! - "${anulada.descripcion}"_`,
+				`🪤 _¡La comunidad votó para cancelar la timba de <@${anulada.jugador_1Id}>${rivalLine} para **${partido}**! - "${anulada.descripcion}"_\n_Sus puntos quedan congelados hasta que finalice el partido._`,
 			),
 			anulada.discordMessageId
 				? deleteAnnouncementMessages(message.client, [anulada.discordMessageId])

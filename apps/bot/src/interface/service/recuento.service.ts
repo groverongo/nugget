@@ -18,6 +18,8 @@ export interface DatosRecuento {
 	titulo: string;
 	partidosFinalizados: number;
 	partidosTotal: number;
+	suplementariosOcurridos: number;
+	suplementariosPosibles: number;
 	exactos: number;
 	totalFinalizados: number;
 	ranking: VerRankingCompletoRow[];
@@ -26,6 +28,10 @@ export interface DatosRecuento {
 	eliminados: VerEquiposEliminadosRow[];
 	awards: VerAwardsParaRecuentoRow[];
 	hitMasGoles: HitMasGoles | null;
+	decepcionEquipoGanadorId: number | null;
+	sorpresaEquipoGanadorId: number | null;
+	finalistaIds: [number, number] | null;
+	campeonKOId: number | null;
 }
 
 export interface IRecuentoService {
@@ -37,4 +43,12 @@ export interface IRecuentoService {
 	verAwardsParaRecuento(): Promise<VerAwardsParaRecuentoRow[]>;
 	marcarEquipoEliminado(equipoId: number): Promise<void>;
 	marcarEquipoNoEliminado(equipoId: number): Promise<void>;
+	resolverGanadoresDecepcionYSorpresa(): Promise<{
+		decepcionEquipoGanadorId: number | null;
+		sorpresaEquipoGanadorId: number | null;
+	}>;
+	resolverFinalistasYCampeonKO(): Promise<{
+		finalistaIds: [number, number] | null;
+		campeonKOId: number | null;
+	}>;
 }

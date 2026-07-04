@@ -65,13 +65,13 @@ export async function verRankingCompleto(client: Client): Promise<VerRankingComp
 
 export const verEstadisticasTorneoQuery = `-- name: VerEstadisticasTorneo :one
 SELECT
-    COUNT(*) FILTER (WHERE estado = 'finalizado')::INTEGER AS partidos_finalizados,
-    COUNT(*)::INTEGER AS partidos_total
+    COUNT(*) FILTER (WHERE estado = 'finalizado' AND partido_original_id IS NULL)::INTEGER AS partidos_finalizados,
+    COUNT(*) FILTER (WHERE partido_original_id IS NOT NULL)::INTEGER AS suplementarios_ocurridos
 FROM partidos`;
 
 export interface VerEstadisticasTorneoRow {
     partidosFinalizados: number;
-    partidosTotal: number;
+    suplementariosOcurridos: number;
 }
 
 export async function verEstadisticasTorneo(client: Client): Promise<VerEstadisticasTorneoRow | null> {
@@ -86,8 +86,35 @@ export async function verEstadisticasTorneo(client: Client): Promise<VerEstadist
     const row = result.rows[0];
     return {
         partidosFinalizados: row[0],
-        partidosTotal: row[1]
+        suplementariosOcurridos: row[1]
     };
+}
+
+export const verEquiposConEliminacionQuery = `-- name: VerEquiposConEliminacion :many
+SELECT id, siglas, eliminado, eliminado_at
+FROM estatico_equipos`;
+
+export interface VerEquiposConEliminacionRow {
+    id: number;
+    siglas: string;
+    eliminado: boolean;
+    eliminadoAt: Date | null;
+}
+
+export async function verEquiposConEliminacion(client: Client): Promise<VerEquiposConEliminacionRow[]> {
+    const result = await client.query({
+        text: verEquiposConEliminacionQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            siglas: row[1],
+            eliminado: row[2],
+            eliminadoAt: row[3]
+        };
+    });
 }
 
 export const verWinRateGlobalQuery = `-- name: VerWinRateGlobal :one
@@ -251,7 +278,12 @@ SELECT
     u.award_seleccion_decepcion AS seleccion_decepcion_id,
     esd.bandera AS seleccion_decepcion_bandera,
     u.award_seleccion_sorpresa AS seleccion_sorpresa_id,
-    ess.bandera AS seleccion_sorpresa_bandera
+    ess.bandera AS seleccion_sorpresa_bandera,
+    u.award_ko_finalista1 AS ko_finalista1_id,
+    u.award_ko_finalista2 AS ko_finalista2_id,
+    u.award_ko_campeon AS ko_campeon_id,
+    u.award_ko_goleador AS ko_goleador_id,
+    jkg.equipo_id AS ko_goleador_equipo_id
 FROM usuarios u
 LEFT JOIN estatico_equipos ec ON ec.id = u.award_campeon
 LEFT JOIN estatico_jugadores jg ON jg.id = u.award_goleador
@@ -261,7 +293,9 @@ LEFT JOIN estatico_jugadores jmjj ON jmjj.id = u.award_mejor_jugador_joven
 LEFT JOIN estatico_jugadores jmg ON jmg.id = u.award_mejor_gol
 LEFT JOIN estatico_equipos esd ON esd.id = u.award_seleccion_decepcion
 LEFT JOIN estatico_equipos ess ON ess.id = u.award_seleccion_sorpresa
-WHERE u.participante = TRUE AND u.award_campeon IS NOT NULL
+LEFT JOIN estatico_jugadores jkg ON jkg.id = u.award_ko_goleador
+WHERE u.participante = TRUE
+  AND (u.award_campeon IS NOT NULL OR u.award_ko_finalista1 IS NOT NULL)
 ORDER BY u.username`;
 
 export interface VerAwardsParaRecuentoRow {
@@ -283,6 +317,11 @@ export interface VerAwardsParaRecuentoRow {
     seleccionDecepcionBandera: string | null;
     seleccionSorpresaId: number | null;
     seleccionSorpresaBandera: string | null;
+    koFinalista1Id: number | null;
+    koFinalista2Id: number | null;
+    koCampeonId: number | null;
+    koGoleadorId: number | null;
+    koGoleadorEquipoId: number | null;
 }
 
 export async function verAwardsParaRecuento(client: Client): Promise<VerAwardsParaRecuentoRow[]> {
@@ -310,7 +349,51 @@ export async function verAwardsParaRecuento(client: Client): Promise<VerAwardsPa
             seleccionDecepcionId: row[14],
             seleccionDecepcionBandera: row[15],
             seleccionSorpresaId: row[16],
-            seleccionSorpresaBandera: row[17]
+            seleccionSorpresaBandera: row[17],
+            koFinalista1Id: row[18],
+            koFinalista2Id: row[19],
+            koCampeonId: row[20],
+            koGoleadorId: row[21],
+            koGoleadorEquipoId: row[22]
+        };
+    });
+}
+
+export const verPartidoFinalQuery = `-- name: VerPartidoFinal :many
+SELECT p.id, p.partido_original_id, p.equipo_local_id, p.equipo_visitante_id,
+       p.estado, p.goles_local, p.goles_visitante, p.penales_ganador_id
+FROM partidos p
+JOIN estatico_fases f ON f.id = p.fase_id
+WHERE f.nombre = 'final'
+ORDER BY p.id ASC`;
+
+export interface VerPartidoFinalRow {
+    id: number;
+    partidoOriginalId: number | null;
+    equipoLocalId: number | null;
+    equipoVisitanteId: number | null;
+    estado: string;
+    golesLocal: number | null;
+    golesVisitante: number | null;
+    penalesGanadorId: number | null;
+}
+
+export async function verPartidoFinal(client: Client): Promise<VerPartidoFinalRow[]> {
+    const result = await client.query({
+        text: verPartidoFinalQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            partidoOriginalId: row[1],
+            equipoLocalId: row[2],
+            equipoVisitanteId: row[3],
+            estado: row[4],
+            golesLocal: row[5],
+            golesVisitante: row[6],
+            penalesGanadorId: row[7]
         };
     });
 }

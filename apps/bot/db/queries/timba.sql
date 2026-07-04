@@ -145,7 +145,7 @@ ORDER BY p.fecha_partido ASC;
 SELECT COUNT(*)::INTEGER AS count
 FROM timba_time
 WHERE partido_id = $1
-AND estado NOT IN ('cancelada')
+AND estado NOT IN ('cancelada', 'anulada')
 AND (
     (jugador_1_id = $2 AND jugador_2_id = $3)
     OR (jugador_1_id = $3 AND jugador_2_id = $2)
@@ -211,7 +211,7 @@ JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
 ORDER BY t.id DESC;
 
 -- name: AnularTimba :exec
-DELETE FROM timba_time WHERE id = $1;
+UPDATE timba_time SET estado = 'anulada' WHERE id = $1;
 
 -- name: CancelarTimbasAbiertasPorPartido :exec
 UPDATE timba_time
@@ -245,14 +245,20 @@ SET ganador_id = NULL, estado = 'cerrada'
 WHERE id = $1;
 
 -- name: SumarApuestasActivas :one
+-- Las timbas anuladas siguen contando mientras el partido no haya finalizado:
+-- los puntos quedan "congelados" para que no se puedan re-timbear enseguida.
 SELECT COALESCE(SUM(
-    CASE WHEN jugador_1_id = sqlc.arg('user_id') THEN puntos_propuestos
-         ELSE puntos_arriesgados
+    CASE WHEN t.jugador_1_id = sqlc.arg('user_id') THEN t.puntos_propuestos
+         ELSE t.puntos_arriesgados
     END
 ), 0)::INTEGER AS total
-FROM timba_time
-WHERE (jugador_1_id = sqlc.arg('user_id') OR jugador_2_id = sqlc.arg('user_id'))
-AND estado IN ('abierta', 'cerrada', 'contraoferta');
+FROM timba_time t
+JOIN partidos p ON p.id = t.partido_id
+WHERE (t.jugador_1_id = sqlc.arg('user_id') OR t.jugador_2_id = sqlc.arg('user_id'))
+AND (
+    t.estado IN ('abierta', 'cerrada', 'contraoferta')
+    OR (t.estado = 'anulada' AND p.estado != 'finalizado')
+);
 
 -- name: VerContraofertasMensajesPorTimba :many
 SELECT id, discord_message_id

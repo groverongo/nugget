@@ -2,8 +2,10 @@ import type {
 	MarcarEquipoEliminadoArgs,
 	MarcarEquipoNoEliminadoArgs,
 	VerAwardsParaRecuentoRow,
+	VerEquiposConEliminacionRow,
 	VerEquiposEliminadosRow,
 	VerEstadisticasTorneoRow,
+	VerPartidoFinalRow,
 	VerRankingCompletoRow,
 	VerRankingRachaMaximaRow,
 	VerRankingWinRateRow,
@@ -17,6 +19,8 @@ export interface IRecuentoRepository {
 	verRankingWinRate(): Promise<VerRankingWinRateRow[]>;
 	verRankingRachaMaxima(): Promise<VerRankingRachaMaximaRow[]>;
 	verEquiposEliminados(): Promise<VerEquiposEliminadosRow[]>;
+	verEquiposConEliminacion(): Promise<VerEquiposConEliminacionRow[]>;
+	verPartidoFinal(): Promise<VerPartidoFinalRow[]>;
 	marcarEquipoEliminado(args: MarcarEquipoEliminadoArgs): Promise<void>;
 	marcarEquipoNoEliminado(args: MarcarEquipoNoEliminadoArgs): Promise<void>;
 	verAwardsParaRecuento(): Promise<VerAwardsParaRecuentoRow[]>;

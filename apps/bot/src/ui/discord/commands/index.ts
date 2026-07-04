@@ -17,6 +17,7 @@ import {
 	buildMisTimbasComponents,
 	buildTimbaResolucionComponents,
 	buildTimbaResolucionMedioTiempoComponents,
+	buildTimbaSinPendientesComponents,
 	buildVerTimbasComponent,
 } from "../components/timba";
 import {
@@ -1066,7 +1067,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								interaction.client,
 								buildAlertaSupleCreado(info, predicciones, sinPrediccion),
 							);
-							const mensajeAura = buildAlertaAuraPoints(puntajes);
+							const mensajeAura = buildAlertaAuraPoints(
+								puntajes,
+								info.partidoOriginalId != null,
+							);
 							if (mensajeAura) {
 								await sendAlertsChannel(interaction.client, mensajeAura);
 							}
@@ -1085,7 +1089,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								penalesGanadorId,
 							),
 						);
-						const mensajeAura = buildAlertaAuraPoints(puntajes);
+						const mensajeAura = buildAlertaAuraPoints(
+							puntajes,
+							info.partidoOriginalId != null,
+						);
 						if (mensajeAura) {
 							await sendAlertsChannel(interaction.client, mensajeAura);
 						}
@@ -1232,7 +1239,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						);
 					}
 
-					if (timbas.length > 0) {
+					const hayPendientes = timbas.some((t) => t.estado === "cerrada");
+					if (hayPendientes) {
 						await sendAlertsChannel(
 							interaction.client,
 							`👑 _Resolución de **Timba Times**:_`,
@@ -1243,6 +1251,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								timbas.slice(0, 3),
 								partidoId,
 							) as any,
+							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+						});
+					} else {
+						await interaction.followUp({
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							components: buildTimbaSinPendientesComponents(partidoId) as any,
 							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
 						});
 					}
@@ -1537,7 +1551,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					await appContext.services.timba.cancelarTimbasAbiertas(partidoId);
 					await sendAlertsChannel(
 						interaction.client,
-						`⚽ _¡Tanda de penales de ${nombrePartido}!_`,
+						`▶️ _¡Tanda de penales de ${nombrePartido}!_`,
 					);
 				} catch (error) {
 					await interaction.editReply({
@@ -1619,7 +1633,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 						);
 					}
 
-					if (timbas.length > 0) {
+					const hayPendientes = timbas.some((t) => t.estado === "cerrada");
+					if (hayPendientes) {
 						await sendAlertsChannel(
 							interaction.client,
 							`👑 _Resolución de **Timba Times**:_`,
@@ -1630,6 +1645,12 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								timbas.slice(0, 3),
 								partidoId,
 							) as any,
+							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+						});
+					} else {
+						await interaction.followUp({
+							// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+							components: buildTimbaSinPendientesComponents(partidoId) as any,
 							flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
 						});
 					}
@@ -3402,15 +3423,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const eliminado = interaction.options.getBoolean("eliminado", true);
 				if (eliminado) {
 					await appContext.services.recuento.marcarEquipoEliminado(equipoId);
-					const [eliminados, awards] = await Promise.all([
-						appContext.services.recuento.verEquiposEliminados(),
-						appContext.services.recuento.verAwardsParaRecuento(),
-					]);
+					const [eliminados, awards, ganadores, finalistasYCampeonKO] =
+						await Promise.all([
+							appContext.services.recuento.verEquiposEliminados(),
+							appContext.services.recuento.verAwardsParaRecuento(),
+							appContext.services.recuento.resolverGanadoresDecepcionYSorpresa(),
+							appContext.services.recuento.resolverFinalistasYCampeonKO(),
+						]);
 					const equipo = eliminados.find((e) => e.id === equipoId);
 					if (equipo) {
 						await sendAlertsChannel(
 							interaction.client,
-							buildAlertaEliminacion(equipo, awards, equipoId),
+							buildAlertaEliminacion(
+								equipo,
+								awards,
+								equipoId,
+								ganadores.decepcionEquipoGanadorId,
+								ganadores.sorpresaEquipoGanadorId,
+								finalistasYCampeonKO.finalistaIds,
+								finalistasYCampeonKO.campeonKOId,
+							),
 						);
 					}
 				} else {

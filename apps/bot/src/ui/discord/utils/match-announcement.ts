@@ -109,9 +109,16 @@ export function buildAlertaMedioTiempo(
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
+	const esSuple = info.partidoOriginalId != null;
+
+	const header = esPrePenales
+		? `**⚽ ¡TENEMOS PENALES!**`
+		: esSuple
+			? `**⏸️ ¡MEDIO TIEMPO SUPLEMENTARIO!**`
+			: `**⏸️ ¡MEDIO TIEMPO!**`;
 
 	const lineas = [
-		esPrePenales ? `**⏸️ FIN DEL TIEMPO EXTRA**` : `**⏸️ ¡MEDIO TIEMPO!**`,
+		header,
 		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		`**Resultado parcial: (${gL} - ${gV})**`,
 	];
@@ -134,6 +141,10 @@ export function buildAlertaMedioTiempo(
 		if (pL === gL && pV === gV) {
 			emoji = "❇️";
 			ganadoresActuales.push(...menciones);
+		} else if (esPrePenales) {
+			// El marcador ya quedo congelado - solo faltan los penales, asi que
+			// cualquiera que no haya acertado el resultado exacto ya no puede ganar.
+			emoji = "❌";
 		} else if (gL > pL || gV > pV) {
 			emoji = "❌";
 		} else {
@@ -163,11 +174,15 @@ export function buildAlertaFinPartido(
 ): string {
 	const gL = info.partidoGolesLocal ?? 0;
 	const gV = info.partidoGolesVisitante ?? 0;
+	const penalesNota =
+		penalesGanadorId != null && gL === gV
+			? `, ${penalesGanadorId === info.equipoLocalId ? info.equipoLocalBandera : info.equipoVisitanteBandera} en penales`
+			: "";
 
 	const lineas = [
 		`**🏁 ¡TIEMPO COMPLETO!**`,
 		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
-		`**Resultado final: (${gL} - ${gV})**`,
+		`**Resultado final: (${gL} - ${gV}${penalesNota})**`,
 	];
 
 	if (predicciones.length === 0) {
@@ -218,9 +233,9 @@ export function buildAlertaSupleCreado(
 	const gV = info.partidoGolesVisitante ?? 0;
 
 	const lineas = [
-		`**⏱️ ¡SUPLEMENTARIO!**`,
+		`**⏰ ¡TENEMOS SUPLEMENTARIO!**`,
 		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
-		`**Resultado 90': (${gL} - ${gV}) → Se va a tiempo extra**`,
+		`**Resultado en tiempo regular: (${gL} - ${gV}) → Se va a tiempo extra**`,
 	];
 
 	if (predicciones.length === 0) {
@@ -235,11 +250,12 @@ export function buildAlertaSupleCreado(
 		info.equipoVisitanteBandera,
 	);
 
-	const {
-		lineas: lineasPredicciones,
-		ganadores,
-		hayGanadores,
-	} = clasificarPredicciones(grouped, gL, gV, null);
+	const { lineas: lineasPredicciones, hayGanadores } = clasificarPredicciones(
+		grouped,
+		gL,
+		gV,
+		null,
+	);
 	lineas.push(...lineasPredicciones);
 
 	const sinLine = sinPrediccionLine(sinPrediccion);
@@ -256,8 +272,6 @@ export function buildAlertaSupleCreado(
 
 	if (!hayGanadores) {
 		lineas.push(`⏹️ *Nadie atinó el 90' exacto.*`);
-	} else {
-		lineas.push(`✅ *¡Bravo! Atinaron el 90':* ${ganadores.join(", ")}`);
 	}
 
 	return lineas.join("\n");
@@ -269,8 +283,8 @@ export function buildAlertaInicioSuplementario(
 	sinPrediccion: VerParticipantesSinPrediccionRow[],
 ): string {
 	const lineas = [
-		"⏱️ **¡EMPIEZA EL TIEMPO EXTRA!**",
-		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}***`,
+		"⏱️ **¡EMPEZÓ EL TIEMPO EXTRA!**",
+		`***${info.equipoLocalNombre} ${info.equipoLocalBandera} vs. ${info.equipoVisitanteNombre} ${info.equipoVisitanteBandera}${etLabel(info.partidoOriginalId)}***`,
 		"*Ya no más apuestas* 🙅",
 	];
 
@@ -324,15 +338,17 @@ function puntajeLine(p: VerPuntajesPartidoRow): string {
 
 export function buildAlertaAuraPoints(
 	puntajes: VerPuntajesPartidoRow[],
+	esSuple = false,
 ): string | null {
 	if (puntajes.length === 0) return null;
 
 	const exactos = puntajes.filter((p) => p.resultado === "exacto");
 	const buenosIntentos = puntajes.filter((p) => p.resultado === "buen_intento");
+	const periodo = esSuple ? "en tiempo extra" : "en tiempo regular";
 
 	const lineas: string[] = [];
 	if (exactos.length > 0) {
-		lineas.push(`✅ ***¡Bravo!** Resultado exacto:*`);
+		lineas.push(`✅ ***¡Bravo!** Resultado exacto ${periodo}:*`);
 		lineas.push(...exactos.map(puntajeLine));
 	}
 	if (buenosIntentos.length > 0) {
