@@ -28,6 +28,7 @@ export const PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX = "partidos:et:";
 export const PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:et-admin:";
 
 const PARTIDOS_MAX_BUTTONS = 25;
+const FECHAS_SELECT_MAX_OPTIONS = 25;
 
 export function isValidDateInput(value: string): boolean {
 	return /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -142,6 +143,7 @@ export function buildPartidosComponents(
 					fechas
 						.slice()
 						.reverse()
+						.slice(0, FECHAS_SELECT_MAX_OPTIONS)
 						.map((optionDate) =>
 							new StringSelectMenuOptionBuilder()
 								.setLabel(optionDate)
@@ -306,6 +308,7 @@ export function buildPartidosAdminComponents(
 					fechas
 						.slice()
 						.reverse()
+						.slice(0, FECHAS_SELECT_MAX_OPTIONS)
 						.map((optionDate) =>
 							new StringSelectMenuOptionBuilder()
 								.setLabel(optionDate)

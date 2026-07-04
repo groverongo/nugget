@@ -17,6 +17,8 @@ import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
 
+const FECHAS_SELECT_MAX_OPTIONS = 25;
+
 type MiPrediccionPorFecha = VerMisPrediccionesPorFechaRow;
 
 function penalesFlag(
@@ -219,6 +221,7 @@ export function buildMisPrediccionesComponents(
 					fechas
 						.slice()
 						.reverse()
+						.slice(0, FECHAS_SELECT_MAX_OPTIONS)
 						.map((optionDate) =>
 							new StringSelectMenuOptionBuilder()
 								.setLabel(optionDate)

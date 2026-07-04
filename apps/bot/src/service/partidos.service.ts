@@ -82,10 +82,12 @@ export class PartidosService implements IPartidosService {
 			id: partidoId,
 		});
 		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		const golesLocal = info.partidoGolesLocal ?? info.golesMinimosLocal ?? 0;
+		const golesVisitante =
+			info.partidoGolesVisitante ?? info.golesMinimosVisitante ?? 0;
 		await this.partidosRepo.actualizarGolesPartido({
-			golesLocal: (info.partidoGolesLocal ?? 0) + (equipo === "local" ? 1 : 0),
-			golesVisitante:
-				(info.partidoGolesVisitante ?? 0) + (equipo === "visitante" ? 1 : 0),
+			golesLocal: golesLocal + (equipo === "local" ? 1 : 0),
+			golesVisitante: golesVisitante + (equipo === "visitante" ? 1 : 0),
 			id: partidoId,
 		});
 	}
@@ -98,14 +100,18 @@ export class PartidosService implements IPartidosService {
 			id: partidoId,
 		});
 		if (!info) throw new Error(`Partido #${partidoId} no encontrado`);
+		const pisoLocal = info.golesMinimosLocal ?? 0;
+		const pisoVisitante = info.golesMinimosVisitante ?? 0;
+		const golesLocal = info.partidoGolesLocal ?? pisoLocal;
+		const golesVisitante = info.partidoGolesVisitante ?? pisoVisitante;
 		await this.partidosRepo.actualizarGolesPartido({
 			golesLocal: Math.max(
-				(info.partidoGolesLocal ?? 0) - (equipo === "local" ? 1 : 0),
-				0,
+				golesLocal - (equipo === "local" ? 1 : 0),
+				pisoLocal,
 			),
 			golesVisitante: Math.max(
-				(info.partidoGolesVisitante ?? 0) - (equipo === "visitante" ? 1 : 0),
-				0,
+				golesVisitante - (equipo === "visitante" ? 1 : 0),
+				pisoVisitante,
 			),
 			id: partidoId,
 		});

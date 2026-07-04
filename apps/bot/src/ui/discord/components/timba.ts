@@ -40,6 +40,8 @@ export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
 export const TIMBA_MT_SKIP_PREFIX = "timba:mt:skip:";
 export const TIMBA_ANULAR_PREFIX = "timba:anular:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
+
+const FECHAS_SELECT_MAX_OPTIONS = 25;
 export const TIMBA_ANULAR_VOTO_EMOJI = "🪤";
 export const TIMBA_ANULAR_VOTO_DIVISOR = 3;
 
@@ -407,7 +409,7 @@ export function buildMisTimbasComponents(
 				.setCustomId(MIS_TIMBAS_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas.map((optionDate) =>
+					fechas.slice(-FECHAS_SELECT_MAX_OPTIONS).map((optionDate) =>
 						new StringSelectMenuOptionBuilder()
 							.setLabel(optionDate)
 							.setValue(optionDate)
