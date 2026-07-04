@@ -13,6 +13,10 @@ import {
 } from "discord.js";
 import type { PartidosService } from "../../../service/partidos.service";
 import { fechaADiscordTimestamp } from "../utils/fecha";
+import {
+	buildFechaPaginationRow,
+	paginarFechas,
+} from "../utils/fecha-pagination";
 
 type PartidosPorFecha = Awaited<
 	ReturnType<PartidosService["verPartidosPorFecha"]>
@@ -21,9 +25,11 @@ type PartidoPorFecha = PartidosPorFecha[number];
 
 export const PARTIDOS_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick:";
 export const PARTIDOS_DATE_SELECT_CUSTOM_ID = "partidos:date-select";
+export const PARTIDOS_DATE_PAGE_PREFIX = "partidos:date-page:";
 export const PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:pick-admin:";
 export const PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX =
 	"partidos:date-select-admin:";
+export const PARTIDOS_ADMIN_DATE_PAGE_PREFIX = "partidos:date-page-admin:";
 export const PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX = "partidos:et:";
 export const PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX = "partidos:et-admin:";
 
@@ -56,6 +62,7 @@ export function buildPartidosComponents(
 	date: string,
 	partidos: PartidosPorFecha,
 	fechas: string[],
+	pageOffset = 0,
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
@@ -133,24 +140,30 @@ export function buildPartidosComponents(
 		);
 	}
 
+	const { visibles, page, totalPages } = paginarFechas(fechas, pageOffset);
+
 	container.addActionRowComponents((actionRow) =>
 		actionRow.addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(PARTIDOS_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas
-						.slice()
-						.reverse()
-						.map((optionDate) =>
-							new StringSelectMenuOptionBuilder()
-								.setLabel(optionDate)
-								.setValue(optionDate)
-								.setDefault(optionDate === date),
-						),
+					visibles.map((optionDate) =>
+						new StringSelectMenuOptionBuilder()
+							.setLabel(optionDate)
+							.setValue(optionDate)
+							.setDefault(optionDate === date),
+					),
 				),
 		),
 	);
+
+	const paginationRow = buildFechaPaginationRow(
+		`${PARTIDOS_DATE_PAGE_PREFIX}${date}:`,
+		page,
+		totalPages,
+	);
+	if (paginationRow) container.addActionRowComponents(paginationRow);
 
 	return [container.toJSON()];
 }
@@ -212,6 +225,7 @@ export function buildPartidosAdminComponents(
 	partidos: PartidosPorFecha,
 	fechas: string[],
 	usuarioId: string,
+	pageOffset = 0,
 ): APIMessageTopLevelComponent[] {
 	const container = new ContainerBuilder().addTextDisplayComponents(
 		new TextDisplayBuilder().setContent(
@@ -295,6 +309,8 @@ export function buildPartidosAdminComponents(
 		);
 	}
 
+	const { visibles, page, totalPages } = paginarFechas(fechas, pageOffset);
+
 	container.addActionRowComponents((actionRow) =>
 		actionRow.addComponents(
 			new StringSelectMenuBuilder()
@@ -303,18 +319,22 @@ export function buildPartidosAdminComponents(
 				)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas
-						.slice()
-						.reverse()
-						.map((optionDate) =>
-							new StringSelectMenuOptionBuilder()
-								.setLabel(optionDate)
-								.setValue(optionDate)
-								.setDefault(optionDate === date),
-						),
+					visibles.map((optionDate) =>
+						new StringSelectMenuOptionBuilder()
+							.setLabel(optionDate)
+							.setValue(optionDate)
+							.setDefault(optionDate === date),
+					),
 				),
 		),
 	);
+
+	const paginationRow = buildFechaPaginationRow(
+		`${PARTIDOS_ADMIN_DATE_PAGE_PREFIX}${usuarioId}:${date}:`,
+		page,
+		totalPages,
+	);
+	if (paginationRow) container.addActionRowComponents(paginationRow);
 
 	return [container.toJSON()];
 }

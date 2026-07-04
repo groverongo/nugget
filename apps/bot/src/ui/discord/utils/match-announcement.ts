@@ -87,9 +87,7 @@ function clasificarPredicciones(
 			(penalesGanadorId == null || pL !== pV || penalesId === penalesGanadorId);
 
 		let emoji: string;
-		if (!hayGanadores) {
-			emoji = "⏹️";
-		} else if (esExacto) {
+		if (esExacto) {
 			emoji = "✅";
 			ganadores.push(...menciones);
 		} else if (esBuenIntento) {
