@@ -793,11 +793,13 @@ JOIN estatico_equipos el ON el.id = p.equipo_local_id
 JOIN estatico_equipos ev ON ev.id = p.equipo_visitante_id
 WHERE pe.resultado = 'exacto'
   AND u.participante = TRUE
+  AND p.partido_original_id IS NULL
   AND (p.goles_local + p.goles_visitante) = (
     SELECT MAX(p2.goles_local + p2.goles_visitante)
     FROM prediccion pe2
     JOIN partidos p2 ON p2.id = pe2.partido_id
     WHERE pe2.resultado = 'exacto'
+      AND p2.partido_original_id IS NULL
   )`;
 
 export interface VerGanadoresHitMasGolesRow {

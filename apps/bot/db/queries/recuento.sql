@@ -22,9 +22,13 @@ ORDER BY
 
 -- name: VerEstadisticasTorneo :one
 SELECT
-    COUNT(*) FILTER (WHERE estado = 'finalizado')::INTEGER AS partidos_finalizados,
-    COUNT(*)::INTEGER AS partidos_total
+    COUNT(*) FILTER (WHERE estado = 'finalizado' AND partido_original_id IS NULL)::INTEGER AS partidos_finalizados,
+    COUNT(*) FILTER (WHERE partido_original_id IS NOT NULL)::INTEGER AS suplementarios_ocurridos
 FROM partidos;
+
+-- name: VerEquiposConEliminacion :many
+SELECT id, siglas, eliminado, eliminado_at
+FROM estatico_equipos;
 
 -- name: VerWinRateGlobal :one
 SELECT
@@ -77,7 +81,12 @@ SELECT
     u.award_seleccion_decepcion AS seleccion_decepcion_id,
     esd.bandera AS seleccion_decepcion_bandera,
     u.award_seleccion_sorpresa AS seleccion_sorpresa_id,
-    ess.bandera AS seleccion_sorpresa_bandera
+    ess.bandera AS seleccion_sorpresa_bandera,
+    u.award_ko_finalista1 AS ko_finalista1_id,
+    u.award_ko_finalista2 AS ko_finalista2_id,
+    u.award_ko_campeon AS ko_campeon_id,
+    u.award_ko_goleador AS ko_goleador_id,
+    jkg.equipo_id AS ko_goleador_equipo_id
 FROM usuarios u
 LEFT JOIN estatico_equipos ec ON ec.id = u.award_campeon
 LEFT JOIN estatico_jugadores jg ON jg.id = u.award_goleador
@@ -87,5 +96,15 @@ LEFT JOIN estatico_jugadores jmjj ON jmjj.id = u.award_mejor_jugador_joven
 LEFT JOIN estatico_jugadores jmg ON jmg.id = u.award_mejor_gol
 LEFT JOIN estatico_equipos esd ON esd.id = u.award_seleccion_decepcion
 LEFT JOIN estatico_equipos ess ON ess.id = u.award_seleccion_sorpresa
-WHERE u.participante = TRUE AND u.award_campeon IS NOT NULL
+LEFT JOIN estatico_jugadores jkg ON jkg.id = u.award_ko_goleador
+WHERE u.participante = TRUE
+  AND (u.award_campeon IS NOT NULL OR u.award_ko_finalista1 IS NOT NULL)
 ORDER BY u.username;
+
+-- name: VerPartidoFinal :many
+SELECT p.id, p.partido_original_id, p.equipo_local_id, p.equipo_visitante_id,
+       p.estado, p.goles_local, p.goles_visitante, p.penales_ganador_id
+FROM partidos p
+JOIN estatico_fases f ON f.id = p.fase_id
+WHERE f.nombre = 'final'
+ORDER BY p.id ASC;

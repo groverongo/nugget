@@ -11,6 +11,9 @@ const AWARD_LABELS: Record<string, string> = {
 	mejorGol: "Mejor gol",
 	seleccionDecepcion: "Selección decepción",
 	seleccionSorpresa: "Selección sorpresa",
+	finalistasKO: "Finalistas (KO)",
+	campeonKO: "Campeón (KO)",
+	goleadorKO: "Goleador (KO)",
 };
 
 function premioStr(premio: number): string {
@@ -25,13 +28,72 @@ function getPremioParaPuesto(
 	return bloque?.premio ?? 0;
 }
 
+/** Arma la(s) linea(s) de un award "comparativo" (decepcion/sorpresa) separando acertados (✅) de descartados (❌) */
+function buildSplitAwardLine(
+	label: string,
+	afectados: VerAwardsParaRecuentoRow[],
+	equipoIdDeUsuario: (r: VerAwardsParaRecuentoRow) => number | null,
+	equipoGanadorId: number | null,
+): string[] {
+	if (afectados.length === 0) return [];
+
+	const ganadores = afectados
+		.filter((r) => equipoIdDeUsuario(r) === equipoGanadorId)
+		.map((r) => `<@${r.usuarioId}>`);
+	const perdedores = afectados
+		.filter((r) => equipoIdDeUsuario(r) !== equipoGanadorId)
+		.map((r) => `<@${r.usuarioId}>`);
+
+	const lineas: string[] = [];
+	if (ganadores.length > 0) {
+		lineas.push(`- ***${label}:*** ${ganadores.join("/")} ✅ `);
+	}
+	if (perdedores.length > 0) {
+		const prefijo = ganadores.length > 0 ? "" : `- ***${label}:*** `;
+		lineas.push(`${prefijo}${perdedores.join("/")} ❌`);
+	}
+	return lineas;
+}
+
+/** Arma la(s) linea(s) de un award KO que solo se revela una vez que hay suficiente info (finalistas/campeon confirmados) */
+function buildRevealedAwardLine(
+	label: string,
+	elegibles: VerAwardsParaRecuentoRow[],
+	acerto: (r: VerAwardsParaRecuentoRow) => boolean,
+): string[] {
+	if (elegibles.length === 0) return [];
+
+	const ganadores = elegibles.filter(acerto).map((r) => `<@${r.usuarioId}>`);
+	const perdedores = elegibles
+		.filter((r) => !acerto(r))
+		.map((r) => `<@${r.usuarioId}>`);
+
+	const lineas: string[] = [];
+	if (ganadores.length > 0) {
+		lineas.push(`- ***${label}:*** ${ganadores.join("/")} ✅ `);
+	}
+	if (perdedores.length > 0) {
+		const prefijo = ganadores.length > 0 ? "" : `- ***${label}:*** `;
+		lineas.push(`${prefijo}${perdedores.join("/")} ❌`);
+	}
+	return lineas;
+}
+
 function buildAwardsSection(
 	awards: VerAwardsParaRecuentoRow[],
 	eliminadosIds: Set<number>,
+	decepcionEquipoGanadorId: number | null,
+	sorpresaEquipoGanadorId: number | null,
+	finalistaIds: [number, number] | null,
+	campeonKOId: number | null,
 ): string[] {
 	if (awards.length === 0) return [];
 
-	if (eliminadosIds.size === 0) {
+	if (
+		eliminadosIds.size === 0 &&
+		finalistaIds === null &&
+		campeonKOId === null
+	) {
 		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
 
@@ -75,16 +137,10 @@ function buildAwardsSection(
 				r.mejorGolEquipoId !== null && eliminadosIds.has(r.mejorGolEquipoId),
 		},
 		{
-			label: AWARD_LABELS.seleccionDecepcion,
+			label: AWARD_LABELS.goleadorKO,
 			isEliminated: (r) =>
-				r.seleccionDecepcionId !== null &&
-				eliminadosIds.has(r.seleccionDecepcionId),
-		},
-		{
-			label: AWARD_LABELS.seleccionSorpresa,
-			isEliminated: (r) =>
-				r.seleccionSorpresaId !== null &&
-				eliminadosIds.has(r.seleccionSorpresaId),
+				r.koGoleadorEquipoId !== null &&
+				eliminadosIds.has(r.koGoleadorEquipoId),
 		},
 	];
 
@@ -101,6 +157,98 @@ function buildAwardsSection(
 		}
 	}
 
+	const decepcionAfectados = awards.filter(
+		(r) =>
+			r.seleccionDecepcionId !== null &&
+			eliminadosIds.has(r.seleccionDecepcionId),
+	);
+	const decepcionLineas = buildSplitAwardLine(
+		AWARD_LABELS.seleccionDecepcion,
+		decepcionAfectados,
+		(r) => r.seleccionDecepcionId,
+		decepcionEquipoGanadorId,
+	);
+	if (decepcionLineas.length > 0) {
+		hayMuertas = true;
+		lineas.push(...decepcionLineas);
+	}
+
+	const sorpresaAfectados = awards.filter(
+		(r) =>
+			r.seleccionSorpresaId !== null &&
+			eliminadosIds.has(r.seleccionSorpresaId),
+	);
+	const sorpresaLineas = buildSplitAwardLine(
+		AWARD_LABELS.seleccionSorpresa,
+		sorpresaAfectados,
+		(r) => r.seleccionSorpresaId,
+		sorpresaEquipoGanadorId,
+	);
+	if (sorpresaLineas.length > 0) {
+		hayMuertas = true;
+		lineas.push(...sorpresaLineas);
+	}
+
+	// Finalistas (KO): mientras no se conozcan los 2 finalistas reales, se descarta
+	// progresivamente a quien ya tenga un pick eliminado (ya no puede ganar la categoria).
+	// Una vez existe el partido de la final, se resuelve del todo (✅/❌ para todos).
+	let finalistasLineas: string[] = [];
+	if (finalistaIds !== null) {
+		const finalistasSet = new Set(finalistaIds);
+		const elegibles = awards.filter(
+			(r) => r.koFinalista1Id !== null && r.koFinalista2Id !== null,
+		);
+		finalistasLineas = buildRevealedAwardLine(
+			AWARD_LABELS.finalistasKO,
+			elegibles,
+			(r) =>
+				finalistasSet.has(r.koFinalista1Id as number) &&
+				finalistasSet.has(r.koFinalista2Id as number),
+		);
+	} else {
+		const descartados = awards
+			.filter(
+				(r) =>
+					(r.koFinalista1Id !== null && eliminadosIds.has(r.koFinalista1Id)) ||
+					(r.koFinalista2Id !== null && eliminadosIds.has(r.koFinalista2Id)),
+			)
+			.map((r) => `<@${r.usuarioId}>`);
+		if (descartados.length > 0) {
+			finalistasLineas = [
+				`- ***${AWARD_LABELS.finalistasKO}:*** ${descartados.join("/")} ❌`,
+			];
+		}
+	}
+	if (finalistasLineas.length > 0) {
+		hayMuertas = true;
+		lineas.push(...finalistasLineas);
+	}
+
+	// Campeon (KO): mismo criterio - descarte progresivo antes de que termine la final,
+	// resolucion completa (✅/❌) una vez que la final esta finalizada.
+	let campeonKOLineas: string[] = [];
+	if (campeonKOId !== null) {
+		const elegibles = awards.filter((r) => r.koCampeonId !== null);
+		campeonKOLineas = buildRevealedAwardLine(
+			AWARD_LABELS.campeonKO,
+			elegibles,
+			(r) => r.koCampeonId === campeonKOId,
+		);
+	} else {
+		const descartados = awards
+			.filter((r) => r.koCampeonId !== null && eliminadosIds.has(r.koCampeonId))
+			.map((r) => `<@${r.usuarioId}>`);
+		if (descartados.length > 0) {
+			campeonKOLineas = [
+				`- ***${AWARD_LABELS.campeonKO}:*** ${descartados.join("/")} ❌`,
+			];
+		}
+	}
+	if (campeonKOLineas.length > 0) {
+		hayMuertas = true;
+		lineas.push(...campeonKOLineas);
+	}
+
 	if (!hayMuertas) {
 		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
@@ -112,12 +260,23 @@ export function buildAlertaEliminacion(
 	equipo: { nombre: string; bandera: string },
 	awards: VerAwardsParaRecuentoRow[],
 	equipoId: number,
+	decepcionEquipoGanadorId: number | null,
+	sorpresaEquipoGanadorId: number | null,
+	finalistaIds: [number, number] | null,
+	campeonKOId: number | null,
 ): string {
 	const lineas: string[] = [
 		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
 	];
 
-	const afectadas = buildAwardsSection(awards, new Set([equipoId]));
+	const afectadas = buildAwardsSection(
+		awards,
+		new Set([equipoId]),
+		decepcionEquipoGanadorId,
+		sorpresaEquipoGanadorId,
+		finalistaIds,
+		campeonKOId,
+	);
 	if (
 		afectadas.length > 0 &&
 		afectadas[0] !== "🏅 🟢 _Todas las **awards** siguen abiertas._"
@@ -164,6 +323,8 @@ export function buildRecuento(datos: DatosRecuento): string {
 		titulo,
 		partidosFinalizados,
 		partidosTotal,
+		suplementariosOcurridos,
+		suplementariosPosibles,
 		exactos,
 		totalFinalizados,
 		ranking,
@@ -172,11 +333,19 @@ export function buildRecuento(datos: DatosRecuento): string {
 		eliminados,
 		awards,
 		hitMasGoles,
+		decepcionEquipoGanadorId,
+		sorpresaEquipoGanadorId,
+		finalistaIds,
+		campeonKOId,
 	} = datos;
 
 	const pct =
 		partidosTotal > 0
-			? `${((partidosFinalizados / partidosTotal) * 100).toFixed(0)}%`
+			? `${((partidosFinalizados / partidosTotal) * 100).toFixed(1)}%`
+			: "0%";
+	const suplePct =
+		suplementariosPosibles > 0
+			? `${((suplementariosOcurridos / suplementariosPosibles) * 100).toFixed(1)}%`
 			: "0%";
 	const wrPct =
 		totalFinalizados > 0
@@ -189,6 +358,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 		`⚽ 🏆  ***RECUENTO: POLLITA FWC 2026***`,
 		`_***${titulo}***_`,
 		`_***${partidosFinalizados}/${partidosTotal}*** partidos disputados_ (${pct})`,
+		`_***${suplementariosOcurridos}/${suplementariosPosibles}*** suplementarios posibles_ (${suplePct})`,
 		`_***Win Rate grupal:*** ${exactos}/${totalFinalizados} atinados_ (${wrPct})`,
 	];
 
@@ -201,7 +371,14 @@ export function buildRecuento(datos: DatosRecuento): string {
 	}
 
 	// Awards
-	const awardsLineas = buildAwardsSection(awards, eliminadosIds);
+	const awardsLineas = buildAwardsSection(
+		awards,
+		eliminadosIds,
+		decepcionEquipoGanadorId,
+		sorpresaEquipoGanadorId,
+		finalistaIds,
+		campeonKOId,
+	);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
 		if (eliminados.length > 0) {
@@ -219,7 +396,12 @@ export function buildRecuento(datos: DatosRecuento): string {
 						(r.mejorGolEquipoId !== null && r.mejorGolEquipoId === e.id) ||
 						(r.seleccionDecepcionId !== null &&
 							r.seleccionDecepcionId === e.id) ||
-						(r.seleccionSorpresaId !== null && r.seleccionSorpresaId === e.id),
+						(r.seleccionSorpresaId !== null &&
+							r.seleccionSorpresaId === e.id) ||
+						(r.koFinalista1Id !== null && r.koFinalista1Id === e.id) ||
+						(r.koFinalista2Id !== null && r.koFinalista2Id === e.id) ||
+						(r.koCampeonId !== null && r.koCampeonId === e.id) ||
+						(r.koGoleadorEquipoId !== null && r.koGoleadorEquipoId === e.id),
 				),
 			);
 			if (equiposQueAfectanAward.length > 0) {

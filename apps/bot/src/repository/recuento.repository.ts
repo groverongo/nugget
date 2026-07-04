@@ -4,15 +4,19 @@ import {
 	marcarEquipoEliminado,
 	marcarEquipoNoEliminado,
 	type VerAwardsParaRecuentoRow,
+	type VerEquiposConEliminacionRow,
 	type VerEquiposEliminadosRow,
 	type VerEstadisticasTorneoRow,
+	type VerPartidoFinalRow,
 	type VerRankingCompletoRow,
 	type VerRankingRachaMaximaRow,
 	type VerRankingWinRateRow,
 	type VerWinRateGlobalRow,
 	verAwardsParaRecuento,
+	verEquiposConEliminacion,
 	verEquiposEliminados,
 	verEstadisticasTorneo,
+	verPartidoFinal,
 	verRankingCompleto,
 	verRankingRachaMaxima,
 	verRankingWinRate,
@@ -46,6 +50,14 @@ export class RecuentoRepository implements IRecuentoRepository {
 
 	verEquiposEliminados(): Promise<VerEquiposEliminadosRow[]> {
 		return verEquiposEliminados(this.pool);
+	}
+
+	verEquiposConEliminacion(): Promise<VerEquiposConEliminacionRow[]> {
+		return verEquiposConEliminacion(this.pool);
+	}
+
+	verPartidoFinal(): Promise<VerPartidoFinalRow[]> {
+		return verPartidoFinal(this.pool);
 	}
 
 	marcarEquipoEliminado(args: MarcarEquipoEliminadoArgs): Promise<void> {

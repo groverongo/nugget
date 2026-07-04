@@ -42,12 +42,13 @@ export const TIMBA_MT_RESOLVER_J1_PREFIX = "timba:mt:resolver:j1:";
 export const TIMBA_MT_RESOLVER_J2_PREFIX = "timba:mt:resolver:j2:";
 export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
 export const TIMBA_MT_SKIP_PREFIX = "timba:mt:skip:";
+export const TIMBA_MT_SIN_PENDIENTES_PREFIX = "timba:mt:sin-pendientes:";
 export const TIMBA_ANULAR_PREFIX = "timba:anular:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
 export const MIS_TIMBAS_DATE_PAGE_PREFIX = "mis-timbas:date-page:";
 
 export const TIMBA_ANULAR_VOTO_EMOJI = "🪤";
-export const TIMBA_ANULAR_VOTO_DIVISOR = 3;
+export const TIMBA_ANULAR_VOTO_DIVISOR = 5;
 
 function puntosStr(puntos: number): string {
 	return `${puntos} ${puntos === 1 ? "punto" : "puntos"}`;
@@ -351,6 +352,8 @@ function getMiTimbaEstadoBadge(
 			return timba.ganadorId === usuarioId ? "🏆 ¡Ganaste!" : "💀 Perdiste";
 		case "cancelada":
 			return "🚫 Cancelada";
+		case "anulada":
+			return "🪤 Anulada — puntos congelados hasta que finalice el partido";
 		default:
 			return "";
 	}
@@ -508,6 +511,34 @@ export function buildTimbaResolucionMedioTiempoComponents(
 				),
 		);
 	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
+	return [container.toJSON() as any];
+}
+
+export function buildTimbaSinPendientesComponents(
+	partidoId: number,
+): APIMessageTopLevelComponent[] {
+	const container = new ContainerBuilder()
+		.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				"⏸️ **Timba Times — Revisión de Medio Tiempo**",
+			),
+		)
+		.addSectionComponents(
+			new SectionBuilder()
+				.addTextDisplayComponents(
+					new TextDisplayBuilder().setContent(
+						"No hay timbas pendientes de resolver para este partido.",
+					),
+				)
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(`${TIMBA_MT_SIN_PENDIENTES_PREFIX}${partidoId}`)
+						.setLabel("No hay timbas por resolver aún")
+						.setStyle(ButtonStyle.Secondary),
+				),
+		);
 
 	// biome-ignore lint/suspicious/noExplicitAny: components v2 type mismatch
 	return [container.toJSON() as any];

@@ -460,7 +460,7 @@ export const checkEmparejamientoTimbaQuery = `-- name: CheckEmparejamientoTimba 
 SELECT COUNT(*)::INTEGER AS count
 FROM timba_time
 WHERE partido_id = $1
-AND estado NOT IN ('cancelada')
+AND estado NOT IN ('cancelada', 'anulada')
 AND (
     (jugador_1_id = $2 AND jugador_2_id = $3)
     OR (jugador_1_id = $3 AND jugador_2_id = $2)
@@ -695,7 +695,7 @@ export async function verTodasLasTimbas(client: Client): Promise<VerTodasLasTimb
 }
 
 export const anularTimbaQuery = `-- name: AnularTimba :exec
-DELETE FROM timba_time WHERE id = $1`;
+UPDATE timba_time SET estado = 'anulada' WHERE id = $1`;
 
 export interface AnularTimbaArgs {
     id: number;
@@ -807,13 +807,17 @@ export async function revertirTimba(client: Client, args: RevertirTimbaArgs): Pr
 
 export const sumarApuestasActivasQuery = `-- name: SumarApuestasActivas :one
 SELECT COALESCE(SUM(
-    CASE WHEN jugador_1_id = $1 THEN puntos_propuestos
-         ELSE puntos_arriesgados
+    CASE WHEN t.jugador_1_id = $1 THEN t.puntos_propuestos
+         ELSE t.puntos_arriesgados
     END
 ), 0)::INTEGER AS total
-FROM timba_time
-WHERE (jugador_1_id = $1 OR jugador_2_id = $1)
-AND estado IN ('abierta', 'cerrada', 'contraoferta')`;
+FROM timba_time t
+JOIN partidos p ON p.id = t.partido_id
+WHERE (t.jugador_1_id = $1 OR t.jugador_2_id = $1)
+AND (
+    t.estado IN ('abierta', 'cerrada', 'contraoferta')
+    OR (t.estado = 'anulada' AND p.estado != 'finalizado')
+)`;
 
 export interface SumarApuestasActivasArgs {
     userId: string;
