@@ -13,11 +13,14 @@ import {
 import type { VerPrediccionEtRow } from "../../../../db/sqlcgen/predicciones_et_sql";
 import type { VerMisPrediccionesPorFechaRow } from "../../../../db/sqlcgen/predicciones_sql";
 import { etLabel, fechaADiscordTimestamp } from "../utils/fecha";
+import {
+	buildFechaPaginationRow,
+	paginarFechas,
+} from "../utils/fecha-pagination";
 import { PARTIDOS_BUTTON_CUSTOM_ID_PREFIX } from "./partidos";
 
 export const PREDICCIONES_DATE_SELECT_CUSTOM_ID = "predicciones:date-select";
-
-const FECHAS_SELECT_MAX_OPTIONS = 25;
+export const PREDICCIONES_DATE_PAGE_PREFIX = "predicciones:date-page:";
 
 type MiPrediccionPorFecha = VerMisPrediccionesPorFechaRow;
 
@@ -157,6 +160,7 @@ export function buildMisPrediccionesComponents(
 	predicciones: MiPrediccionPorFecha[],
 	fechas: string[],
 	etPrediccionesMap?: Map<number, VerPrediccionEtRow>,
+	pageOffset = 0,
 ): APIMessageTopLevelComponent[] {
 	const titulo = `## Mis predicciones del <t:${fechaADiscordTimestamp(date)}:D>`;
 
@@ -212,25 +216,30 @@ export function buildMisPrediccionesComponents(
 		}
 	}
 
+	const { visibles, page, totalPages } = paginarFechas(fechas, pageOffset);
+
 	container.addActionRowComponents((actionRow) =>
 		actionRow.addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(PREDICCIONES_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas
-						.slice()
-						.reverse()
-						.slice(0, FECHAS_SELECT_MAX_OPTIONS)
-						.map((optionDate) =>
-							new StringSelectMenuOptionBuilder()
-								.setLabel(optionDate)
-								.setValue(optionDate)
-								.setDefault(optionDate === date),
-						),
+					visibles.map((optionDate) =>
+						new StringSelectMenuOptionBuilder()
+							.setLabel(optionDate)
+							.setValue(optionDate)
+							.setDefault(optionDate === date),
+					),
 				),
 		),
 	);
+
+	const paginationRow = buildFechaPaginationRow(
+		`${PREDICCIONES_DATE_PAGE_PREFIX}${date}:`,
+		page,
+		totalPages,
+	);
+	if (paginationRow) container.addActionRowComponents(paginationRow);
 
 	return [container.toJSON()];
 }

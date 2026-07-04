@@ -34,14 +34,17 @@ import {
 	buildPartidosAdminComponents,
 	buildPartidosComponents,
 	PARTIDOS_ADMIN_BUTTON_CUSTOM_ID_PREFIX,
+	PARTIDOS_ADMIN_DATE_PAGE_PREFIX,
 	PARTIDOS_ADMIN_DATE_SELECT_CUSTOM_ID_PREFIX,
 	PARTIDOS_BUTTON_CUSTOM_ID_PREFIX,
+	PARTIDOS_DATE_PAGE_PREFIX,
 	PARTIDOS_DATE_SELECT_CUSTOM_ID,
 	PARTIDOS_ET_ADMIN_BUTTON_CUSTOM_ID_PREFIX,
 	PARTIDOS_ET_BUTTON_CUSTOM_ID_PREFIX,
 } from "../components/partidos";
 import {
 	buildMisPrediccionesComponents,
+	PREDICCIONES_DATE_PAGE_PREFIX,
 	PREDICCIONES_DATE_SELECT_CUSTOM_ID,
 } from "../components/predicciones";
 import {
@@ -52,6 +55,7 @@ import {
 	buildTimbaCreacionComponent,
 	buildTimbaResolucionComponents,
 	buildTimbaResolucionMedioTiempoComponents,
+	MIS_TIMBAS_DATE_PAGE_PREFIX,
 	MIS_TIMBAS_DATE_SELECT_CUSTOM_ID,
 	TIMBA_ACEPTAR_CANCELAR_PREFIX,
 	TIMBA_ACEPTAR_CONFIRMAR_PREFIX,
@@ -1020,6 +1024,32 @@ export async function handlePartidosDateSelectInteraction(
 	});
 }
 
+export async function handlePartidosDatePageInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PARTIDOS_DATE_PAGE_PREFIX)) return;
+
+	const rest = interaction.customId.slice(PARTIDOS_DATE_PAGE_PREFIX.length);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const date = rest.slice(0, lastColon);
+	const pageOffset = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(pageOffset)) return;
+
+	await interaction.deferUpdate();
+
+	const fechas = await appContext.services.partidos.verFechasDePartidos();
+	const partidos = await appContext.services.partidos.verPartidosPorFecha({
+		date,
+	});
+
+	await interaction.editReply({
+		components: buildPartidosComponents(date, partidos, fechas, pageOffset),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
 export async function buildEtPrediccionesMap(
 	predicciones: { partidoId: number }[],
 	usuarioId: string,
@@ -1085,6 +1115,48 @@ export async function handlePrediccionesDateSelectInteraction(
 	});
 }
 
+export async function handlePrediccionesDatePageInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PREDICCIONES_DATE_PAGE_PREFIX)) return;
+
+	const rest = interaction.customId.slice(PREDICCIONES_DATE_PAGE_PREFIX.length);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const date = rest.slice(0, lastColon);
+	const pageOffset = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(pageOffset)) return;
+
+	await interaction.deferUpdate();
+
+	const fechas =
+		await appContext.services.predicciones.verFechasDePrediccionesPorUsuario(
+			interaction.user.id,
+		);
+	const predicciones =
+		await appContext.services.predicciones.verMisPrediccionesPorFecha({
+			usuarioId: interaction.user.id,
+			date,
+		});
+	const etPrediccionesMap = await buildEtPrediccionesMap(
+		predicciones,
+		interaction.user.id,
+		appContext,
+	);
+
+	await interaction.editReply({
+		components: buildMisPrediccionesComponents(
+			date,
+			predicciones,
+			fechas,
+			etPrediccionesMap,
+			pageOffset,
+		),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
 export async function handleMisTimbasDateSelectInteraction(
 	interaction: StringSelectMenuInteraction,
 	appContext: AppContext,
@@ -1119,6 +1191,41 @@ export async function handleMisTimbasDateSelectInteraction(
 			interaction.user.id,
 			timbas,
 			fechas,
+		),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+export async function handleMisTimbasDatePageInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(MIS_TIMBAS_DATE_PAGE_PREFIX)) return;
+
+	const rest = interaction.customId.slice(MIS_TIMBAS_DATE_PAGE_PREFIX.length);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const date = rest.slice(0, lastColon);
+	const pageOffset = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(pageOffset)) return;
+
+	await interaction.deferUpdate();
+
+	const fechas = await appContext.services.timba.verFechasDeTimbasPorUsuario(
+		interaction.user.id,
+	);
+	const timbas = await appContext.services.timba.verMisTimbasPorFecha({
+		jugador_1Id: interaction.user.id,
+		date,
+	});
+
+	await interaction.editReply({
+		components: buildMisTimbasComponents(
+			date,
+			interaction.user.id,
+			timbas,
+			fechas,
+			pageOffset,
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});
@@ -1320,6 +1427,45 @@ export async function handlePartidosAdminDateSelectInteraction(
 			partidos,
 			fechas,
 			usuarioId,
+		),
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+export async function handlePartidosAdminDatePageInteraction(
+	interaction: ButtonInteraction,
+	appContext: AppContext,
+): Promise<void> {
+	if (!interaction.customId.startsWith(PARTIDOS_ADMIN_DATE_PAGE_PREFIX)) return;
+
+	const rest = interaction.customId.slice(
+		PARTIDOS_ADMIN_DATE_PAGE_PREFIX.length,
+	);
+	const lastColon = rest.lastIndexOf(":");
+	if (lastColon === -1) return;
+	const pageOffset = Number(rest.slice(lastColon + 1));
+	if (Number.isNaN(pageOffset)) return;
+
+	const withoutOffset = rest.slice(0, lastColon);
+	const secondLastColon = withoutOffset.lastIndexOf(":");
+	if (secondLastColon === -1) return;
+	const usuarioId = withoutOffset.slice(0, secondLastColon);
+	const date = withoutOffset.slice(secondLastColon + 1);
+
+	await interaction.deferUpdate();
+
+	const fechas = await appContext.services.partidos.verFechasDePartidos();
+	const partidos = await appContext.services.partidos.verPartidosPorFecha({
+		date,
+	});
+
+	await interaction.editReply({
+		components: buildPartidosAdminComponents(
+			date,
+			partidos,
+			fechas,
+			usuarioId,
+			pageOffset,
 		),
 		flags: MessageFlags.IsComponentsV2,
 	});

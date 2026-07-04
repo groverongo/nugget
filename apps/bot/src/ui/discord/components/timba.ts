@@ -24,6 +24,10 @@ import type {
 	CrearTimbaResult,
 } from "../../../interface/service/timba.service";
 import { fechaADiscordTimestamp } from "../utils/fecha";
+import {
+	buildFechaPaginationRow,
+	paginarFechas,
+} from "../utils/fecha-pagination";
 
 export const TIMBA_ACEPTAR_PREFIX = "timba:aceptar:";
 export const TIMBA_ACEPTAR_CONFIRMAR_PREFIX = "timba:aceptar:confirmar:";
@@ -40,8 +44,8 @@ export const TIMBA_MT_REVERTIR_PREFIX = "timba:mt:revertir:";
 export const TIMBA_MT_SKIP_PREFIX = "timba:mt:skip:";
 export const TIMBA_ANULAR_PREFIX = "timba:anular:";
 export const MIS_TIMBAS_DATE_SELECT_CUSTOM_ID = "mis-timbas:date-select";
+export const MIS_TIMBAS_DATE_PAGE_PREFIX = "mis-timbas:date-page:";
 
-const FECHAS_SELECT_MAX_OPTIONS = 25;
 export const TIMBA_ANULAR_VOTO_EMOJI = "🪤";
 export const TIMBA_ANULAR_VOTO_DIVISOR = 3;
 
@@ -377,6 +381,7 @@ export function buildMisTimbasComponents(
 	usuarioId: string,
 	timbas: MiTimbaPorFecha[],
 	fechas: string[],
+	pageOffset = 0,
 ): APIMessageTopLevelComponent[] {
 	const titulo = `## Mis Timba Times del <t:${fechaADiscordTimestamp(date)}:D>`;
 
@@ -403,13 +408,15 @@ export function buildMisTimbasComponents(
 		}
 	}
 
+	const { visibles, page, totalPages } = paginarFechas(fechas, pageOffset);
+
 	container.addActionRowComponents((actionRow) =>
 		actionRow.addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(MIS_TIMBAS_DATE_SELECT_CUSTOM_ID)
 				.setPlaceholder("Selecciona otra fecha")
 				.addOptions(
-					fechas.slice(-FECHAS_SELECT_MAX_OPTIONS).map((optionDate) =>
+					visibles.map((optionDate) =>
 						new StringSelectMenuOptionBuilder()
 							.setLabel(optionDate)
 							.setValue(optionDate)
@@ -419,6 +426,12 @@ export function buildMisTimbasComponents(
 		),
 	);
 
+	const paginationRow = buildFechaPaginationRow(
+		`${MIS_TIMBAS_DATE_PAGE_PREFIX}${date}:`,
+		page,
+		totalPages,
+	);
+	if (paginationRow) container.addActionRowComponents(paginationRow);
 	return [container.toJSON()];
 }
 

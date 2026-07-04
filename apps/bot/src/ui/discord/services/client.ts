@@ -17,10 +17,13 @@ import {
 	handleAwardsKOModalSubmitInteraction,
 	handleCommandInteraction,
 	handleContraofertaModalSubmitInteraction,
+	handleMisTimbasDatePageInteraction,
 	handleMisTimbasDateSelectInteraction,
 	handlePartidosAdminButtonInteraction,
+	handlePartidosAdminDatePageInteraction,
 	handlePartidosAdminDateSelectInteraction,
 	handlePartidosButtonInteraction,
+	handlePartidosDatePageInteraction,
 	handlePartidosDateSelectInteraction,
 	handlePartidosEtAdminButtonInteraction,
 	handlePartidosEtButtonInteraction,
@@ -29,6 +32,7 @@ import {
 	handlePrediccionEtModalSubmitInteraction,
 	handlePrediccionEtPenalesAdminButtonInteraction,
 	handlePrediccionEtPenalesButtonInteraction,
+	handlePrediccionesDatePageInteraction,
 	handlePrediccionesDateSelectInteraction,
 	handlePrediccionModalSubmitInteraction,
 	handlePrediccionSuplePenalesButtonInteraction,
@@ -125,6 +129,10 @@ export function registerDiscordEventHandlers(
 					interaction,
 					appContext,
 				);
+				await handlePartidosDatePageInteraction(interaction, appContext);
+				await handlePartidosAdminDatePageInteraction(interaction, appContext);
+				await handlePrediccionesDatePageInteraction(interaction, appContext);
+				await handleMisTimbasDatePageInteraction(interaction, appContext);
 				return;
 			}
 
