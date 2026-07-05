@@ -250,6 +250,8 @@ export class AdminService implements IAdminService {
 				}
 			}
 
+			await predRepo.poblarEvolucion(args.partidoId);
+
 			// Si no es suple y terminó en empate en fase KO, crear suplementario
 			let supleCreado: { supleId: number } | null = null;
 			if (

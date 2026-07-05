@@ -1,4 +1,10 @@
 import type {
+	VerEvolucionGrupalArgs,
+	VerEvolucionGrupalRow,
+	VerEvolucionPorUsuarioArgs,
+	VerEvolucionPorUsuarioRow,
+} from "@sqlc/evolucion_sql";
+import type {
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
@@ -54,4 +60,12 @@ export interface IPrediccionesService {
 	verParticipantesSinPrediccion(
 		args: VerParticipantesSinPrediccionArgs,
 	): Promise<VerParticipantesSinPrediccionRow[]>;
+
+	verEvolucionPorUsuario(
+		args: VerEvolucionPorUsuarioArgs,
+	): Promise<VerEvolucionPorUsuarioRow[]>;
+
+	verEvolucionGrupal(
+		args: VerEvolucionGrupalArgs,
+	): Promise<VerEvolucionGrupalRow[]>;
 }

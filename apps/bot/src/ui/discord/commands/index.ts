@@ -43,7 +43,11 @@ import {
 	enviarAlertaInicioPartidoSoloMensaje,
 	enviarEstadisticasPrePartido,
 } from "../services/match-scheduler";
-import { generarEvolucionPredicciones } from "../services/utility-client";
+import {
+	generarEvolucionGrupal,
+	generarEvolucionPorRango,
+	generarEvolucionPredicciones,
+} from "../services/utility-client";
 import { obtenerYYYYMMDDPeru } from "../utils/fecha";
 import {
 	buildAlertaAuraPoints,
@@ -417,6 +421,37 @@ const miEvolucionCommand = new SlashCommandBuilder()
 			.setDescription("Número de página (por defecto: 1)")
 			.setRequired(false)
 			.setMinValue(1),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha_inicio")
+			.setDescription("Fecha de inicio en formato YYYY-MM-DD (excluye pagina)")
+			.setRequired(false),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha_fin")
+			.setDescription("Fecha de fin en formato YYYY-MM-DD (excluye pagina)")
+			.setRequired(false),
+	)
+	.setContexts(InteractionContextType.Guild);
+
+const evolucionCommand = new SlashCommandBuilder()
+	.setName("evolucion")
+	.setDescription(
+		"Ver la evolución grupal de puntos (top 10 + bottom 3 del torneo)",
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha_inicio")
+			.setDescription("Fecha de inicio en formato YYYY-MM-DD")
+			.setRequired(false),
+	)
+	.addStringOption((option) =>
+		option
+			.setName("fecha_fin")
+			.setDescription("Fecha de fin en formato YYYY-MM-DD")
+			.setRequired(false),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -1971,21 +2006,41 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 				await interaction.deferReply({ ephemeral: true });
 
-				const limite = config.utility.evolution_limit;
-				const pagina = interaction.options.getInteger("pagina") ?? 1;
-				const offset = (pagina - 1) * limite;
+				const fechaInicio = interaction.options.getString("fecha_inicio");
+				const fechaFin = interaction.options.getString("fecha_fin");
+				const useDateRange = fechaInicio !== null || fechaFin !== null;
 
-				const predicciones =
-					await appContext.services.predicciones.verMisPredicciones(
-						interaction.user.id,
-						limite,
-						offset,
+				let chart: Buffer | null;
+
+				if (useDateRange) {
+					const rows =
+						await appContext.services.predicciones.verEvolucionPorUsuario({
+							usuarioId: interaction.user.id,
+							fechaInicio: fechaInicio,
+							fechaFin: fechaFin,
+							offset: 0,
+							limit: 10000,
+						});
+					chart = await generarEvolucionPorRango(
+						rows,
+						interaction.user.displayName,
 					);
+				} else {
+					const limite = config.utility.evolution_limit;
+					const pagina = interaction.options.getInteger("pagina") ?? 1;
+					const offset = (pagina - 1) * limite;
 
-				const chart = await generarEvolucionPredicciones(
-					predicciones,
-					interaction.user.displayName,
-				);
+					const predicciones =
+						await appContext.services.predicciones.verMisPredicciones(
+							interaction.user.id,
+							limite,
+							offset,
+						);
+					chart = await generarEvolucionPredicciones(
+						predicciones,
+						interaction.user.displayName,
+					);
+				}
 
 				if (!chart) {
 					await interaction.editReply({
@@ -1996,6 +2051,43 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 
 				await interaction.editReply({
 					files: [new AttachmentBuilder(chart, { name: "evolucion.png" })],
+				});
+			},
+		},
+	],
+	[
+		"evolucion",
+		{
+			definition: evolucionCommand,
+			handle: async (interaction, appContext) => {
+				if (!(await assertPollero(interaction))) return;
+
+				await interaction.deferReply({ ephemeral: false });
+
+				const fechaInicio = interaction.options.getString("fecha_inicio");
+				const fechaFin = interaction.options.getString("fecha_fin");
+
+				const rows = await appContext.services.predicciones.verEvolucionGrupal({
+					fechaInicio: fechaInicio,
+					fechaFin: fechaFin,
+				});
+
+				const chart = await generarEvolucionGrupal(
+					rows,
+					"Evolución grupal de puntos",
+				);
+
+				if (!chart) {
+					await interaction.editReply({
+						content: "Aún no hay partidos finalizados para mostrar.",
+					});
+					return;
+				}
+
+				await interaction.editReply({
+					files: [
+						new AttachmentBuilder(chart, { name: "evolucion-grupal.png" }),
+					],
 				});
 			},
 		},

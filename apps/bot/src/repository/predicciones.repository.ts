@@ -1,4 +1,13 @@
 import {
+	poblarEvolucion,
+	type VerEvolucionGrupalArgs,
+	type VerEvolucionGrupalRow,
+	type VerEvolucionPorUsuarioArgs,
+	type VerEvolucionPorUsuarioRow,
+	verEvolucionGrupal,
+	verEvolucionPorUsuario,
+} from "@sqlc/evolucion_sql";
+import {
 	type ActualizarPrediccionArgs,
 	type ActualizarPuntajePrediccionArgs,
 	type ActualizarPuntosActualesPrediccionArgs,
@@ -146,6 +155,22 @@ export class PrediccionesRepository implements IPrediccionesRepository {
 		args: ActualizarPuntosActualesPrediccionArgs,
 	): Promise<void> {
 		return actualizarPuntosActualesPrediccion(this.pool, args);
+	}
+
+	poblarEvolucion(partidoId: number): Promise<void> {
+		return poblarEvolucion(this.pool, { partidoId });
+	}
+
+	verEvolucionPorUsuario(
+		args: VerEvolucionPorUsuarioArgs,
+	): Promise<VerEvolucionPorUsuarioRow[]> {
+		return verEvolucionPorUsuario(this.pool, args);
+	}
+
+	verEvolucionGrupal(
+		args: VerEvolucionGrupalArgs,
+	): Promise<VerEvolucionGrupalRow[]> {
+		return verEvolucionGrupal(this.pool, args);
 	}
 
 	withTx(tx: PoolClient): IPrediccionesRepository {

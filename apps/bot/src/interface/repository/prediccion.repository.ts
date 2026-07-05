@@ -1,4 +1,10 @@
 import type {
+	VerEvolucionGrupalArgs,
+	VerEvolucionGrupalRow,
+	VerEvolucionPorUsuarioArgs,
+	VerEvolucionPorUsuarioRow,
+} from "@sqlc/evolucion_sql";
+import type {
 	ActualizarPrediccionArgs,
 	ActualizarPuntajePrediccionArgs,
 	ActualizarPuntosActualesPrediccionArgs,
@@ -86,6 +92,16 @@ export interface IPrediccionesRepository {
 	actualizarPuntosActualesPrediccion(
 		args: ActualizarPuntosActualesPrediccionArgs,
 	): Promise<void>;
+
+	poblarEvolucion(partidoId: number): Promise<void>;
+
+	verEvolucionPorUsuario(
+		args: VerEvolucionPorUsuarioArgs,
+	): Promise<VerEvolucionPorUsuarioRow[]>;
+
+	verEvolucionGrupal(
+		args: VerEvolucionGrupalArgs,
+	): Promise<VerEvolucionGrupalRow[]>;
 
 	withTx(tx: PoolClient): IPrediccionesRepository;
 }

@@ -1,4 +1,10 @@
 import type {
+	VerEvolucionGrupalArgs,
+	VerEvolucionGrupalRow,
+	VerEvolucionPorUsuarioArgs,
+	VerEvolucionPorUsuarioRow,
+} from "@sqlc/evolucion_sql";
+import type {
 	VerMisPrediccionesPorFechaArgs,
 	VerMisPrediccionesPorFechaRow,
 	VerMisPrediccionesRow,
@@ -177,5 +183,17 @@ export class PrediccionesService implements IPrediccionesService {
 		args: VerPrediccionPorUsuarioYPartidoArgs,
 	): Promise<VerPrediccionPorUsuarioYPartidoRow | null> {
 		return this.prediccionesRepo.verPrediccionPorUsuarioYPartido(args);
+	}
+
+	verEvolucionPorUsuario(
+		args: VerEvolucionPorUsuarioArgs,
+	): Promise<VerEvolucionPorUsuarioRow[]> {
+		return this.prediccionesRepo.verEvolucionPorUsuario(args);
+	}
+
+	verEvolucionGrupal(
+		args: VerEvolucionGrupalArgs,
+	): Promise<VerEvolucionGrupalRow[]> {
+		return this.prediccionesRepo.verEvolucionGrupal(args);
 	}
 }
