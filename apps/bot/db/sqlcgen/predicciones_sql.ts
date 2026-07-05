@@ -404,7 +404,7 @@ export async function verPredicciones(client: Client): Promise<VerPrediccionesRo
 }
 
 export const verMisPrediccionesQuery = `-- name: VerMisPredicciones :many
-SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo, equipo_local_siglas, equipo_visitante_siglas, puntos_total, SUM(puntos_total) OVER (ORDER BY fecha_partido ROWS UNBOUNDED PRECEDING) AS puntos_acumulados
+SELECT pe.partido_id AS partido_id, prediccion_goles_local, prediccion_goles_visitante, equipo_local_id, equipo_visitante_id, fecha_partido, partido_goles_local, partido_goles_visitante, estado, equipo_local_nombre, equipo_local_puntos_fifa, equipo_local_grupo, equipo_visitante_nombre, equipo_visitante_puntos_fifa, equipo_visitante_grupo, equipo_local_siglas, equipo_visitante_siglas, puntos_total, timba_delta, SUM(puntos_total + COALESCE(timba_delta, 0)) OVER (ORDER BY fecha_partido ROWS UNBOUNDED PRECEDING) AS puntos_acumulados_con_timba
 FROM (
     SELECT partido_id, goles_local AS prediccion_goles_local, goles_visitante AS prediccion_goles_visitante, puntos_total
     FROM prediccion
@@ -416,6 +416,20 @@ INNER JOIN (
     JOIN estatico_equipos el on el.id = pa.equipo_local_id
     JOIN estatico_equipos ev on ev.id = pa.equipo_visitante_id
 ) pa_ex ON pe.partido_id = pa_ex.partido_id
+LEFT JOIN (
+    SELECT partido_id, COALESCE(SUM(
+        CASE
+            WHEN jugador_1_id = $1 AND ganador_id = jugador_1_id THEN puntos_arriesgados
+            WHEN jugador_2_id = $1 AND ganador_id = jugador_2_id THEN puntos_propuestos
+            WHEN jugador_1_id = $1 AND ganador_id = jugador_2_id THEN -puntos_propuestos
+            WHEN jugador_2_id = $1 AND ganador_id = jugador_1_id THEN -puntos_arriesgados
+            ELSE 0
+        END
+    ), 0) AS timba_delta
+    FROM timba_time
+    WHERE estado = 'resuelta' AND (jugador_1_id = $1 OR jugador_2_id = $1)
+    GROUP BY partido_id
+) timba_stats ON timba_stats.partido_id = pa_ex.partido_id
 WHERE estado = 'finalizado'
 ORDER BY fecha_partido ASC
 LIMIT $3::INTEGER OFFSET $2::INTEGER`;
@@ -445,7 +459,8 @@ export interface VerMisPrediccionesRow {
     equipoLocalSiglas: string;
     equipoVisitanteSiglas: string;
     puntosTotal: number;
-    puntosAcumulados: string;
+    timbaDelta: string | null;
+    puntosAcumuladosConTimba: string;
 }
 
 export async function verMisPredicciones(client: Client, args: VerMisPrediccionesArgs): Promise<VerMisPrediccionesRow[]> {
@@ -474,7 +489,8 @@ export async function verMisPredicciones(client: Client, args: VerMisPrediccione
             equipoLocalSiglas: row[15],
             equipoVisitanteSiglas: row[16],
             puntosTotal: row[17],
-            puntosAcumulados: row[18]
+            timbaDelta: row[18],
+            puntosAcumuladosConTimba: row[19]
         };
     });
 }

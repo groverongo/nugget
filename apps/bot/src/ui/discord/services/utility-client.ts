@@ -124,7 +124,10 @@ export async function generarEvolucionPredicciones(
 		return `${local} vs ${visitante}`;
 	});
 
-	const cumulativePoints = predicciones.map((p) => p.puntosAcumulados);
+	const cumulativePoints = predicciones.map((p) => {
+		const cumulative = parseFloat(p.puntosAcumuladosConTimba);
+		return isNaN(cumulative) ? 0 : cumulative;
+	});
 
 	try {
 		const response = await axios.post<ArrayBuffer>(
@@ -132,7 +135,7 @@ export async function generarEvolucionPredicciones(
 			{
 				matches,
 				cumulative_points: cumulativePoints,
-				title: `Evolución de puntos — ${usuarioUsername}`,
+				title: `Evolución de puntos (predicciones + timbas) — ${usuarioUsername}`,
 			},
 			{
 				responseType: "arraybuffer",
