@@ -267,6 +267,25 @@ export class TimbaService implements ITimbaService {
 		};
 	}
 
+	// A diferencia de anularTimba (voto comunitario), esto usa 'cancelada' en
+	// vez de 'anulada' para que los puntos se liberen de inmediato en lugar de
+	// quedar congelados hasta que finalice el partido.
+	async anularTimbaAdmin(timbaId: number): Promise<AnularTimbaResult> {
+		const timba = await this.timbaRepo.verTimba(timbaId);
+		if (!timba) throw new Error("Timba no encontrada.");
+		await this.timbaRepo.cancelar({ id: timbaId });
+		return {
+			jugador_1Id: timba.jugador_1Id,
+			jugador_2Id: timba.jugador_2Id,
+			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			descripcion: timba.descripcion,
+			discordMessageId: timba.discordMessageId,
+		};
+	}
+
 	async resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult> {
 		const timba = await this.timbaRepo.verTimba(args.timbaId);
 

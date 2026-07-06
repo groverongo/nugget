@@ -3209,7 +3209,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					const anulada = await appContext.services.timba.anularTimba(timbaId);
+					const anulada =
+						await appContext.services.timba.anularTimbaAdmin(timbaId);
 					await interaction.editReply({
 						content: `✅ Timba #${timbaId} anulada y eliminada.`,
 					});
