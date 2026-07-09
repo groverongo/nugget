@@ -4,8 +4,10 @@ from pydantic import BaseModel
 from typing import List, Tuple
 import io
 
-from handlers.heatmap import diagrama_predicciones
+from fastapi import HTTPException
 from handlers.evolution import grafico_evolucion
+from handlers.heatmap import diagrama_predicciones
+from handlers.timba_review import revisar_prompt, revisar_timba
 
 app = FastAPI()
 
@@ -16,6 +18,20 @@ class HeatmapRequest(BaseModel):
     title: str = "Position Density Heatmap"
     x_label: str = "X Coordinate"
     y_label: str = "Y Coordinate"
+
+
+class TimbaReviewRequest(BaseModel):
+    timba: str
+
+
+class PromptReviewResponse(BaseModel):
+    safe: bool
+    reason: str | None = None
+
+
+class TimbaReviewResponse(BaseModel):
+    categoria: str
+    justificacion: str
 
 
 class EvolutionRequest(BaseModel):
@@ -56,4 +72,22 @@ async def generate_heatmap(request: HeatmapRequest):
         media_type="image/png",
         headers={"Content-Disposition": "attachment; filename=heatmap.png"}
     )
+
+
+@app.post("/prompt/review")
+async def review_prompt(request: TimbaReviewRequest):
+    try:
+        result = revisar_prompt(request.timba)
+        return PromptReviewResponse(**result)
+    except Exception:
+        raise HTTPException(status_code=502, detail="Error al revisar el prompt")
+
+
+@app.post("/timba/review")
+async def review_timba(request: TimbaReviewRequest):
+    try:
+        result = revisar_timba(request.timba)
+        return TimbaReviewResponse(**result)
+    except Exception:
+        raise HTTPException(status_code=502, detail="Error al revisar la timba")
 

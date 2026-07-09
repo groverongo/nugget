@@ -8,7 +8,7 @@ import sys
 print("Starting FastAPI server...")
 server = subprocess.Popen(
     [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"],
-    cwd="/home/groverongo/Documents/Personal/nugget/python",
+    cwd="/home/groverongo/Documents/Personal/nugget/apps/utility",
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE
 )
