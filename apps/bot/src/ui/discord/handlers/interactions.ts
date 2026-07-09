@@ -2248,20 +2248,21 @@ export async function handleContraofertaModalSubmitInteraction(
 
 	await interaction.deferReply({ ephemeral: true });
 
-	const promptCheckContraoferta = await revisarPromptTimba(descripcion);
-	if (promptCheckContraoferta === null) {
-		await interaction.editReply({
-			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
-		});
-		return;
-	}
-	if (!promptCheckContraoferta.safe) {
-		await interaction.editReply({
-			content:
-				"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
-		});
-		return;
-	}
+	// TODO: Rehacer esta revision de timbas
+	// const promptCheckContraoferta = await revisarPromptTimba(descripcion);
+	// if (promptCheckContraoferta === null) {
+	// 	await interaction.editReply({
+	// 		content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+	// 	});
+	// 	return;
+	// }
+	// if (!promptCheckContraoferta.safe) {
+	// 	await interaction.editReply({
+	// 		content:
+	// 			"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
+	// 	});
+	// 	return;
+	// }
 
 	const timbaInfoContraoferta = await appContext.services.timba
 		.verTimba(timbaOriginalId)
