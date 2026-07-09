@@ -36,6 +36,9 @@ const ConfigSchema = z.object({
 		base_url: z.url(),
 		evolution_limit: z.number().int().positive().default(26),
 	}),
+	timba: z.object({
+		review_error_user_id: z.string().default(""),
+	}),
 	polla: z.object({
 		costo_entrada: z.number(),
 		fraccion_comision_org: z.number().min(0).max(1),
@@ -77,6 +80,9 @@ const DEFAULT_CONFIG: Config = {
 	utility: {
 		base_url: "http://127.0.0.1:8000",
 		evolution_limit: 26,
+	},
+	timba: {
+		review_error_user_id: "",
 	},
 	polla: {
 		costo_entrada: 100,

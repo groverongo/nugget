@@ -106,6 +106,9 @@ export class TimbaService implements ITimbaService {
 			jugador_1Id: args.jugador1Id,
 			puntosPropuestos: args.puntosPropuestos,
 			puntosArriesgados,
+			estado: args.categoria === "valida" ? "abierta" : "cancelada",
+			categoria: args.categoria,
+			justificacion: args.justificacion,
 		});
 		if (!created) throw new Error("Error creando la timba.");
 
@@ -517,6 +520,9 @@ export class TimbaService implements ITimbaService {
 			puntosPropuestos: args.puntosPropuestos,
 			puntosArriesgados: args.puntosArriesgados,
 			timbaOriginalId: args.timbaOriginalId,
+			estado: args.categoria === "valida" ? "contraoferta" : "cancelada",
+			categoria: args.categoria,
+			justificacion: args.justificacion,
 		});
 		if (!created) throw new Error("Error creando la contraoferta.");
 

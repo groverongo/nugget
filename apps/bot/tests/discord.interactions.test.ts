@@ -6,6 +6,11 @@ import {
 
 jest.mock("../src/ui/discord/services/utility-client", () => ({
 	generarHeatmapPredicciones: jest.fn(),
+	revisarPromptTimba: jest.fn().mockResolvedValue({ safe: true, reason: null }),
+	revisarTimba: jest.fn().mockResolvedValue({
+		categoria: "valida",
+		justificacion: "Descripción válida.",
+	}),
 }));
 
 type PartidosServiceMock = {
@@ -300,6 +305,8 @@ describe("Discord interaction handlers", () => {
 			descripcion: "Brasil gana",
 			puntosPropuestos: 10,
 			puntosArriesgados: 10,
+			categoria: "valida",
+			justificacion: "Descripción válida.",
 		});
 		expect(editReply).toHaveBeenCalledWith({
 			content: '✅ Timba creada. **10 💠** en juego — _"Brasil gana"_',

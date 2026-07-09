@@ -5,8 +5,8 @@ interface Client {
 }
 
 export const crearTimbaQuery = `-- name: CrearTimba :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, categoria, justificacion)
+VALUES ($1, $2, $3, $4, $5, $6::timba_estado, $7::timba_categoria, $8)
 RETURNING id`;
 
 export interface CrearTimbaArgs {
@@ -15,6 +15,9 @@ export interface CrearTimbaArgs {
     jugador_1Id: string;
     puntosPropuestos: number;
     puntosArriesgados: number;
+    estado: string;
+    categoria: string;
+    justificacion: string | null;
 }
 
 export interface CrearTimbaRow {
@@ -24,7 +27,7 @@ export interface CrearTimbaRow {
 export async function crearTimba(client: Client, args: CrearTimbaArgs): Promise<CrearTimbaRow | null> {
     const result = await client.query({
         text: crearTimbaQuery,
-        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados],
+        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados, args.estado, args.categoria, args.justificacion],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -871,8 +874,8 @@ export async function verContraofertasMensajesPorTimba(client: Client, args: Ver
 }
 
 export const crearContraofertaQuery = `-- name: CrearContraoferta :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
-VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id, categoria, justificacion)
+VALUES ($1, $2, $3, $4, $5, $7::timba_estado, $6, $8::timba_categoria, $9)
 RETURNING id`;
 
 export interface CrearContraofertaArgs {
@@ -882,6 +885,9 @@ export interface CrearContraofertaArgs {
     puntosPropuestos: number;
     puntosArriesgados: number;
     timbaOriginalId: number | null;
+    estado: string;
+    categoria: string;
+    justificacion: string | null;
 }
 
 export interface CrearContraofertaRow {
@@ -891,7 +897,7 @@ export interface CrearContraofertaRow {
 export async function crearContraoferta(client: Client, args: CrearContraofertaArgs): Promise<CrearContraofertaRow | null> {
     const result = await client.query({
         text: crearContraofertaQuery,
-        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados, args.timbaOriginalId],
+        values: [args.partidoId, args.descripcion, args.jugador_1Id, args.puntosPropuestos, args.puntosArriesgados, args.timbaOriginalId, args.estado, args.categoria, args.justificacion],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {

@@ -65,6 +65,48 @@ export async function generarHeatmapPredicciones(
 	}
 }
 
+export async function revisarPromptTimba(
+	descripcion: string,
+): Promise<{ safe: boolean; reason: string | null } | null> {
+	try {
+		const response = await axios.post<{ safe: boolean; reason: string | null }>(
+			`${config.utility.base_url}/prompt/review`,
+			{ timba: descripcion },
+			{ headers: { "Content-Type": "application/json" } },
+		);
+		return response.data;
+	} catch (error) {
+		logger.error(
+			{ err: error, utilityBaseUrl: config.utility.base_url },
+			"Error revisando prompt de timba",
+		);
+		return null;
+	}
+}
+
+export async function revisarTimba(descripcion: string): Promise<{
+	categoria: "valida" | "mafia" | "contexto";
+	justificacion: string;
+} | null> {
+	try {
+		const response = await axios.post<{
+			categoria: "valida" | "mafia" | "contexto";
+			justificacion: string;
+		}>(
+			`${config.utility.base_url}/timba/review`,
+			{ timba: descripcion },
+			{ headers: { "Content-Type": "application/json" } },
+		);
+		return response.data;
+	} catch (error) {
+		logger.error(
+			{ err: error, utilityBaseUrl: config.utility.base_url },
+			"Error revisando timba con LLM",
+		);
+		return null;
+	}
+}
+
 export async function generarEvolucionPredicciones(
 	predicciones: VerMisPrediccionesRow[],
 	usuarioUsername: string,
