@@ -1957,16 +1957,12 @@ export async function handleTimbaModalSubmitInteraction(
 			});
 			await sendAnnouncementChannel(
 				interaction.client,
-				`🚫 <@${result.jugador1Id}> tu timba **"${result.descripcion}"** fue rechazada: es muy poco probable que ocurra. ${revision.justificacion}`,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revision.justificacion}_`,
 			);
 		} else {
 			await interaction.editReply({
 				content: `❓ Tu timba necesita más contexto. ${revision.justificacion} Por favor, reformúlala con más detalle.`,
 			});
-			await sendAnnouncementChannel(
-				interaction.client,
-				`❓ <@${result.jugador1Id}> tu timba **"${result.descripcion}"** necesita más contexto. ${revision.justificacion} Por favor, reformúlala con más detalle.`,
-			);
 		}
 	} catch (error) {
 		await interaction.editReply({
@@ -2140,16 +2136,12 @@ export async function handleTimbaAdminModalSubmitInteraction(
 			});
 			await sendAnnouncementChannel(
 				interaction.client,
-				`🚫 <@${result.jugador1Id}> tu timba **"${result.descripcion}"** fue rechazada: es muy poco probable que ocurra. ${revisionAdmin.justificacion}`,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revisionAdmin.justificacion}_`,
 			);
 		} else {
 			await interaction.editReply({
 				content: `❓ Timba de <@${usuarioId}> necesita más contexto. ${revisionAdmin.justificacion} Por favor, reformúlala con más detalle.`,
 			});
-			await sendAnnouncementChannel(
-				interaction.client,
-				`❓ <@${result.jugador1Id}> tu timba **"${result.descripcion}"** necesita más contexto. ${revisionAdmin.justificacion} Por favor, reformúlala con más detalle.`,
-			);
 		}
 	} catch (error) {
 		await interaction.editReply({
@@ -2319,16 +2311,12 @@ export async function handleContraofertaModalSubmitInteraction(
 			});
 			await sendAnnouncementChannel(
 				interaction.client,
-				`🚫 <@${result.jugador1Id}> tu timba **"${result.descripcion}"** fue rechazada: es muy poco probable que ocurra. ${revisionContraoferta.justificacion}`,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revisionContraoferta.justificacion}_`,
 			);
 		} else {
 			await interaction.editReply({
 				content: `❓ Tu contraoferta necesita más contexto. ${revisionContraoferta.justificacion} Por favor, reformúlala con más detalle.`,
 			});
-			await sendAnnouncementChannel(
-				interaction.client,
-				`❓ <@${result.jugador1Id}> tu timba **"${result.descripcion}"** necesita más contexto. ${revisionContraoferta.justificacion} Por favor, reformúlala con más detalle.`,
-			);
 		}
 	} catch (error) {
 		await interaction.editReply({
