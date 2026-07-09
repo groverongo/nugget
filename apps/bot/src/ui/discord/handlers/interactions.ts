@@ -1888,20 +1888,21 @@ export async function handleTimbaModalSubmitInteraction(
 
 	await interaction.deferReply({ ephemeral: true });
 
-	const promptCheck = await revisarPromptTimba(descripcion);
-	if (promptCheck === null) {
-		await interaction.editReply({
-			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
-		});
-		return;
-	}
-	if (!promptCheck.safe) {
-		await interaction.editReply({
-			content:
-				"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
-		});
-		return;
-	}
+	// TODO: Rehacer esta revision de timbas
+	// const promptCheck = await revisarPromptTimba(descripcion);
+	// if (promptCheck === null) {
+	// 	await interaction.editReply({
+	// 		content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+	// 	});
+	// 	return;
+	// }
+	// if (!promptCheck.safe) {
+	// 	await interaction.editReply({
+	// 		content:
+	// 			"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
+	// 	});
+	// 	return;
+	// }
 
 	const partidoInfoRevision = await appContext.services.partidos
 		.verInformacionPartido({ id: partidoId })
