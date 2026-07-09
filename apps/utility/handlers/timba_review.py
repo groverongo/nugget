@@ -54,12 +54,13 @@ def revisar_prompt(timba: str) -> dict:
         return {"safe": safe, "reason": None}
 
 
-def revisar_timba(timba: str) -> dict:
+def revisar_timba(timba: str, contexto: str | None = None) -> dict:
+    user_content = f"Partido: {contexto}\nApuesta: {timba}" if contexto else timba
     completion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": TIMBA_REVIEW_SYSTEM},
-            {"role": "user", "content": timba},
+            {"role": "user", "content": user_content},
         ],
         temperature=0.3,
         max_completion_tokens=256,

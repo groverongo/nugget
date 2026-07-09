@@ -34,6 +34,7 @@ type DiscordAppContextMock = {
 
 type TimbaAppContextMock = {
 	services: {
+		partidos: PartidosServiceMock;
 		timba: TimbaServiceMock;
 	};
 };
@@ -230,6 +231,9 @@ describe("Discord interaction handlers", () => {
 		} as const;
 		const appContext = {
 			services: {
+				partidos: {
+					verInformacionPartido: jest.fn(),
+				},
 				timba: {
 					crearTimba: jest.fn(),
 				},
@@ -271,6 +275,11 @@ describe("Discord interaction handlers", () => {
 		} as const;
 		const appContext = {
 			services: {
+				partidos: {
+					verInformacionPartido: jest
+						.fn()
+						.mockResolvedValue(createPartidoDetalle()),
+				},
 				timba: {
 					crearTimba: jest.fn().mockResolvedValue({
 						timbaId: 7,

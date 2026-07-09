@@ -84,7 +84,10 @@ export async function revisarPromptTimba(
 	}
 }
 
-export async function revisarTimba(descripcion: string): Promise<{
+export async function revisarTimba(
+	descripcion: string,
+	contexto?: string,
+): Promise<{
 	categoria: "valida" | "mafia" | "contexto";
 	justificacion: string;
 } | null> {
@@ -94,7 +97,7 @@ export async function revisarTimba(descripcion: string): Promise<{
 			justificacion: string;
 		}>(
 			`${config.utility.base_url}/timba/review`,
-			{ timba: descripcion },
+			{ timba: descripcion, contexto: contexto ?? null },
 			{ headers: { "Content-Type": "application/json" } },
 		);
 		return response.data;

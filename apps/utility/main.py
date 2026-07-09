@@ -22,6 +22,7 @@ class HeatmapRequest(BaseModel):
 
 class TimbaReviewRequest(BaseModel):
     timba: str
+    contexto: str | None = None
 
 
 class PromptReviewResponse(BaseModel):
@@ -86,7 +87,7 @@ async def review_prompt(request: TimbaReviewRequest):
 @app.post("/timba/review")
 async def review_timba(request: TimbaReviewRequest):
     try:
-        result = revisar_timba(request.timba)
+        result = revisar_timba(request.timba, request.contexto)
         return TimbaReviewResponse(**result)
     except Exception:
         raise HTTPException(status_code=502, detail="Error al revisar la timba")

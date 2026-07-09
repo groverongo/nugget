@@ -1903,7 +1903,13 @@ export async function handleTimbaModalSubmitInteraction(
 		return;
 	}
 
-	const revision = await revisarTimba(descripcion);
+	const partidoInfoRevision = await appContext.services.partidos
+		.verInformacionPartido({ id: partidoId })
+		.catch(() => null);
+	const contextoRevision = partidoInfoRevision
+		? `${partidoInfoRevision.equipoLocalNombre} vs ${partidoInfoRevision.equipoVisitanteNombre}`
+		: undefined;
+	const revision = await revisarTimba(descripcion, contextoRevision);
 	if (revision === null) {
 		await interaction.editReply({
 			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
@@ -2080,7 +2086,13 @@ export async function handleTimbaAdminModalSubmitInteraction(
 		return;
 	}
 
-	const revisionAdmin = await revisarTimba(descripcion);
+	const partidoInfoAdmin = await appContext.services.partidos
+		.verInformacionPartido({ id: partidoId })
+		.catch(() => null);
+	const contextoAdmin = partidoInfoAdmin
+		? `${partidoInfoAdmin.equipoLocalNombre} vs ${partidoInfoAdmin.equipoVisitanteNombre}`
+		: undefined;
+	const revisionAdmin = await revisarTimba(descripcion, contextoAdmin);
 	if (revisionAdmin === null) {
 		await interaction.editReply({
 			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
@@ -2259,7 +2271,16 @@ export async function handleContraofertaModalSubmitInteraction(
 		return;
 	}
 
-	const revisionContraoferta = await revisarTimba(descripcion);
+	const timbaInfoContraoferta = await appContext.services.timba
+		.verTimba(timbaOriginalId)
+		.catch(() => null);
+	const contextoContraoferta = timbaInfoContraoferta
+		? `${timbaInfoContraoferta.equipoLocalNombre} vs ${timbaInfoContraoferta.equipoVisitanteNombre}`
+		: undefined;
+	const revisionContraoferta = await revisarTimba(
+		descripcion,
+		contextoContraoferta,
+	);
 	if (revisionContraoferta === null) {
 		await interaction.editReply({
 			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
