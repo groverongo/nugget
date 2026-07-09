@@ -74,7 +74,13 @@ import {
 	TIMBA_RESOLVER_J1_PREFIX,
 	TIMBA_RESOLVER_J2_PREFIX,
 } from "../components/timba";
+import { revisarPromptTimba, revisarTimba } from "../services/utility-client";
 import { golesSchema, puntosApuestaSchema } from "../types/shared";
+
+function buildTimbaReviewErrorReply(reviewErrorUserId: string): string {
+	const mention = reviewErrorUserId ? ` culpa de <@${reviewErrorUserId}>` : "";
+	return `❌ El servicio de revisión de timbas no está disponible ahora,${mention}.`;
+}
 
 const AWARDS_KO_MODAL_FINALISTAS = "awards-ko:modal:finalistas";
 const AWARDS_KO_MODAL_MEJOR_PARTIDO = "awards-ko:modal:mejor-partido";
@@ -1882,6 +1888,35 @@ export async function handleTimbaModalSubmitInteraction(
 
 	await interaction.deferReply({ ephemeral: true });
 
+	const promptCheck = await revisarPromptTimba(descripcion);
+	if (promptCheck === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+	if (!promptCheck.safe) {
+		await interaction.editReply({
+			content:
+				"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
+		});
+		return;
+	}
+
+	const partidoInfoRevision = await appContext.services.partidos
+		.verInformacionPartido({ id: partidoId })
+		.catch(() => null);
+	const contextoRevision = partidoInfoRevision
+		? `${partidoInfoRevision.equipoLocalNombre} vs ${partidoInfoRevision.equipoVisitanteNombre}`
+		: undefined;
+	const revision = await revisarTimba(descripcion, contextoRevision);
+	if (revision === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+
 	try {
 		const result = await appContext.services.timba.crearTimba({
 			jugador1Id: interaction.user.id,
@@ -1889,30 +1924,45 @@ export async function handleTimbaModalSubmitInteraction(
 			descripcion,
 			puntosPropuestos: puntosParsed.data,
 			puntosArriesgados,
+			categoria: revision.categoria,
+			justificacion: revision.justificacion,
 		});
 
-		const resumen =
-			puntosArriesgados === puntosParsed.data
-				? `**${puntosParsed.data} 💠** en juego`
-				: `yo arriesgo **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgados} 💠**`;
-		await interaction.editReply({
-			content: `✅ Timba creada. ${resumen} — _"${descripcion}"_`,
-		});
-
-		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
-		await sendAnnouncementChannel(
-			interaction.client,
-			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
-		);
-		const messageId = await sendComponentsToAnnouncementChannel(
-			interaction.client,
-			buildTimbaCreacionComponent(result),
-		);
-		if (messageId) {
-			await appContext.services.timba.guardarMensajeTimba(
-				result.timbaId,
-				messageId,
+		if (revision.categoria === "valida") {
+			const resumen =
+				puntosArriesgados === puntosParsed.data
+					? `**${puntosParsed.data} 💠** en juego`
+					: `yo arriesgo **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgados} 💠**`;
+			await interaction.editReply({
+				content: `✅ Timba creada. ${resumen} — _"${descripcion}"_`,
+			});
+			const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
 			);
+			const messageId = await sendComponentsToAnnouncementChannel(
+				interaction.client,
+				buildTimbaCreacionComponent(result),
+			);
+			if (messageId) {
+				await appContext.services.timba.guardarMensajeTimba(
+					result.timbaId,
+					messageId,
+				);
+			}
+		} else if (revision.categoria === "mafia") {
+			await interaction.editReply({
+				content: `🚫 Tu timba fue rechazada: es muy poco probable que ocurra. ${revision.justificacion}`,
+			});
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revision.justificacion}_`,
+			);
+		} else {
+			await interaction.editReply({
+				content: `❓ Tu timba necesita más contexto. ${revision.justificacion} Por favor, reformúlala con más detalle.`,
+			});
 		}
 	} catch (error) {
 		await interaction.editReply({
@@ -2017,6 +2067,35 @@ export async function handleTimbaAdminModalSubmitInteraction(
 
 	await interaction.deferReply({ ephemeral: true });
 
+	const promptCheckAdmin = await revisarPromptTimba(descripcion);
+	if (promptCheckAdmin === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+	if (!promptCheckAdmin.safe) {
+		await interaction.editReply({
+			content:
+				"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
+		});
+		return;
+	}
+
+	const partidoInfoAdmin = await appContext.services.partidos
+		.verInformacionPartido({ id: partidoId })
+		.catch(() => null);
+	const contextoAdmin = partidoInfoAdmin
+		? `${partidoInfoAdmin.equipoLocalNombre} vs ${partidoInfoAdmin.equipoVisitanteNombre}`
+		: undefined;
+	const revisionAdmin = await revisarTimba(descripcion, contextoAdmin);
+	if (revisionAdmin === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+
 	try {
 		const result = await appContext.services.timba.crearTimba({
 			jugador1Id: usuarioId,
@@ -2024,30 +2103,45 @@ export async function handleTimbaAdminModalSubmitInteraction(
 			descripcion,
 			puntosPropuestos: puntosParsed.data,
 			puntosArriesgados: puntosArriesgadosAdmin,
+			categoria: revisionAdmin.categoria,
+			justificacion: revisionAdmin.justificacion,
 		});
 
-		const resumenAdmin =
-			puntosArriesgadosAdmin === puntosParsed.data
-				? `**${puntosParsed.data} 💠** en juego`
-				: `J1 arriesga **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgadosAdmin} 💠**`;
-		await interaction.editReply({
-			content: `✅ Timba creada para <@${usuarioId}>. ${resumenAdmin} — _"${descripcion}"_`,
-		});
-
-		const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
-		await sendAnnouncementChannel(
-			interaction.client,
-			`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
-		);
-		const messageId = await sendComponentsToAnnouncementChannel(
-			interaction.client,
-			buildTimbaCreacionComponent(result),
-		);
-		if (messageId) {
-			await appContext.services.timba.guardarMensajeTimba(
-				result.timbaId,
-				messageId,
+		if (revisionAdmin.categoria === "valida") {
+			const resumenAdmin =
+				puntosArriesgadosAdmin === puntosParsed.data
+					? `**${puntosParsed.data} 💠** en juego`
+					: `J1 arriesga **${puntosParsed.data} 💠** / retador arriesga **${puntosArriesgadosAdmin} 💠**`;
+			await interaction.editReply({
+				content: `✅ Timba creada para <@${usuarioId}>. ${resumenAdmin} — _"${descripcion}"_`,
+			});
+			const partido = `${result.equipoLocalNombre} ${result.equipoLocalBandera} vs. ${result.equipoVisitanteNombre} ${result.equipoVisitanteBandera}`;
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🎰 _¡<@${result.jugador1Id}> envió una timba para **${partido}**!_`,
 			);
+			const messageId = await sendComponentsToAnnouncementChannel(
+				interaction.client,
+				buildTimbaCreacionComponent(result),
+			);
+			if (messageId) {
+				await appContext.services.timba.guardarMensajeTimba(
+					result.timbaId,
+					messageId,
+				);
+			}
+		} else if (revisionAdmin.categoria === "mafia") {
+			await interaction.editReply({
+				content: `🚫 Timba rechazada para <@${usuarioId}>: es muy poco probable que ocurra. ${revisionAdmin.justificacion}`,
+			});
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revisionAdmin.justificacion}_`,
+			);
+		} else {
+			await interaction.editReply({
+				content: `❓ Timba de <@${usuarioId}> necesita más contexto. ${revisionAdmin.justificacion} Por favor, reformúlala con más detalle.`,
+			});
 		}
 	} catch (error) {
 		await interaction.editReply({
@@ -2154,6 +2248,38 @@ export async function handleContraofertaModalSubmitInteraction(
 
 	await interaction.deferReply({ ephemeral: true });
 
+	const promptCheckContraoferta = await revisarPromptTimba(descripcion);
+	if (promptCheckContraoferta === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+	if (!promptCheckContraoferta.safe) {
+		await interaction.editReply({
+			content:
+				"❌ Tu timba parece contener instrucciones para el sistema, por favor reformula tu timba.",
+		});
+		return;
+	}
+
+	const timbaInfoContraoferta = await appContext.services.timba
+		.verTimba(timbaOriginalId)
+		.catch(() => null);
+	const contextoContraoferta = timbaInfoContraoferta
+		? `${timbaInfoContraoferta.equipoLocalNombre} vs ${timbaInfoContraoferta.equipoVisitanteNombre}`
+		: undefined;
+	const revisionContraoferta = await revisarTimba(
+		descripcion,
+		contextoContraoferta,
+	);
+	if (revisionContraoferta === null) {
+		await interaction.editReply({
+			content: buildTimbaReviewErrorReply(config.timba.review_error_user_id),
+		});
+		return;
+	}
+
 	try {
 		const result = await appContext.services.timba.crearContraoferta({
 			jugador1Id: interaction.user.id,
@@ -2161,21 +2287,36 @@ export async function handleContraofertaModalSubmitInteraction(
 			descripcion,
 			puntosPropuestos: puntosParsed.data,
 			puntosArriesgados,
+			categoria: revisionContraoferta.categoria,
+			justificacion: revisionContraoferta.justificacion,
 		});
 
-		await interaction.editReply({
-			content: `✅ Contraoferta enviada. _"${descripcion}"_`,
-		});
-
-		const messageId = await sendComponentsToAnnouncementChannel(
-			interaction.client,
-			buildContraofertaComponent(result, result.timbaOriginalJugador1Id),
-		);
-		if (messageId) {
-			await appContext.services.timba.guardarMensajeTimba(
-				result.contraofertaId,
-				messageId,
+		if (revisionContraoferta.categoria === "valida") {
+			await interaction.editReply({
+				content: `✅ Contraoferta enviada. _"${descripcion}"_`,
+			});
+			const messageId = await sendComponentsToAnnouncementChannel(
+				interaction.client,
+				buildContraofertaComponent(result, result.timbaOriginalJugador1Id),
 			);
+			if (messageId) {
+				await appContext.services.timba.guardarMensajeTimba(
+					result.contraofertaId,
+					messageId,
+				);
+			}
+		} else if (revisionContraoferta.categoria === "mafia") {
+			await interaction.editReply({
+				content: `🚫 Tu contraoferta fue rechazada: es muy poco probable que ocurra. ${revisionContraoferta.justificacion}`,
+			});
+			await sendAnnouncementChannel(
+				interaction.client,
+				`🤬 _¡<@${result.jugador1Id}> quiso pasarse de mafioso con su timba de **"${result.descripcion}"**! Se hace el chistoso pero eso aquí no pasa. ${revisionContraoferta.justificacion}_`,
+			);
+		} else {
+			await interaction.editReply({
+				content: `❓ Tu contraoferta necesita más contexto. ${revisionContraoferta.justificacion} Por favor, reformúlala con más detalle.`,
+			});
 		}
 	} catch (error) {
 		await interaction.editReply({

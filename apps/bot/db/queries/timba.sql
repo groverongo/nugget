@@ -1,6 +1,6 @@
 -- name: CrearTimba :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, categoria, justificacion)
+VALUES ($1, $2, $3, $4, $5, sqlc.arg('estado')::timba_estado, sqlc.arg('categoria')::timba_categoria, sqlc.arg('justificacion'))
 RETURNING id;
 
 -- name: VerTimba :one
@@ -266,8 +266,8 @@ FROM timba_time
 WHERE timba_original_id = $1 AND estado = 'contraoferta';
 
 -- name: CrearContraoferta :one
-INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id)
-VALUES ($1, $2, $3, $4, $5, 'contraoferta', $6)
+INSERT INTO timba_time (partido_id, descripcion, jugador_1_id, puntos_propuestos, puntos_arriesgados, estado, timba_original_id, categoria, justificacion)
+VALUES ($1, $2, $3, $4, $5, sqlc.arg('estado')::timba_estado, $6, sqlc.arg('categoria')::timba_categoria, sqlc.arg('justificacion'))
 RETURNING id;
 
 -- name: CancelarContraofertasPorTimba :exec

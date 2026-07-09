@@ -6,6 +6,11 @@ import {
 
 jest.mock("../src/ui/discord/services/utility-client", () => ({
 	generarHeatmapPredicciones: jest.fn(),
+	revisarPromptTimba: jest.fn().mockResolvedValue({ safe: true, reason: null }),
+	revisarTimba: jest.fn().mockResolvedValue({
+		categoria: "valida",
+		justificacion: "Descripción válida.",
+	}),
 }));
 
 type PartidosServiceMock = {
@@ -29,6 +34,7 @@ type DiscordAppContextMock = {
 
 type TimbaAppContextMock = {
 	services: {
+		partidos: PartidosServiceMock;
 		timba: TimbaServiceMock;
 	};
 };
@@ -225,6 +231,9 @@ describe("Discord interaction handlers", () => {
 		} as const;
 		const appContext = {
 			services: {
+				partidos: {
+					verInformacionPartido: jest.fn(),
+				},
 				timba: {
 					crearTimba: jest.fn(),
 				},
@@ -266,6 +275,11 @@ describe("Discord interaction handlers", () => {
 		} as const;
 		const appContext = {
 			services: {
+				partidos: {
+					verInformacionPartido: jest
+						.fn()
+						.mockResolvedValue(createPartidoDetalle()),
+				},
 				timba: {
 					crearTimba: jest.fn().mockResolvedValue({
 						timbaId: 7,
@@ -300,6 +314,8 @@ describe("Discord interaction handlers", () => {
 			descripcion: "Brasil gana",
 			puntosPropuestos: 10,
 			puntosArriesgados: 10,
+			categoria: "valida",
+			justificacion: "Descripción válida.",
 		});
 		expect(editReply).toHaveBeenCalledWith({
 			content: '✅ Timba creada. **10 💠** en juego — _"Brasil gana"_',

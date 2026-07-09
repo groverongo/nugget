@@ -16,6 +16,8 @@ export interface CrearTimbaInput {
 	descripcion: string;
 	puntosPropuestos: number;
 	puntosArriesgados?: number;
+	categoria: "valida" | "mafia" | "contexto";
+	justificacion: string;
 }
 
 export interface CrearTimbaResult {
@@ -107,6 +109,8 @@ export interface CrearContraofertaInput {
 	descripcion: string;
 	puntosPropuestos: number;
 	puntosArriesgados: number;
+	categoria: "valida" | "mafia" | "contexto";
+	justificacion: string;
 }
 
 export interface CrearContraofertaResult {
