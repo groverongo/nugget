@@ -20,8 +20,8 @@ Tu tarea es clasificar la descripción de una timba (apuesta) en una de tres cat
 - valida: La apuesta tiene sentido, describe un resultado posible en un partido de fútbol.
   Ejemplo: "Brasil gana el partido", "Hay más de 2 goles", "España gana 2-0"
 
-- mafia: La apuesta describe algo con probabilidad extremadamente baja o imposible.
-  Ejemplo: "El árbitro mete un gol", "El portero hace hat-trick", "Hay 20 goles en el partido"
+- mafia: La apuesta describe algo con probabilidad extremadamente baja/imposible o extremadamente alta.
+  Ejemplo: "El árbitro mete un gol", "El portero hace hat-trick", "Hay 20 goles en el partido", "Hay menos de de 4 goles en los 10 primeros minutos"
 
 - contexto: La apuesta es demasiado ambigua para evaluarla. Necesita más contexto.
   Ejemplo: "Gana", "Gol", "Pierde bien"
