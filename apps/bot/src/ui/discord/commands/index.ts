@@ -283,7 +283,8 @@ const resolverTimbasCommand = new SlashCommandBuilder()
 		option
 			.setName("partido_id")
 			.setDescription("ID del partido")
-			.setRequired(true),
+			.setRequired(true)
+			.setAutocomplete(true),
 	)
 	.setContexts(InteractionContextType.Guild);
 
@@ -826,6 +827,21 @@ const anularTimbaCommand = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.Guild);
 
+const revertirTimbaCommand = new SlashCommandBuilder()
+	.setName("revertir-timba")
+	.setDescription(
+		"[ADMIN] Revierte una timba resuelta para volver a decidir el ganador",
+	)
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addIntegerOption((option) =>
+		option
+			.setName("timba_id")
+			.setDescription("Timba resuelta a revertir")
+			.setRequired(true)
+			.setAutocomplete(true),
+	)
+	.setContexts(InteractionContextType.Guild);
+
 const verTimbasCommand = new SlashCommandBuilder()
 	.setName("ver-timbas")
 	.setDescription("Ver todas las timba times activas de un partido")
@@ -1136,6 +1152,26 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 		"resolver-timbas",
 		{
 			definition: resolverTimbasCommand,
+			autocomplete: async (interaction, appContext) => {
+				const partidos =
+					await appContext.services.partidos.verPartidosNoFinalizados();
+				const focusedValue = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = partidos
+					.filter((p) =>
+						`${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre}`
+							.toLowerCase()
+							.includes(focusedValue),
+					)
+					.slice(0, 25)
+					.map((p) => ({
+						name: `#${p.partidoId} — ${p.equipoLocalNombre} vs ${p.equipoVisitanteNombre} [${p.estado}]`,
+						value: p.partidoId,
+					}));
+				await interaction.respond(opciones);
+			},
 			handle: async (interaction, appContext) => {
 				const partidoId = interaction.options.getInteger("partido_id", true);
 
@@ -3209,7 +3245,8 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				await interaction.deferReply({ ephemeral: true });
 
 				try {
-					const anulada = await appContext.services.timba.anularTimba(timbaId);
+					const anulada =
+						await appContext.services.timba.anularTimbaAdmin(timbaId);
 					await interaction.editReply({
 						content: `✅ Timba #${timbaId} anulada y eliminada.`,
 					});
@@ -3228,6 +3265,75 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								])
 							: Promise.resolve(),
 					]);
+				} catch (error) {
+					await interaction.editReply({
+						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,
+					});
+				}
+			},
+		},
+	],
+	[
+		"revertir-timba",
+		{
+			definition: revertirTimbaCommand,
+			autocomplete: async (interaction, appContext) => {
+				const timbas = await appContext.services.timba.verTodasLasTimbas();
+				const q = interaction.options
+					.getFocused(true)
+					.value.toString()
+					.toLowerCase();
+				const opciones = timbas
+					.filter((t) => t.estado === "resuelta")
+					.filter((t) =>
+						`${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} ${t.descripcion} ${t.jugador_1Nombre}`
+							.toLowerCase()
+							.includes(q),
+					)
+					.slice(0, 25)
+					.map((t) => {
+						const label = `#${t.id} ${t.equipoLocalNombre} vs ${t.equipoVisitanteNombre} — "${t.descripcion}" (${t.jugador_1Nombre})`;
+						return {
+							name: label.length > 100 ? `${label.slice(0, 97)}...` : label,
+							value: t.id,
+						};
+					});
+				await interaction.respond(opciones);
+			},
+			handle: async (interaction, appContext) => {
+				const timbaId = interaction.options.getInteger("timba_id", true);
+
+				await interaction.deferReply({ ephemeral: true });
+
+				try {
+					await appContext.services.timba.revertirTimba(timbaId);
+
+					const timba = await appContext.services.timba.verTimba(timbaId);
+					if (!timba) {
+						await interaction.editReply({
+							content: `❌ Timba no encontrada.`,
+						});
+						return;
+					}
+
+					await interaction.editReply({
+						content: `🔄 Timba #${timbaId} revertida. Puntos y puntos_actuales restaurados. Elegí el nuevo ganador:`,
+					});
+
+					const timbasCerradas =
+						await appContext.services.timba.verTimbasCerradasPorPartido(
+							timba.partidoId,
+						);
+					const pendiente = timbasCerradas.filter((t) => t.id === timbaId);
+
+					await interaction.followUp({
+						components: buildTimbaResolucionComponents(
+							pendiente,
+							timba.partidoId,
+						),
+						flags: MessageFlags.IsComponentsV2,
+						ephemeral: true,
+					});
 				} catch (error) {
 					await interaction.editReply({
 						content: `❌ ${error instanceof Error ? error.message : "Error desconocido"}`,

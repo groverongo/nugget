@@ -267,6 +267,25 @@ export class TimbaService implements ITimbaService {
 		};
 	}
 
+	// A diferencia de anularTimba (voto comunitario), esto usa 'cancelada' en
+	// vez de 'anulada' para que los puntos se liberen de inmediato en lugar de
+	// quedar congelados hasta que finalice el partido.
+	async anularTimbaAdmin(timbaId: number): Promise<AnularTimbaResult> {
+		const timba = await this.timbaRepo.verTimba(timbaId);
+		if (!timba) throw new Error("Timba no encontrada.");
+		await this.timbaRepo.cancelar({ id: timbaId });
+		return {
+			jugador_1Id: timba.jugador_1Id,
+			jugador_2Id: timba.jugador_2Id,
+			equipoLocalNombre: timba.equipoLocalNombre,
+			equipoLocalBandera: timba.equipoLocalBandera,
+			equipoVisitanteNombre: timba.equipoVisitanteNombre,
+			equipoVisitanteBandera: timba.equipoVisitanteBandera,
+			descripcion: timba.descripcion,
+			discordMessageId: timba.discordMessageId,
+		};
+	}
+
 	async resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult> {
 		const timba = await this.timbaRepo.verTimba(args.timbaId);
 
@@ -410,19 +429,36 @@ export class TimbaService implements ITimbaService {
 		if (timba.estado !== "resuelta" || !timba.ganadorId)
 			throw new Error("La timba no está resuelta.");
 
+		const ganadorId = timba.ganadorId;
 		const perdedorId =
-			timba.jugador_1Id === timba.ganadorId
-				? timba.jugador_2Id!
-				: timba.jugador_1Id;
+			timba.jugador_1Id === ganadorId ? timba.jugador_2Id! : timba.jugador_1Id;
 		const puntosRobados =
-			timba.ganadorId === timba.jugador_1Id
+			ganadorId === timba.jugador_1Id
 				? timba.puntosArriesgados
 				: timba.puntosPropuestos;
 
 		await Promise.all([
 			this.timbaRepo.revertir({ id: timbaId }),
-			this.usuariosRepo.ajustarPuntos(timba.ganadorId, -puntosRobados),
+			this.usuariosRepo.ajustarPuntos(ganadorId, -puntosRobados),
 			this.usuariosRepo.ajustarPuntos(perdedorId, puntosRobados),
+		]);
+
+		const [puntosGanador, puntosPerdedor] = await Promise.all([
+			this.usuariosRepo.obtenerPuntos(ganadorId),
+			this.usuariosRepo.obtenerPuntos(perdedorId),
+		]);
+
+		await Promise.all([
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
+				puntosActuales: puntosGanador,
+				usuarioId: ganadorId,
+				partidoId: timba.partidoId,
+			}),
+			this.prediccionesRepo.actualizarPuntosActualesPrediccion({
+				puntosActuales: puntosPerdedor,
+				usuarioId: perdedorId,
+				partidoId: timba.partidoId,
+			}),
 		]);
 	}
 

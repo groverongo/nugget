@@ -145,6 +145,8 @@ export interface ITimbaService {
 
 	anularTimba(timbaId: number): Promise<AnularTimbaResult>;
 
+	anularTimbaAdmin(timbaId: number): Promise<AnularTimbaResult>;
+
 	resolverTimba(args: ResolverTimbaInput): Promise<ResolverTimbaResult>;
 
 	verTimbasCerradasPorPartido(
