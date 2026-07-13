@@ -91,5 +91,5 @@ jobs:
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
               -e GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-              -p 8000:8080 \
+              -p 8080:8000 \
               ${{ env.IMAGE }}:${{ github.sha }}
