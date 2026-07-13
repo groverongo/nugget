@@ -15,8 +15,7 @@ on:
 
 env:
   IMAGE: ${{vars.DOCKER_REGISTRY}}/${{vars.DOCKER_REPOSITORY}}-utility
-  SERVICE_ID: ${{vars.RENDER_SERVICE_ID_UTILITY}}
-  RENDER_API_SERVICES_URL: https://api.render.com/v1/services
+  CONTAINER_NAME: nugget-utility-container
 
 jobs:
 
@@ -72,18 +71,25 @@ jobs:
             ${{ env.IMAGE }}:latest
 
   deploy:
-    name: Deploy to Render
+    name: Deploy to VM via SSH
     needs: build-image
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
     steps:
       - name: Deploy
-        id: deploy-step
-        run: |
-          DATA="{\"imageUrl\": \"docker.io/${{ env.IMAGE }}:${{ github.sha }}\"}"
-
-          curl -X POST ${{ env.RENDER_API_SERVICES_URL }}/${{ env.SERVICE_ID }}/deploys \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-          -d "$DATA"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ${{ env.IMAGE }}:${{ github.sha }}
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm   ${{ env.CONTAINER_NAME }} || true
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              --restart unless-stopped \
+              -e GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
+              -p 8000:8080 \
+              ${{ env.IMAGE }}:${{ github.sha }}
