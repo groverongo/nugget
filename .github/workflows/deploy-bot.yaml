@@ -128,13 +128,13 @@ jobs:
         with:
           context: ./apps/bot
           file: ./apps/bot/Dockerfile
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
 
       - name: Deploy to VM via SSH
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VM_HOST }}
