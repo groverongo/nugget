@@ -14,7 +14,7 @@ ORDER BY e.nombre, j.nombre ASC
 LIMIT 25;
 
 -- name: VerJugadoresPorIds :many
-SELECT j.id, j.nombre, j.posicion, e.nombre AS equipo_nombre
+SELECT j.id, j.nombre, j.posicion, e.nombre AS equipo_nombre, e.bandera AS equipo_bandera
 FROM estatico_jugadores j
 JOIN estatico_equipos e ON e.id = j.equipo_id
 WHERE j.id = ANY(sqlc.arg(ids)::int[])

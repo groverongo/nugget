@@ -23,7 +23,7 @@ SELECT
 FROM usuarios
 WHERE id = sqlc.arg(id);
 
--- name: ListUsuariosConAwards :many
+-- name: ListUsuariosConCamposAwards :many
 SELECT
     id,
     username,
@@ -37,20 +37,63 @@ SELECT
     award_seleccion_decepcion,
     award_seleccion_sorpresa
 FROM usuarios
-WHERE
-    award_campeon IS NOT NULL
-    AND award_goleador IS NOT NULL
-    AND award_mejor_jugador IS NOT NULL
-    AND award_mejor_arquero IS NOT NULL
-    AND award_mejor_jugador_joven IS NOT NULL
-    AND award_mejor_gol IS NOT NULL
-    AND award_seleccion_decepcion IS NOT NULL
-    AND award_seleccion_sorpresa IS NOT NULL;
+WHERE participante = TRUE;
 
--- name: SumarPuntosAward :exec
+-- name: SumarPuntosAward :one
 UPDATE usuarios SET
     puntos = puntos + sqlc.arg(puntos)
-WHERE id = sqlc.arg(id);
+WHERE id = sqlc.arg(id)
+RETURNING puntos;
+
+-- name: VerAwardsResultados :one
+SELECT * FROM awards_resultados WHERE id = 1;
+
+-- name: GuardarResultadoCampeon :exec
+UPDATE awards_resultados SET resultado_campeon = sqlc.arg(resultado_campeon) WHERE id = 1;
+
+-- name: GuardarResultadoGoleador :exec
+UPDATE awards_resultados SET resultado_goleador = sqlc.arg(resultado_goleador) WHERE id = 1;
+
+-- name: GuardarResultadoMejorJugador :exec
+UPDATE awards_resultados SET resultado_mejor_jugador = sqlc.arg(resultado_mejor_jugador) WHERE id = 1;
+
+-- name: GuardarResultadoMejorArquero :exec
+UPDATE awards_resultados SET resultado_mejor_arquero = sqlc.arg(resultado_mejor_arquero) WHERE id = 1;
+
+-- name: GuardarResultadoMejorJugadorJoven :exec
+UPDATE awards_resultados SET resultado_mejor_jugador_joven = sqlc.arg(resultado_mejor_jugador_joven) WHERE id = 1;
+
+-- name: GuardarResultadoMejorGol :exec
+UPDATE awards_resultados SET
+    resultado_mejor_gol = sqlc.arg(resultado_mejor_gol),
+    resultado_mejor_gol_posicion = sqlc.arg(resultado_mejor_gol_posicion)
+WHERE id = 1;
+
+-- name: GuardarResultadoSeleccionDecepcion :exec
+UPDATE awards_resultados SET resultado_seleccion_decepcion = sqlc.arg(resultado_seleccion_decepcion) WHERE id = 1;
+
+-- name: GuardarResultadoSeleccionSorpresa :exec
+UPDATE awards_resultados SET resultado_seleccion_sorpresa = sqlc.arg(resultado_seleccion_sorpresa) WHERE id = 1;
+
+-- name: GuardarResultadoKoFinalistas :exec
+UPDATE awards_resultados SET
+    resultado_ko_finalista1 = sqlc.arg(resultado_ko_finalista1),
+    resultado_ko_finalista2 = sqlc.arg(resultado_ko_finalista2),
+    resultado_ko_campeon = sqlc.arg(resultado_ko_campeon)
+WHERE id = 1;
+
+-- name: GuardarResultadoKoMejorPartido :exec
+UPDATE awards_resultados SET
+    resultado_ko_mejor_partido_equipo1 = sqlc.arg(resultado_ko_mejor_partido_equipo1),
+    resultado_ko_mejor_partido_equipo2 = sqlc.arg(resultado_ko_mejor_partido_equipo2),
+    resultado_ko_mejor_partido_mas_goles = sqlc.narg(resultado_ko_mejor_partido_mas_goles)
+WHERE id = 1;
+
+-- name: GuardarResultadoKoNumSuplementarios :exec
+UPDATE awards_resultados SET resultado_ko_num_suplementarios = sqlc.arg(resultado_ko_num_suplementarios) WHERE id = 1;
+
+-- name: GuardarResultadoKoGoleador :exec
+UPDATE awards_resultados SET resultado_ko_goleador = sqlc.arg(resultado_ko_goleador) WHERE id = 1;
 
 -- name: GuardarAwardsKO :exec
 UPDATE usuarios SET
@@ -77,7 +120,7 @@ SELECT
 FROM usuarios
 WHERE id = sqlc.arg(id);
 
--- name: ListUsuariosConAwardsKO :many
+-- name: ListUsuariosConCamposAwardsKO :many
 SELECT
     id,
     username,
@@ -91,14 +134,7 @@ SELECT
     award_ko_num_suplementarios,
     award_ko_goleador
 FROM usuarios
-WHERE
-    award_ko_finalista1 IS NOT NULL
-    AND award_ko_finalista2 IS NOT NULL
-    AND award_ko_campeon IS NOT NULL
-    AND award_ko_mejor_partido_equipo1 IS NOT NULL
-    AND award_ko_mejor_partido_equipo2 IS NOT NULL
-    AND award_ko_num_suplementarios IS NOT NULL
-    AND award_ko_goleador IS NOT NULL;
+WHERE participante = TRUE;
 
 -- name: VerPrediccionesAwardsKO :many
 SELECT
