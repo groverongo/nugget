@@ -4,23 +4,49 @@ import {
 	buscarJugadoresNoEliminados,
 	type GuardarAwardsArgs,
 	type GuardarAwardsKOArgs,
+	type GuardarResultadoCampeonArgs,
+	type GuardarResultadoGoleadorArgs,
+	type GuardarResultadoKoFinalistasArgs,
+	type GuardarResultadoKoGoleadorArgs,
+	type GuardarResultadoKoMejorPartidoArgs,
+	type GuardarResultadoKoNumSuplementariosArgs,
+	type GuardarResultadoMejorArqueroArgs,
+	type GuardarResultadoMejorGolArgs,
+	type GuardarResultadoMejorJugadorArgs,
+	type GuardarResultadoMejorJugadorJovenArgs,
+	type GuardarResultadoSeleccionDecepcionArgs,
+	type GuardarResultadoSeleccionSorpresaArgs,
 	guardarAwards,
 	guardarAwardsKO,
-	type ListUsuariosConAwardsKORow,
-	type ListUsuariosConAwardsRow,
-	listUsuariosConAwards,
-	listUsuariosConAwardsKO,
+	guardarResultadoCampeon,
+	guardarResultadoGoleador,
+	guardarResultadoKoFinalistas,
+	guardarResultadoKoGoleador,
+	guardarResultadoKoMejorPartido,
+	guardarResultadoKoNumSuplementarios,
+	guardarResultadoMejorArquero,
+	guardarResultadoMejorGol,
+	guardarResultadoMejorJugador,
+	guardarResultadoMejorJugadorJoven,
+	guardarResultadoSeleccionDecepcion,
+	guardarResultadoSeleccionSorpresa,
+	type ListUsuariosConCamposAwardsKORow,
+	type ListUsuariosConCamposAwardsRow,
+	listUsuariosConCamposAwards,
+	listUsuariosConCamposAwardsKO,
 	type SumarPuntosAwardArgs,
 	sumarPuntosAward,
 	type VerAwardsDeUsuarioArgs,
 	type VerAwardsDeUsuarioRow,
 	type VerAwardsKODeUsuarioArgs,
 	type VerAwardsKODeUsuarioRow,
+	type VerAwardsResultadosRow,
 	type VerEquiposNoEliminadosRow,
 	type VerPrediccionesAwardsKORow,
 	type VerPrediccionesAwardsRow,
 	verAwardsDeUsuario,
 	verAwardsKODeUsuario,
+	verAwardsResultados,
 	verEquiposNoEliminados,
 	verPrediccionesAwards,
 	verPrediccionesAwardsKO,
@@ -42,12 +68,83 @@ export class AwardsRepository implements IAwardsRepository {
 		return verAwardsDeUsuario(this.pool, args);
 	}
 
-	listUsuariosConAwards(): Promise<ListUsuariosConAwardsRow[]> {
-		return listUsuariosConAwards(this.pool);
+	listUsuariosConCamposAwards(): Promise<ListUsuariosConCamposAwardsRow[]> {
+		return listUsuariosConCamposAwards(this.pool);
 	}
 
-	sumarPuntosAward(args: SumarPuntosAwardArgs): Promise<void> {
-		return sumarPuntosAward(this.pool, args);
+	async sumarPuntosAward(args: SumarPuntosAwardArgs): Promise<number> {
+		const row = await sumarPuntosAward(this.pool, args);
+		return row?.puntos ?? 0;
+	}
+
+	verAwardsResultados(): Promise<VerAwardsResultadosRow | null> {
+		return verAwardsResultados(this.pool);
+	}
+
+	guardarResultadoCampeon(args: GuardarResultadoCampeonArgs): Promise<void> {
+		return guardarResultadoCampeon(this.pool, args);
+	}
+
+	guardarResultadoGoleador(args: GuardarResultadoGoleadorArgs): Promise<void> {
+		return guardarResultadoGoleador(this.pool, args);
+	}
+
+	guardarResultadoMejorJugador(
+		args: GuardarResultadoMejorJugadorArgs,
+	): Promise<void> {
+		return guardarResultadoMejorJugador(this.pool, args);
+	}
+
+	guardarResultadoMejorArquero(
+		args: GuardarResultadoMejorArqueroArgs,
+	): Promise<void> {
+		return guardarResultadoMejorArquero(this.pool, args);
+	}
+
+	guardarResultadoMejorJugadorJoven(
+		args: GuardarResultadoMejorJugadorJovenArgs,
+	): Promise<void> {
+		return guardarResultadoMejorJugadorJoven(this.pool, args);
+	}
+
+	guardarResultadoMejorGol(args: GuardarResultadoMejorGolArgs): Promise<void> {
+		return guardarResultadoMejorGol(this.pool, args);
+	}
+
+	guardarResultadoSeleccionDecepcion(
+		args: GuardarResultadoSeleccionDecepcionArgs,
+	): Promise<void> {
+		return guardarResultadoSeleccionDecepcion(this.pool, args);
+	}
+
+	guardarResultadoSeleccionSorpresa(
+		args: GuardarResultadoSeleccionSorpresaArgs,
+	): Promise<void> {
+		return guardarResultadoSeleccionSorpresa(this.pool, args);
+	}
+
+	guardarResultadoKoFinalistas(
+		args: GuardarResultadoKoFinalistasArgs,
+	): Promise<void> {
+		return guardarResultadoKoFinalistas(this.pool, args);
+	}
+
+	guardarResultadoKoMejorPartido(
+		args: GuardarResultadoKoMejorPartidoArgs,
+	): Promise<void> {
+		return guardarResultadoKoMejorPartido(this.pool, args);
+	}
+
+	guardarResultadoKoNumSuplementarios(
+		args: GuardarResultadoKoNumSuplementariosArgs,
+	): Promise<void> {
+		return guardarResultadoKoNumSuplementarios(this.pool, args);
+	}
+
+	guardarResultadoKoGoleador(
+		args: GuardarResultadoKoGoleadorArgs,
+	): Promise<void> {
+		return guardarResultadoKoGoleador(this.pool, args);
 	}
 
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]> {
@@ -64,8 +161,8 @@ export class AwardsRepository implements IAwardsRepository {
 		return verAwardsKODeUsuario(this.pool, args);
 	}
 
-	listUsuariosConAwardsKO(): Promise<ListUsuariosConAwardsKORow[]> {
-		return listUsuariosConAwardsKO(this.pool);
+	listUsuariosConCamposAwardsKO(): Promise<ListUsuariosConCamposAwardsKORow[]> {
+		return listUsuariosConCamposAwardsKO(this.pool);
 	}
 
 	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]> {

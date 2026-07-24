@@ -4,6 +4,7 @@ import type {
 	RESTPostAPIApplicationCommandsJSONBody,
 	SlashCommandBuilder,
 	SlashCommandOptionsOnlyBuilder,
+	SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
 import type { AppContext } from "../../../app";
 
@@ -18,7 +19,10 @@ export type DiscordAutocompleteHandler = (
 ) => Promise<void>;
 
 export type DiscordCommand = {
-	definition: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
+	definition:
+		| SlashCommandBuilder
+		| SlashCommandOptionsOnlyBuilder
+		| SlashCommandSubcommandsOnlyBuilder;
 	handle: DiscordCommandHandler;
 	autocomplete?: DiscordAutocompleteHandler;
 };

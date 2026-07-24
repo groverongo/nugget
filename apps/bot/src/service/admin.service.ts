@@ -154,8 +154,7 @@ export class AdminService implements IAdminService {
 						puntosMilagro +
 						puntosBatacazo +
 						puntosElegido;
-					const puntosGranFinal =
-						!esSuple && info.faseNombre === "final" ? subTotal : 0;
+					const puntosGranFinal = info.faseNombre === "final" ? subTotal : 0;
 					const puntosTotal = subTotal + puntosGranFinal;
 
 					await predRepo.actualizarPuntajePrediccion({
@@ -188,6 +187,11 @@ export class AdminService implements IAdminService {
 						partidoId: args.partidoId,
 					});
 				} else if (esBuenIntento) {
+					const puntosGranFinalBuenIntento =
+						info.faseNombre === "final" ? puntosBuenIntento : 0;
+					const puntosTotalBuenIntento =
+						puntosBuenIntento + puntosGranFinalBuenIntento;
+
 					await predRepo.actualizarPuntajePrediccion({
 						usuarioId: pred.usuarioId,
 						partidoId: args.partidoId,
@@ -198,15 +202,15 @@ export class AdminService implements IAdminService {
 						puntosMilagro: 0,
 						puntosBatacazo: 0,
 						puntosElElegido: 0,
-						puntosGranFinal: 0,
-						puntosTotal: puntosBuenIntento,
+						puntosGranFinal: puntosGranFinalBuenIntento,
+						puntosTotal: puntosTotalBuenIntento,
 					});
 
 					await usuariosRepo.actualizarStats({
 						id: pred.usuarioId,
 						partidosGanados: 0,
 						partidosPerdidos: 0,
-						puntos: puntosBuenIntento,
+						puntos: puntosTotalBuenIntento,
 						racha: 0,
 					});
 					const puntosActualesBuenIntento = await usuariosRepo.obtenerPuntos(

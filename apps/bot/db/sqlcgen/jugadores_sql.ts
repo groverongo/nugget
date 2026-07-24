@@ -74,7 +74,7 @@ export async function buscarJugadores(client: Client, args: BuscarJugadoresArgs)
 }
 
 export const verJugadoresPorIdsQuery = `-- name: VerJugadoresPorIds :many
-SELECT j.id, j.nombre, j.posicion, e.nombre AS equipo_nombre
+SELECT j.id, j.nombre, j.posicion, e.nombre AS equipo_nombre, e.bandera AS equipo_bandera
 FROM estatico_jugadores j
 JOIN estatico_equipos e ON e.id = j.equipo_id
 WHERE j.id = ANY($1::int[])
@@ -89,6 +89,7 @@ export interface VerJugadoresPorIdsRow {
     nombre: string;
     posicion: string;
     equipoNombre: string;
+    equipoBandera: string;
 }
 
 export async function verJugadoresPorIds(client: Client, args: VerJugadoresPorIdsArgs): Promise<VerJugadoresPorIdsRow[]> {
@@ -102,7 +103,8 @@ export async function verJugadoresPorIds(client: Client, args: VerJugadoresPorId
             id: row[0],
             nombre: row[1],
             posicion: row[2],
-            equipoNombre: row[3]
+            equipoNombre: row[3],
+            equipoBandera: row[4]
         };
     });
 }

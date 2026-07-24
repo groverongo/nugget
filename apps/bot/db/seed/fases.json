@@ -6,6 +6,6 @@
 		{ "nombre": "8vos", "puntos_base": 4, "puntos_buen_intento": 2 },
 		{ "nombre": "4tos", "puntos_base": 5, "puntos_buen_intento": 2 },
 		{ "nombre": "semis", "puntos_base": 5, "puntos_buen_intento": 2 },
-		{ "nombre": "final", "puntos_base": 5, "puntos_buen_intento": 3 }
+		{ "nombre": "final", "puntos_base": 5, "puntos_buen_intento": 2 }
 	]
 }

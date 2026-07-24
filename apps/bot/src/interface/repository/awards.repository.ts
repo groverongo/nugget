@@ -3,13 +3,26 @@ import type {
 	BuscarJugadoresNoEliminadosRow,
 	GuardarAwardsArgs,
 	GuardarAwardsKOArgs,
-	ListUsuariosConAwardsKORow,
-	ListUsuariosConAwardsRow,
+	GuardarResultadoCampeonArgs,
+	GuardarResultadoGoleadorArgs,
+	GuardarResultadoKoFinalistasArgs,
+	GuardarResultadoKoGoleadorArgs,
+	GuardarResultadoKoMejorPartidoArgs,
+	GuardarResultadoKoNumSuplementariosArgs,
+	GuardarResultadoMejorArqueroArgs,
+	GuardarResultadoMejorGolArgs,
+	GuardarResultadoMejorJugadorArgs,
+	GuardarResultadoMejorJugadorJovenArgs,
+	GuardarResultadoSeleccionDecepcionArgs,
+	GuardarResultadoSeleccionSorpresaArgs,
+	ListUsuariosConCamposAwardsKORow,
+	ListUsuariosConCamposAwardsRow,
 	SumarPuntosAwardArgs,
 	VerAwardsDeUsuarioArgs,
 	VerAwardsDeUsuarioRow,
 	VerAwardsKODeUsuarioArgs,
 	VerAwardsKODeUsuarioRow,
+	VerAwardsResultadosRow,
 	VerEquiposNoEliminadosRow,
 	VerPrediccionesAwardsKORow,
 	VerPrediccionesAwardsRow,
@@ -21,14 +34,45 @@ export interface IAwardsRepository {
 	verAwardsDeUsuario(
 		args: VerAwardsDeUsuarioArgs,
 	): Promise<VerAwardsDeUsuarioRow | null>;
-	listUsuariosConAwards(): Promise<ListUsuariosConAwardsRow[]>;
-	sumarPuntosAward(args: SumarPuntosAwardArgs): Promise<void>;
+	listUsuariosConCamposAwards(): Promise<ListUsuariosConCamposAwardsRow[]>;
+	sumarPuntosAward(args: SumarPuntosAwardArgs): Promise<number>;
+	verAwardsResultados(): Promise<VerAwardsResultadosRow | null>;
+	guardarResultadoCampeon(args: GuardarResultadoCampeonArgs): Promise<void>;
+	guardarResultadoGoleador(args: GuardarResultadoGoleadorArgs): Promise<void>;
+	guardarResultadoMejorJugador(
+		args: GuardarResultadoMejorJugadorArgs,
+	): Promise<void>;
+	guardarResultadoMejorArquero(
+		args: GuardarResultadoMejorArqueroArgs,
+	): Promise<void>;
+	guardarResultadoMejorJugadorJoven(
+		args: GuardarResultadoMejorJugadorJovenArgs,
+	): Promise<void>;
+	guardarResultadoMejorGol(args: GuardarResultadoMejorGolArgs): Promise<void>;
+	guardarResultadoSeleccionDecepcion(
+		args: GuardarResultadoSeleccionDecepcionArgs,
+	): Promise<void>;
+	guardarResultadoSeleccionSorpresa(
+		args: GuardarResultadoSeleccionSorpresaArgs,
+	): Promise<void>;
+	guardarResultadoKoFinalistas(
+		args: GuardarResultadoKoFinalistasArgs,
+	): Promise<void>;
+	guardarResultadoKoMejorPartido(
+		args: GuardarResultadoKoMejorPartidoArgs,
+	): Promise<void>;
+	guardarResultadoKoNumSuplementarios(
+		args: GuardarResultadoKoNumSuplementariosArgs,
+	): Promise<void>;
+	guardarResultadoKoGoleador(
+		args: GuardarResultadoKoGoleadorArgs,
+	): Promise<void>;
 	verPrediccionesAwards(): Promise<VerPrediccionesAwardsRow[]>;
 	guardarAwardsKO(args: GuardarAwardsKOArgs): Promise<void>;
 	verAwardsKODeUsuario(
 		args: VerAwardsKODeUsuarioArgs,
 	): Promise<VerAwardsKODeUsuarioRow | null>;
-	listUsuariosConAwardsKO(): Promise<ListUsuariosConAwardsKORow[]>;
+	listUsuariosConCamposAwardsKO(): Promise<ListUsuariosConCamposAwardsKORow[]>;
 	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]>;
 	verEquiposNoEliminados(): Promise<VerEquiposNoEliminadosRow[]>;
 	buscarJugadoresNoEliminados(

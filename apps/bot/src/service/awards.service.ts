@@ -1,5 +1,6 @@
 import type {
 	BuscarJugadoresNoEliminadosRow,
+	VerAwardsResultadosRow,
 	VerEquiposNoEliminadosRow,
 	VerPrediccionesAwardsKORow,
 	VerPrediccionesAwardsRow,
@@ -20,11 +21,15 @@ import type {
 	GuardarAwardsKOInput,
 	IAwardsService,
 	MisAwardsResueltos,
-	ResultadosAwards,
-	ResultadosAwardsKO,
-	ResumenActualizacionAwards,
-	ResumenActualizacionAwardsKO,
+	ResumenResolucionAward,
 } from "../interface/service/awards.service";
+
+type EquipoInfo = { nombre: string; bandera: string };
+type JugadorInfo = {
+	nombre: string;
+	equipoNombre: string;
+	equipoBandera: string;
+};
 
 export class AwardsService implements IAwardsService {
 	constructor(
@@ -134,79 +139,6 @@ export class AwardsService implements IAwardsService {
 				? (equipoMap.get(raw.awardSeleccionSorpresa) ?? null)
 				: null,
 		};
-	}
-
-	async actualizarAwards(
-		resultados: ResultadosAwards,
-	): Promise<ResumenActualizacionAwards> {
-		const fila = await this.estaticoRepo.verPuntosMejorGolPorPosicion(
-			resultados.mejorGolPosicion,
-		);
-		const puntosMejorGol = fila?.puntos ?? 0;
-
-		return this.txManager.runInTx(async (tx) => {
-			const repo = this.awardsRepo.withTx(tx);
-			const usuarios = await repo.listUsuariosConAwards();
-
-			const resumen: ResumenActualizacionAwards = {
-				totalUsuarios: usuarios.length,
-				resultados: [],
-			};
-
-			for (const u of usuarios) {
-				let puntosGanados = 0;
-				const aciertos: string[] = [];
-
-				if (u.awardCampeon === resultados.campeon) {
-					puntosGanados += 10;
-					aciertos.push("Campeón +10");
-				}
-				if (u.awardGoleador === resultados.goleador) {
-					puntosGanados += 5;
-					aciertos.push("Goleador +5");
-				}
-				if (u.awardMejorJugador === resultados.mejorJugador) {
-					puntosGanados += 5;
-					aciertos.push("Mejor jugador +5");
-				}
-				if (u.awardMejorArquero === resultados.mejorArquero) {
-					puntosGanados += 3;
-					aciertos.push("Mejor arquero +3");
-				}
-				if (u.awardMejorJugadorJoven === resultados.mejorJugadorJoven) {
-					puntosGanados += 3;
-					aciertos.push("Mejor jugador joven +3");
-				}
-				if (
-					u.awardMejorGol === resultados.mejorGolJugadorId &&
-					puntosMejorGol > 0
-				) {
-					puntosGanados += puntosMejorGol;
-					aciertos.push(`Mejor gol +${puntosMejorGol}`);
-				}
-				if (u.awardSeleccionDecepcion === resultados.seleccionDecepcion) {
-					puntosGanados += 5;
-					aciertos.push("Selección Decepción +5");
-				}
-				if (u.awardSeleccionSorpresa === resultados.seleccionSorpresa) {
-					puntosGanados += 5;
-					aciertos.push("Selección Sorpresa +5");
-				}
-
-				if (puntosGanados > 0) {
-					await repo.sumarPuntosAward({ id: u.id, puntos: puntosGanados });
-				}
-
-				resumen.resultados.push({
-					usuarioId: u.id,
-					username: u.username,
-					puntosGanados,
-					aciertos,
-				});
-			}
-
-			return resumen;
-		});
 	}
 
 	verEquiposWhiteHorse(): Promise<VerEquiposRow[]> {
@@ -414,116 +346,6 @@ export class AwardsService implements IAwardsService {
 		return eraVacio ? "created" : "updated";
 	}
 
-	async actualizarAwardsKO(
-		resultados: ResultadosAwardsKO,
-	): Promise<ResumenActualizacionAwardsKO> {
-		return this.txManager.runInTx(async (tx) => {
-			const repo = this.awardsRepo.withTx(tx);
-			const usuarios = await repo.listUsuariosConAwardsKO();
-
-			const resumen: ResumenActualizacionAwardsKO = {
-				totalUsuarios: usuarios.length,
-				resultados: [],
-			};
-
-			const finalistasReales = new Set([
-				resultados.finalista1,
-				resultados.finalista2,
-			]);
-
-			for (const u of usuarios) {
-				let puntosGanados = 0;
-				const aciertos: string[] = [];
-
-				// Finalistas
-				const f1 = u.awardKoFinalista1 ?? 0;
-				const f2 = u.awardKoFinalista2 ?? 0;
-				const campeonPred = u.awardKoCampeon ?? 0;
-				const correctos = [f1, f2].filter((f) => finalistasReales.has(f));
-
-				if (correctos.length === 2) {
-					puntosGanados += 4;
-					aciertos.push("Finalistas +4");
-				} else if (correctos.length === 1) {
-					const esElCampeon = correctos[0] === resultados.campeon;
-					const pts = esElCampeon ? 3 : 2;
-					puntosGanados += pts;
-					aciertos.push(`Finalista${esElCampeon ? " (campeón)" : ""} +${pts}`);
-				}
-
-				if (campeonPred === resultados.campeon) {
-					puntosGanados += 5;
-					aciertos.push("Campeón final +5");
-				}
-
-				// Mejor partido
-				const mp1 = u.awardKoMejorPartidoEquipo1 ?? 0;
-				const mp2 = u.awardKoMejorPartidoEquipo2 ?? 0;
-				const mpReal = new Set([
-					resultados.mejorPartidoEquipo1,
-					resultados.mejorPartidoEquipo2,
-				]);
-				const mpCorrectos = [mp1, mp2].filter((e) => mpReal.has(e));
-
-				if (mpCorrectos.length === 2) {
-					const masGolesCorr =
-						u.awardKoMejorPartidoMasGoles === resultados.mejorPartidoMasGoles;
-					const pts = masGolesCorr ? 3 : 2;
-					puntosGanados += pts;
-					aciertos.push(
-						`Mejor partido${masGolesCorr ? " + más goles" : ""} +${pts}`,
-					);
-				} else if (mpCorrectos.length === 1) {
-					// +2 si el único equipo que acertó es el que hizo más goles
-					const equipo = mpCorrectos[0];
-					if (
-						resultados.mejorPartidoMasGoles !== null &&
-						equipo === resultados.mejorPartidoMasGoles
-					) {
-						puntosGanados += 2;
-						aciertos.push("Mejor partido (1 equipo + más goles) +2");
-					} else {
-						puntosGanados += 1;
-						aciertos.push("Mejor partido (1 equipo) +1");
-					}
-				}
-
-				// Número de suplementarios
-				const numPred = u.awardKoNumSuplementarios ?? -99;
-				const diff = Math.abs(numPred - resultados.numSuplementarios);
-				if (diff === 0) {
-					puntosGanados += 3;
-					aciertos.push("Suplementarios exacto +3");
-				} else if (diff === 1) {
-					puntosGanados += 2;
-					aciertos.push("Suplementarios ±1 +2");
-				} else if (diff === 2) {
-					puntosGanados += 1;
-					aciertos.push("Suplementarios ±2 +1");
-				}
-
-				// Goleador KO
-				if (u.awardKoGoleador === resultados.goleadorKO) {
-					puntosGanados += 3;
-					aciertos.push("Goleador KO +3");
-				}
-
-				if (puntosGanados > 0) {
-					await repo.sumarPuntosAward({ id: u.id, puntos: puntosGanados });
-				}
-
-				resumen.resultados.push({
-					usuarioId: u.id,
-					username: u.username,
-					puntosGanados,
-					aciertos,
-				});
-			}
-
-			return resumen;
-		});
-	}
-
 	verEquiposNoEliminados(): Promise<VerEquiposNoEliminadosRow[]> {
 		return this.awardsRepo.verEquiposNoEliminados();
 	}
@@ -538,5 +360,573 @@ export class AwardsService implements IAwardsService {
 
 	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]> {
 		return this.awardsRepo.verPrediccionesAwardsKO();
+	}
+
+	// ---------------------------------------------------------------------
+	// Resolución individual de awards
+	// ---------------------------------------------------------------------
+
+	private async obtenerResultados(
+		repo: IAwardsRepository,
+	): Promise<VerAwardsResultadosRow> {
+		const actual = await repo.verAwardsResultados();
+		if (!actual) {
+			throw new Error(
+				"No se encontró la fila de awards_resultados (¿faltó correr la migración?).",
+			);
+		}
+		return actual;
+	}
+
+	private async equipoMap(): Promise<Map<number, EquipoInfo>> {
+		const equipos = await this.verEquipos();
+		return new Map(
+			equipos.map((e) => [e.id, { nombre: e.nombre, bandera: e.bandera }]),
+		);
+	}
+
+	private displayEquipo(map: Map<number, EquipoInfo>, id: number): string {
+		const e = map.get(id);
+		return e ? `${e.bandera} ${e.nombre}` : `#${id}`;
+	}
+
+	private async jugadorMap(ids: number[]): Promise<Map<number, JugadorInfo>> {
+		if (ids.length === 0) return new Map();
+		const jugadores = await this.estaticoRepo.verJugadoresPorIds({ ids });
+		return new Map(
+			jugadores.map((j) => [
+				j.id,
+				{
+					nombre: j.nombre,
+					equipoNombre: j.equipoNombre,
+					equipoBandera: j.equipoBandera,
+				},
+			]),
+		);
+	}
+
+	private displayJugador(map: Map<number, JugadorInfo>, id: number): string {
+		const j = map.get(id);
+		return j ? `${j.nombre} (${j.equipoBandera} ${j.equipoNombre})` : `#${id}`;
+	}
+
+	async resolverCampeon(equipoId: number): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoCampeon !== null) {
+				throw new Error("El award de Campeón ya fue resuelto.");
+			}
+			const equipos = await this.equipoMap();
+			const usuarios = await repo.listUsuariosConCamposAwards();
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: this.displayEquipo(equipos, equipoId),
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (u.awardCampeon === null) continue;
+				resumen.totalUsuarios++;
+				const acierto = u.awardCampeon === equipoId;
+				const puntos = acierto ? 10 : 0;
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: this.displayEquipo(equipos, u.awardCampeon),
+					aciertos: acierto ? ["Campeón +10"] : [],
+				});
+			}
+			await repo.guardarResultadoCampeon({ resultadoCampeon: equipoId });
+			return resumen;
+		});
+	}
+
+	private async resolverJugadorSimple(
+		campo:
+			| "awardGoleador"
+			| "awardMejorJugador"
+			| "awardMejorArquero"
+			| "awardMejorJugadorJoven",
+		gate: (r: VerAwardsResultadosRow) => number | null,
+		guardar: (repo: IAwardsRepository, jugadorId: number) => Promise<void>,
+		yaResueltoMsg: string,
+		puntosPorAcierto: number,
+		etiqueta: string,
+		jugadorId: number,
+	): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (gate(actual) !== null) {
+				throw new Error(yaResueltoMsg);
+			}
+			const usuarios = await repo.listUsuariosConCamposAwards();
+			const ids = new Set<number>([jugadorId]);
+			for (const u of usuarios) {
+				const valor = u[campo];
+				if (valor !== null) ids.add(valor);
+			}
+			const jugadores = await this.jugadorMap([...ids]);
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: this.displayJugador(jugadores, jugadorId),
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				const valor = u[campo];
+				if (valor === null) continue;
+				resumen.totalUsuarios++;
+				const acierto = valor === jugadorId;
+				const puntos = acierto ? puntosPorAcierto : 0;
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: this.displayJugador(jugadores, valor),
+					aciertos: acierto ? [`${etiqueta} +${puntos}`] : [],
+				});
+			}
+			await guardar(repo, jugadorId);
+			return resumen;
+		});
+	}
+
+	resolverGoleador(jugadorId: number): Promise<ResumenResolucionAward> {
+		return this.resolverJugadorSimple(
+			"awardGoleador",
+			(r) => r.resultadoGoleador,
+			(repo, id) => repo.guardarResultadoGoleador({ resultadoGoleador: id }),
+			"El award de Goleador ya fue resuelto.",
+			5,
+			"Goleador",
+			jugadorId,
+		);
+	}
+
+	resolverMejorJugador(jugadorId: number): Promise<ResumenResolucionAward> {
+		return this.resolverJugadorSimple(
+			"awardMejorJugador",
+			(r) => r.resultadoMejorJugador,
+			(repo, id) =>
+				repo.guardarResultadoMejorJugador({ resultadoMejorJugador: id }),
+			"El award de Mejor Jugador ya fue resuelto.",
+			5,
+			"Mejor jugador",
+			jugadorId,
+		);
+	}
+
+	resolverMejorArquero(jugadorId: number): Promise<ResumenResolucionAward> {
+		return this.resolverJugadorSimple(
+			"awardMejorArquero",
+			(r) => r.resultadoMejorArquero,
+			(repo, id) =>
+				repo.guardarResultadoMejorArquero({ resultadoMejorArquero: id }),
+			"El award de Mejor Arquero ya fue resuelto.",
+			3,
+			"Mejor arquero",
+			jugadorId,
+		);
+	}
+
+	resolverMejorJugadorJoven(
+		jugadorId: number,
+	): Promise<ResumenResolucionAward> {
+		return this.resolverJugadorSimple(
+			"awardMejorJugadorJoven",
+			(r) => r.resultadoMejorJugadorJoven,
+			(repo, id) =>
+				repo.guardarResultadoMejorJugadorJoven({
+					resultadoMejorJugadorJoven: id,
+				}),
+			"El award de Mejor Jugador Joven ya fue resuelto.",
+			3,
+			"Mejor jugador joven",
+			jugadorId,
+		);
+	}
+
+	async resolverMejorGol(
+		jugadorId: number,
+		posicion: number,
+	): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoMejorGol !== null) {
+				throw new Error("El award de Mejor Gol ya fue resuelto.");
+			}
+			const fila =
+				await this.estaticoRepo.verPuntosMejorGolPorPosicion(posicion);
+			const puntosMejorGol = fila?.puntos ?? 0;
+			const usuarios = await repo.listUsuariosConCamposAwards();
+			const ids = new Set<number>([jugadorId]);
+			for (const u of usuarios) {
+				if (u.awardMejorGol !== null) ids.add(u.awardMejorGol);
+			}
+			const jugadores = await this.jugadorMap([...ids]);
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: `${this.displayJugador(jugadores, jugadorId)} (posición ${posicion})`,
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (u.awardMejorGol === null) continue;
+				resumen.totalUsuarios++;
+				const acierto = u.awardMejorGol === jugadorId && puntosMejorGol > 0;
+				const puntos = acierto ? puntosMejorGol : 0;
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: this.displayJugador(jugadores, u.awardMejorGol),
+					aciertos: acierto ? [`Mejor gol +${puntos}`] : [],
+				});
+			}
+			await repo.guardarResultadoMejorGol({
+				resultadoMejorGol: jugadorId,
+				resultadoMejorGolPosicion: posicion,
+			});
+			return resumen;
+		});
+	}
+
+	private async resolverEquipoSimple(
+		campo: "awardSeleccionDecepcion" | "awardSeleccionSorpresa",
+		gate: (r: VerAwardsResultadosRow) => number | null,
+		guardar: (repo: IAwardsRepository, equipoId: number) => Promise<void>,
+		yaResueltoMsg: string,
+		puntosPorAcierto: number,
+		etiqueta: string,
+		equipoId: number,
+	): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (gate(actual) !== null) {
+				throw new Error(yaResueltoMsg);
+			}
+			const equipos = await this.equipoMap();
+			const usuarios = await repo.listUsuariosConCamposAwards();
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: this.displayEquipo(equipos, equipoId),
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				const valor = u[campo];
+				if (valor === null) continue;
+				resumen.totalUsuarios++;
+				const acierto = valor === equipoId;
+				const puntos = acierto ? puntosPorAcierto : 0;
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: this.displayEquipo(equipos, valor),
+					aciertos: acierto ? [`${etiqueta} +${puntos}`] : [],
+				});
+			}
+			await guardar(repo, equipoId);
+			return resumen;
+		});
+	}
+
+	resolverSeleccionDecepcion(
+		equipoId: number,
+	): Promise<ResumenResolucionAward> {
+		return this.resolverEquipoSimple(
+			"awardSeleccionDecepcion",
+			(r) => r.resultadoSeleccionDecepcion,
+			(repo, id) =>
+				repo.guardarResultadoSeleccionDecepcion({
+					resultadoSeleccionDecepcion: id,
+				}),
+			"El award de Selección Decepción ya fue resuelto.",
+			5,
+			"Selección Decepción",
+			equipoId,
+		);
+	}
+
+	resolverSeleccionSorpresa(equipoId: number): Promise<ResumenResolucionAward> {
+		return this.resolverEquipoSimple(
+			"awardSeleccionSorpresa",
+			(r) => r.resultadoSeleccionSorpresa,
+			(repo, id) =>
+				repo.guardarResultadoSeleccionSorpresa({
+					resultadoSeleccionSorpresa: id,
+				}),
+			"El award de Selección Sorpresa ya fue resuelto.",
+			5,
+			"Selección Sorpresa",
+			equipoId,
+		);
+	}
+
+	async resolverKoFinalistas(
+		finalista1: number,
+		finalista2: number,
+		campeon: number,
+	): Promise<ResumenResolucionAward> {
+		if (campeon !== finalista1 && campeon !== finalista2) {
+			throw new Error("El campeón debe ser uno de los dos finalistas.");
+		}
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoKoFinalista1 !== null) {
+				throw new Error("El award de Finalistas ya fue resuelto.");
+			}
+			const equipos = await this.equipoMap();
+			const finalistasReales = new Set([finalista1, finalista2]);
+			const usuarios = await repo.listUsuariosConCamposAwardsKO();
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: `${this.displayEquipo(equipos, finalista1)}/${this.displayEquipo(equipos, finalista2)} (campeón: ${this.displayEquipo(equipos, campeon)})`,
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (u.awardKoFinalista1 === null || u.awardKoFinalista2 === null) {
+					continue;
+				}
+				resumen.totalUsuarios++;
+				const finalistasUsuario = new Set([
+					u.awardKoFinalista1,
+					u.awardKoFinalista2,
+				]);
+				const aciertosFinalistas = [...finalistasUsuario].filter((f) =>
+					finalistasReales.has(f),
+				).length;
+				let puntos = aciertosFinalistas * 2;
+				const aciertos =
+					aciertosFinalistas > 0
+						? [
+								`Finalistas: ${aciertosFinalistas} acertado(s) +${aciertosFinalistas * 2}`,
+							]
+						: [];
+				if (u.awardKoCampeon !== null && u.awardKoCampeon === campeon) {
+					puntos += 1;
+					aciertos.push("Campeón +1");
+				}
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				const eleccionCampeon =
+					u.awardKoCampeon !== null
+						? this.displayEquipo(equipos, u.awardKoCampeon)
+						: "—";
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: `${this.displayEquipo(equipos, u.awardKoFinalista1)}/${this.displayEquipo(equipos, u.awardKoFinalista2)} (campeón: ${eleccionCampeon})`,
+					aciertos,
+				});
+			}
+			await repo.guardarResultadoKoFinalistas({
+				resultadoKoFinalista1: finalista1,
+				resultadoKoFinalista2: finalista2,
+				resultadoKoCampeon: campeon,
+			});
+			return resumen;
+		});
+	}
+
+	async resolverKoMejorPartido(
+		equipo1: number,
+		equipo2: number,
+		masGoles: number | null,
+	): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoKoMejorPartidoEquipo1 !== null) {
+				throw new Error("El award de Mejor Partido ya fue resuelto.");
+			}
+			const equipos = await this.equipoMap();
+			const equiposReales = new Set([equipo1, equipo2]);
+			const usuarios = await repo.listUsuariosConCamposAwardsKO();
+			const masGolesDisplay =
+				masGoles !== null ? this.displayEquipo(equipos, masGoles) : "empate";
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: `${this.displayEquipo(equipos, equipo1)}/${this.displayEquipo(equipos, equipo2)} (más goles: ${masGolesDisplay})`,
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (
+					u.awardKoMejorPartidoEquipo1 === null ||
+					u.awardKoMejorPartidoEquipo2 === null
+				) {
+					continue;
+				}
+				resumen.totalUsuarios++;
+				const equiposUsuario = new Set([
+					u.awardKoMejorPartidoEquipo1,
+					u.awardKoMejorPartidoEquipo2,
+				]);
+				const correctos = [...equiposUsuario].filter((e) =>
+					equiposReales.has(e),
+				);
+				let puntos = 0;
+				const aciertos: string[] = [];
+				if (correctos.length === 2) {
+					const masGolesCorr = u.awardKoMejorPartidoMasGoles === masGoles;
+					puntos = masGolesCorr ? 3 : 2;
+					aciertos.push(
+						`Mejor partido${masGolesCorr ? " + más goles" : ""} +${puntos}`,
+					);
+				} else if (correctos.length === 1) {
+					const equipo = correctos[0];
+					if (masGoles !== null && equipo === masGoles) {
+						puntos = 2;
+						aciertos.push("Mejor partido (1 equipo + más goles) +2");
+					} else {
+						puntos = 1;
+						aciertos.push("Mejor partido (1 equipo) +1");
+					}
+				}
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				const eleccionMasGoles =
+					u.awardKoMejorPartidoMasGoles !== null
+						? this.displayEquipo(equipos, u.awardKoMejorPartidoMasGoles)
+						: "empate";
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: `${this.displayEquipo(equipos, u.awardKoMejorPartidoEquipo1)}/${this.displayEquipo(equipos, u.awardKoMejorPartidoEquipo2)} (más goles: ${eleccionMasGoles})`,
+					aciertos,
+				});
+			}
+			await repo.guardarResultadoKoMejorPartido({
+				resultadoKoMejorPartidoEquipo1: equipo1,
+				resultadoKoMejorPartidoEquipo2: equipo2,
+				resultadoKoMejorPartidoMasGoles: masGoles,
+			});
+			return resumen;
+		});
+	}
+
+	async resolverKoNumSuplementarios(
+		cantidad: number,
+	): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoKoNumSuplementarios !== null) {
+				throw new Error(
+					"El award de Número de Suplementarios ya fue resuelto.",
+				);
+			}
+			const usuarios = await repo.listUsuariosConCamposAwardsKO();
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: `${cantidad} suplementarios`,
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (u.awardKoNumSuplementarios === null) continue;
+				resumen.totalUsuarios++;
+				const diff = Math.abs(u.awardKoNumSuplementarios - cantidad);
+				let puntos = 0;
+				const aciertos: string[] = [];
+				if (diff === 0) {
+					puntos = 3;
+					aciertos.push("Suplementarios exacto +3");
+				} else if (diff === 1) {
+					puntos = 2;
+					aciertos.push("Suplementarios ±1 +2");
+				} else if (diff === 2) {
+					puntos = 1;
+					aciertos.push("Suplementarios ±2 +1");
+				}
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: `${u.awardKoNumSuplementarios} suplementarios`,
+					aciertos,
+				});
+			}
+			await repo.guardarResultadoKoNumSuplementarios({
+				resultadoKoNumSuplementarios: cantidad,
+			});
+			return resumen;
+		});
+	}
+
+	async resolverKoGoleador(jugadorId: number): Promise<ResumenResolucionAward> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.resultadoKoGoleador !== null) {
+				throw new Error("El award de Goleador KO ya fue resuelto.");
+			}
+			const usuarios = await repo.listUsuariosConCamposAwardsKO();
+			const ids = new Set<number>([jugadorId]);
+			for (const u of usuarios) {
+				if (u.awardKoGoleador !== null) ids.add(u.awardKoGoleador);
+			}
+			const jugadores = await this.jugadorMap([...ids]);
+			const resumen: ResumenResolucionAward = {
+				resultadoDisplay: this.displayJugador(jugadores, jugadorId),
+				totalUsuarios: 0,
+				resultados: [],
+			};
+			for (const u of usuarios) {
+				if (u.awardKoGoleador === null) continue;
+				resumen.totalUsuarios++;
+				const acierto = u.awardKoGoleador === jugadorId;
+				const puntos = acierto ? 3 : 0;
+				const puntosTotal =
+					puntos > 0
+						? await repo.sumarPuntosAward({ id: u.id, puntos })
+						: u.puntos;
+				resumen.resultados.push({
+					usuarioId: u.id,
+					username: u.username,
+					puntosGanados: puntos,
+					puntosTotal,
+					eleccion: this.displayJugador(jugadores, u.awardKoGoleador),
+					aciertos: acierto ? ["Goleador KO +3"] : [],
+				});
+			}
+			await repo.guardarResultadoKoGoleador({ resultadoKoGoleador: jugadorId });
+			return resumen;
+		});
 	}
 }

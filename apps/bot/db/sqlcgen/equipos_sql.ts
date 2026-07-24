@@ -5,7 +5,7 @@ interface Client {
 }
 
 export const verEquiposQuery = `-- name: VerEquipos :many
-SELECT id, nombre
+SELECT id, nombre, bandera
 FROM estatico_equipos
 WHERE ($1::boolean IS NULL OR blanco = $1::boolean)
 	AND ($2::boolean IS NULL OR negro = $2::boolean)
@@ -19,6 +19,7 @@ export interface VerEquiposArgs {
 export interface VerEquiposRow {
     id: number;
     nombre: string;
+    bandera: string;
 }
 
 export async function verEquipos(client: Client, args: VerEquiposArgs): Promise<VerEquiposRow[]> {
@@ -30,7 +31,8 @@ export async function verEquipos(client: Client, args: VerEquiposArgs): Promise<
     return result.rows.map(row => {
         return {
             id: row[0],
-            nombre: row[1]
+            nombre: row[1],
+            bandera: row[2]
         };
     });
 }

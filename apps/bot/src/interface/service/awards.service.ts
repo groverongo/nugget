@@ -33,27 +33,18 @@ export interface MisAwardsResueltos {
 	seleccionSorpresa: string | null;
 }
 
-export interface ResultadosAwards {
-	campeon: number;
-	goleador: number;
-	mejorJugador: number;
-	mejorArquero: number;
-	mejorJugadorJoven: number;
-	mejorGolJugadorId: number;
-	mejorGolPosicion: number;
-	seleccionDecepcion: number;
-	seleccionSorpresa: number;
-}
-
-export interface ResumenActualizacionAwards {
+export type ResumenResolucionAward = {
+	resultadoDisplay: string;
 	totalUsuarios: number;
 	resultados: {
 		usuarioId: string;
 		username: string;
 		puntosGanados: number;
+		puntosTotal: number;
+		eleccion: string;
 		aciertos: string[];
 	}[];
-}
+};
 
 export interface GuardarAwardsKOInput {
 	usuarioId: string;
@@ -65,27 +56,6 @@ export interface GuardarAwardsKOInput {
 	mejorPartidoMasGoles: number | null;
 	numSuplementarios: number;
 	goleadorKO: number;
-}
-
-export interface ResultadosAwardsKO {
-	finalista1: number;
-	finalista2: number;
-	campeon: number;
-	mejorPartidoEquipo1: number;
-	mejorPartidoEquipo2: number;
-	mejorPartidoMasGoles: number | null;
-	numSuplementarios: number;
-	goleadorKO: number;
-}
-
-export interface ResumenActualizacionAwardsKO {
-	totalUsuarios: number;
-	resultados: {
-		usuarioId: string;
-		username: string;
-		puntosGanados: number;
-		aciertos: string[];
-	}[];
 }
 
 export interface AwardsKODisplay {
@@ -113,9 +83,6 @@ export interface AwardsKORaw {
 export interface IAwardsService {
 	guardarAwards(input: GuardarAwardsInput): Promise<"created" | "updated">;
 	guardarAwardsAdmin(input: GuardarAwardsInput): Promise<"created" | "updated">;
-	actualizarAwards(
-		resultados: ResultadosAwards,
-	): Promise<ResumenActualizacionAwards>;
 	verMisAwards(usuarioId: string): Promise<MisAwardsResueltos | null>;
 	verEquiposWhiteHorse(): Promise<VerEquiposRow[]>;
 	verEquiposDarkHorse(): Promise<VerEquiposRow[]>;
@@ -130,12 +97,36 @@ export interface IAwardsService {
 	guardarAwardsKOAdmin(
 		input: GuardarAwardsKOInput,
 	): Promise<"created" | "updated">;
-	actualizarAwardsKO(
-		resultados: ResultadosAwardsKO,
-	): Promise<ResumenActualizacionAwardsKO>;
 	verEquiposNoEliminados(): Promise<VerEquiposNoEliminadosRow[]>;
 	buscarJugadoresNoEliminados(
 		query: string,
 	): Promise<BuscarJugadoresNoEliminadosRow[]>;
 	verPrediccionesAwardsKO(): Promise<VerPrediccionesAwardsKORow[]>;
+
+	// Resolución individual de awards
+	resolverCampeon(equipoId: number): Promise<ResumenResolucionAward>;
+	resolverGoleador(jugadorId: number): Promise<ResumenResolucionAward>;
+	resolverMejorJugador(jugadorId: number): Promise<ResumenResolucionAward>;
+	resolverMejorArquero(jugadorId: number): Promise<ResumenResolucionAward>;
+	resolverMejorJugadorJoven(jugadorId: number): Promise<ResumenResolucionAward>;
+	resolverMejorGol(
+		jugadorId: number,
+		posicion: number,
+	): Promise<ResumenResolucionAward>;
+	resolverSeleccionDecepcion(equipoId: number): Promise<ResumenResolucionAward>;
+	resolverSeleccionSorpresa(equipoId: number): Promise<ResumenResolucionAward>;
+	resolverKoFinalistas(
+		finalista1: number,
+		finalista2: number,
+		campeon: number,
+	): Promise<ResumenResolucionAward>;
+	resolverKoMejorPartido(
+		equipo1: number,
+		equipo2: number,
+		masGoles: number | null,
+	): Promise<ResumenResolucionAward>;
+	resolverKoNumSuplementarios(
+		cantidad: number,
+	): Promise<ResumenResolucionAward>;
+	resolverKoGoleador(jugadorId: number): Promise<ResumenResolucionAward>;
 }
