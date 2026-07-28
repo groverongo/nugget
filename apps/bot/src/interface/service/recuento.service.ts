@@ -5,6 +5,7 @@ import type {
 	VerRankingRachaMaximaRow,
 	VerRankingWinRateRow,
 } from "@sqlc/recuento_sql";
+import type { AwardGanadoresGrupo } from "./awards.service";
 
 export type { VerAwardsParaRecuentoRow, VerEquiposEliminadosRow };
 
@@ -32,6 +33,7 @@ export interface DatosRecuento {
 	sorpresaEquipoGanadorId: number | null;
 	finalistaIds: [number, number] | null;
 	campeonKOId: number | null;
+	awardsGanadores: AwardGanadoresGrupo[];
 }
 
 export interface IRecuentoService {

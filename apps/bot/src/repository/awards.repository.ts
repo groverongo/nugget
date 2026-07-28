@@ -4,6 +4,7 @@ import {
 	buscarJugadoresNoEliminados,
 	type GuardarAwardsArgs,
 	type GuardarAwardsKOArgs,
+	type GuardarMejorGolResueltoArgs,
 	type GuardarResultadoCampeonArgs,
 	type GuardarResultadoGoleadorArgs,
 	type GuardarResultadoKoFinalistasArgs,
@@ -11,13 +12,13 @@ import {
 	type GuardarResultadoKoMejorPartidoArgs,
 	type GuardarResultadoKoNumSuplementariosArgs,
 	type GuardarResultadoMejorArqueroArgs,
-	type GuardarResultadoMejorGolArgs,
 	type GuardarResultadoMejorJugadorArgs,
 	type GuardarResultadoMejorJugadorJovenArgs,
 	type GuardarResultadoSeleccionDecepcionArgs,
 	type GuardarResultadoSeleccionSorpresaArgs,
 	guardarAwards,
 	guardarAwardsKO,
+	guardarMejorGolResuelto,
 	guardarResultadoCampeon,
 	guardarResultadoGoleador,
 	guardarResultadoKoFinalistas,
@@ -25,13 +26,14 @@ import {
 	guardarResultadoKoMejorPartido,
 	guardarResultadoKoNumSuplementarios,
 	guardarResultadoMejorArquero,
-	guardarResultadoMejorGol,
 	guardarResultadoMejorJugador,
 	guardarResultadoMejorJugadorJoven,
 	guardarResultadoSeleccionDecepcion,
 	guardarResultadoSeleccionSorpresa,
+	type ListMejorGolResueltosRow,
 	type ListUsuariosConCamposAwardsKORow,
 	type ListUsuariosConCamposAwardsRow,
+	listMejorGolResueltos,
 	listUsuariosConCamposAwards,
 	listUsuariosConCamposAwardsKO,
 	type SumarPuntosAwardArgs,
@@ -107,8 +109,12 @@ export class AwardsRepository implements IAwardsRepository {
 		return guardarResultadoMejorJugadorJoven(this.pool, args);
 	}
 
-	guardarResultadoMejorGol(args: GuardarResultadoMejorGolArgs): Promise<void> {
-		return guardarResultadoMejorGol(this.pool, args);
+	listMejorGolResueltos(): Promise<ListMejorGolResueltosRow[]> {
+		return listMejorGolResueltos(this.pool);
+	}
+
+	guardarMejorGolResuelto(args: GuardarMejorGolResueltoArgs): Promise<void> {
+		return guardarMejorGolResuelto(this.pool, args);
 	}
 
 	guardarResultadoSeleccionDecepcion(

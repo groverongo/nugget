@@ -65,6 +65,7 @@ export function createAppContext(): AppContext {
 	const recuentoService = new RecuentoService(
 		recuentoRepository,
 		prediccionesRepository,
+		awardsService,
 	);
 	const prediccionesEtService = new PrediccionesEtService(
 		prediccionesEtRepository,

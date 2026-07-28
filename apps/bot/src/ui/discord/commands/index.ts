@@ -34,6 +34,10 @@ import {
 	enviarAlertaFaltanAwardsKO,
 } from "../services/awards-ko-scheduler";
 import { enviarAlertaAwards } from "../services/awards-scheduler";
+import {
+	enviarResumenFinalAwards,
+	verificarYProgramarResumenFinal,
+} from "../services/awards-summary-scheduler";
 import { enviarAlertaDiaria } from "../services/daily-alert-scheduler";
 import {
 	checkAndScheduleEndOfDay,
@@ -169,6 +173,10 @@ const enviarAlertaCommand = new SlashCommandBuilder()
 					value: "awards-ko-cierre",
 				},
 				{ name: "📋 Resumen del día", value: "resumen-dia" },
+				{
+					name: "🏆 Resumen final de Awards",
+					value: "awards-resumen",
+				},
 				{
 					name: "🕛 Inicio de partido (solo mensaje, sin cambiar estado)",
 					value: "inicio-partido",
@@ -2880,6 +2888,10 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					})();
 
 					await postResumenAward(interaction.client, titulo, resumen);
+					await verificarYProgramarResumenFinal(
+						appContext.services,
+						interaction.client,
+					);
 
 					await interaction.editReply({
 						content: `✅ Award "${titulo}" resuelto. Revisa el canal de alertas.`,
@@ -3002,6 +3014,16 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 							);
 							await interaction.editReply({
 								content: `✅ Resumen del día (${fecha}) enviado.`,
+							});
+							break;
+						}
+						case "awards-resumen": {
+							await enviarResumenFinalAwards(
+								appContext.services,
+								interaction.client,
+							);
+							await interaction.editReply({
+								content: "✅ Resumen final de awards enviado.",
 							});
 							break;
 						}
@@ -3570,8 +3592,9 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 					const hmgMenciones = resultado.hitMasGoles.ganadores
 						.map((u) => `<@${u.id}>`)
 						.join(", ");
+					const partidosStr = resultado.hitMasGoles.partidos.join(" / ");
 					lineas.push(
-						`⚽ **Hit de más goles** (${resultado.hitMasGoles.partido} — ${resultado.hitMasGoles.totalGoles} goles) **+${resultado.hitMasGoles.puntos} 💠**: ${hmgMenciones}`,
+						`⚽ **Hit de más goles** (${partidosStr} — ${resultado.hitMasGoles.totalGoles} goles) **+${resultado.hitMasGoles.puntos} 💠**: ${hmgMenciones}`,
 					);
 				}
 
@@ -3673,13 +3696,19 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 				const eliminado = interaction.options.getBoolean("eliminado", true);
 				if (eliminado) {
 					await appContext.services.recuento.marcarEquipoEliminado(equipoId);
-					const [eliminados, awards, ganadores, finalistasYCampeonKO] =
-						await Promise.all([
-							appContext.services.recuento.verEquiposEliminados(),
-							appContext.services.recuento.verAwardsParaRecuento(),
-							appContext.services.recuento.resolverGanadoresDecepcionYSorpresa(),
-							appContext.services.recuento.resolverFinalistasYCampeonKO(),
-						]);
+					const [
+						eliminados,
+						awards,
+						ganadores,
+						finalistasYCampeonKO,
+						awardsGanadores,
+					] = await Promise.all([
+						appContext.services.recuento.verEquiposEliminados(),
+						appContext.services.recuento.verAwardsParaRecuento(),
+						appContext.services.recuento.resolverGanadoresDecepcionYSorpresa(),
+						appContext.services.recuento.resolverFinalistasYCampeonKO(),
+						appContext.services.awards.calcularGanadoresPorAward(),
+					]);
 					const equipo = eliminados.find((e) => e.id === equipoId);
 					if (equipo) {
 						await sendAlertsChannel(
@@ -3692,6 +3721,7 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 								ganadores.sorpresaEquipoGanadorId,
 								finalistasYCampeonKO.finalistaIds,
 								finalistasYCampeonKO.campeonKOId,
+								awardsGanadores,
 							),
 						);
 					}

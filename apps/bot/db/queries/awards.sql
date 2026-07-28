@@ -63,11 +63,12 @@ UPDATE awards_resultados SET resultado_mejor_arquero = sqlc.arg(resultado_mejor_
 -- name: GuardarResultadoMejorJugadorJoven :exec
 UPDATE awards_resultados SET resultado_mejor_jugador_joven = sqlc.arg(resultado_mejor_jugador_joven) WHERE id = 1;
 
--- name: GuardarResultadoMejorGol :exec
-UPDATE awards_resultados SET
-    resultado_mejor_gol = sqlc.arg(resultado_mejor_gol),
-    resultado_mejor_gol_posicion = sqlc.arg(resultado_mejor_gol_posicion)
-WHERE id = 1;
+-- name: ListMejorGolResueltos :many
+SELECT jugador_id, posicion FROM awards_mejor_gol_resueltos ORDER BY posicion ASC;
+
+-- name: GuardarMejorGolResuelto :exec
+INSERT INTO awards_mejor_gol_resueltos (jugador_id, posicion)
+VALUES (sqlc.arg(jugador_id), sqlc.arg(posicion));
 
 -- name: GuardarResultadoSeleccionDecepcion :exec
 UPDATE awards_resultados SET resultado_seleccion_decepcion = sqlc.arg(resultado_seleccion_decepcion) WHERE id = 1;
