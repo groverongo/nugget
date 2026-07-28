@@ -2,6 +2,7 @@ import {
 	type BuscarJugadoresNoEliminadosArgs,
 	type BuscarJugadoresNoEliminadosRow,
 	buscarJugadoresNoEliminados,
+	cerrarMejorGol,
 	type GuardarAwardsArgs,
 	type GuardarAwardsKOArgs,
 	type GuardarMejorGolResueltoArgs,
@@ -115,6 +116,10 @@ export class AwardsRepository implements IAwardsRepository {
 
 	guardarMejorGolResuelto(args: GuardarMejorGolResueltoArgs): Promise<void> {
 		return guardarMejorGolResuelto(this.pool, args);
+	}
+
+	cerrarMejorGol(): Promise<void> {
+		return cerrarMejorGol(this.pool);
 	}
 
 	guardarResultadoSeleccionDecepcion(

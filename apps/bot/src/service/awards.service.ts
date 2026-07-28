@@ -35,6 +35,10 @@ type JugadorInfo = {
 
 type PuntosCalculados = { puntos: number; aciertos: string[] };
 
+// Puntaje fijo para un nominado a Mejor Gol del que FIFA no reveló posición
+// (p. ej. si solo publican el top 3 y el resto de nominados queda sin ranking).
+const PUNTOS_MEJOR_GOL_NOMINADO_SIN_POSICION = 1;
+
 // ---------------------------------------------------------------------
 // Fórmulas de puntaje puras — usadas tanto por los resolverX (que además
 // aplican los puntos) como por calcularGanadoresPorAward (solo lectura).
@@ -677,7 +681,7 @@ export class AwardsService implements IAwardsService {
 
 	async resolverMejorGol(
 		jugadorId: number,
-		posicion: number,
+		posicion: number | null,
 	): Promise<ResumenResolucionAward> {
 		return this.txManager.runInTx(async (tx) => {
 			const repo = this.awardsRepo.withTx(tx);
@@ -685,18 +689,27 @@ export class AwardsService implements IAwardsService {
 			if (resueltos.some((r) => r.jugadorId === jugadorId)) {
 				throw new Error("Ese jugador ya fue resuelto para Mejor Gol.");
 			}
-			if (resueltos.some((r) => r.posicion === posicion)) {
+			if (posicion !== null && resueltos.some((r) => r.posicion === posicion)) {
 				throw new Error(
 					`La posición ${posicion} ya fue asignada a otro jugador.`,
 				);
 			}
-			const fila =
-				await this.estaticoRepo.verPuntosMejorGolPorPosicion(posicion);
-			const puntosMejorGol = fila?.puntos ?? 0;
+			let puntosMejorGol: number;
+			if (posicion !== null) {
+				const fila =
+					await this.estaticoRepo.verPuntosMejorGolPorPosicion(posicion);
+				puntosMejorGol = fila?.puntos ?? 0;
+			} else {
+				puntosMejorGol = PUNTOS_MEJOR_GOL_NOMINADO_SIN_POSICION;
+			}
 			const usuarios = await repo.listUsuariosConCamposAwards();
 			const jugadores = await this.jugadorMap([jugadorId]);
+			const etiquetaResultado =
+				posicion !== null
+					? `${this.displayJugador(jugadores, jugadorId)} (posición ${posicion})`
+					: `${this.displayJugador(jugadores, jugadorId)} (nominado, sin posición revelada)`;
 			const resumen: ResumenResolucionAward = {
-				resultadoDisplay: `${this.displayJugador(jugadores, jugadorId)} (posición ${posicion}) — ${resueltos.length + 1}/10 goles resueltos`,
+				resultadoDisplay: `${etiquetaResultado} — ${resueltos.length + 1} nominado(s) resueltos`,
 				totalUsuarios: 0,
 				resultados: [],
 			};
@@ -724,6 +737,17 @@ export class AwardsService implements IAwardsService {
 			}
 			await repo.guardarMejorGolResuelto({ jugadorId, posicion });
 			return resumen;
+		});
+	}
+
+	async cerrarMejorGol(): Promise<void> {
+		return this.txManager.runInTx(async (tx) => {
+			const repo = this.awardsRepo.withTx(tx);
+			const actual = await this.obtenerResultados(repo);
+			if (actual.mejorGolCerradoEn !== null) {
+				throw new Error("El award de Mejor Gol ya fue cerrado.");
+			}
+			await repo.cerrarMejorGol();
 		});
 	}
 
@@ -1154,24 +1178,55 @@ export class AwardsService implements IAwardsService {
 			),
 		);
 
-		const mejorGolResuelto = mejorGolResueltos.length === 10;
+		// "Resuelto" se da por: (a) el admin lo cerró explícitamente
+		// (cerrarMejorGol, para cuando FIFA no revela más nominados), o (b)
+		// todo jugador que alguien eligió como Mejor Gol ya tiene una
+		// resolución (con posición o nominado) — por si se resolvió todo sin
+		// necesidad de cerrar a mano. (a) es la señal principal: depender solo
+		// de (b) se puede trabar para siempre si algún usuario eligió un
+		// jugador que en realidad nunca fue nominado.
+		const picksUnicosMejorGol = new Set(
+			usuarios
+				.map((u) => u.awardMejorGol)
+				.filter((id): id is number => id !== null),
+		);
+		const mejorGolResueltosSet = new Set(
+			mejorGolResueltos.map((r) => r.jugadorId),
+		);
+		const mejorGolResuelto =
+			actual.mejorGolCerradoEn !== null ||
+			(picksUnicosMejorGol.size > 0 &&
+				[...picksUnicosMejorGol].every((id) => mejorGolResueltosSet.has(id)));
+
 		const puntosPorJugadorMejorGol = new Map<number, number>();
 		for (const r of mejorGolResueltos) {
-			const fila = await this.estaticoRepo.verPuntosMejorGolPorPosicion(
-				r.posicion,
-			);
-			puntosPorJugadorMejorGol.set(r.jugadorId, fila?.puntos ?? 0);
+			if (r.posicion !== null) {
+				const fila = await this.estaticoRepo.verPuntosMejorGolPorPosicion(
+					r.posicion,
+				);
+				puntosPorJugadorMejorGol.set(r.jugadorId, fila?.puntos ?? 0);
+			} else {
+				puntosPorJugadorMejorGol.set(
+					r.jugadorId,
+					PUNTOS_MEJOR_GOL_NOMINADO_SIN_POSICION,
+				);
+			}
 		}
+		const mejorGolOrdenados = [...mejorGolResueltos].sort((a, b) => {
+			if (a.posicion === null) return b.posicion === null ? 0 : 1;
+			if (b.posicion === null) return -1;
+			return a.posicion - b.posicion;
+		});
 		grupos.push({
 			key: "mejor-gol",
 			etiqueta: "Mejor Gol",
 			resuelto: mejorGolResuelto,
 			resultadoDisplay: mejorGolResuelto
-				? [...mejorGolResueltos]
-						.sort((a, b) => a.posicion - b.posicion)
-						.map(
-							(r) =>
-								`${r.posicion}° ${this.displayJugador(jugadores, r.jugadorId)}`,
+				? mejorGolOrdenados
+						.map((r) =>
+							r.posicion !== null
+								? `${r.posicion}° ${this.displayJugador(jugadores, r.jugadorId)}`
+								: `${this.displayJugador(jugadores, r.jugadorId)} (nominado)`,
 						)
 						.join(", ")
 				: null,
