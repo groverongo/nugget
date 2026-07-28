@@ -170,7 +170,7 @@ export async function sumarPuntosAward(client: Client, args: SumarPuntosAwardArg
 }
 
 export const verAwardsResultadosQuery = `-- name: VerAwardsResultados :one
-SELECT id, resultado_campeon, resultado_goleador, resultado_mejor_jugador, resultado_mejor_arquero, resultado_mejor_jugador_joven, resultado_seleccion_decepcion, resultado_seleccion_sorpresa, resultado_ko_campeon, resultado_ko_finalista1, resultado_ko_finalista2, resultado_ko_mejor_partido_equipo1, resultado_ko_mejor_partido_equipo2, resultado_ko_mejor_partido_mas_goles, resultado_ko_num_suplementarios, resultado_ko_goleador FROM awards_resultados WHERE id = 1`;
+SELECT id, resultado_campeon, resultado_goleador, resultado_mejor_jugador, resultado_mejor_arquero, resultado_mejor_jugador_joven, resultado_seleccion_decepcion, resultado_seleccion_sorpresa, resultado_ko_campeon, resultado_ko_finalista1, resultado_ko_finalista2, resultado_ko_mejor_partido_equipo1, resultado_ko_mejor_partido_equipo2, resultado_ko_mejor_partido_mas_goles, resultado_ko_num_suplementarios, resultado_ko_goleador, mejor_gol_cerrado_en FROM awards_resultados WHERE id = 1`;
 
 export interface VerAwardsResultadosRow {
     id: number;
@@ -189,6 +189,7 @@ export interface VerAwardsResultadosRow {
     resultadoKoMejorPartidoMasGoles: number | null;
     resultadoKoNumSuplementarios: number | null;
     resultadoKoGoleador: number | null;
+    mejorGolCerradoEn: Date | null;
 }
 
 export async function verAwardsResultados(client: Client): Promise<VerAwardsResultadosRow | null> {
@@ -217,8 +218,20 @@ export async function verAwardsResultados(client: Client): Promise<VerAwardsResu
         resultadoKoMejorPartidoEquipo2: row[12],
         resultadoKoMejorPartidoMasGoles: row[13],
         resultadoKoNumSuplementarios: row[14],
-        resultadoKoGoleador: row[15]
+        resultadoKoGoleador: row[15],
+        mejorGolCerradoEn: row[16]
     };
+}
+
+export const cerrarMejorGolQuery = `-- name: CerrarMejorGol :exec
+UPDATE awards_resultados SET mejor_gol_cerrado_en = NOW() WHERE id = 1`;
+
+export async function cerrarMejorGol(client: Client): Promise<void> {
+    await client.query({
+        text: cerrarMejorGolQuery,
+        values: [],
+        rowMode: "array"
+    });
 }
 
 export const guardarResultadoCampeonQuery = `-- name: GuardarResultadoCampeon :exec
@@ -301,7 +314,7 @@ SELECT jugador_id, posicion FROM awards_mejor_gol_resueltos ORDER BY posicion AS
 
 export interface ListMejorGolResueltosRow {
     jugadorId: number;
-    posicion: number;
+    posicion: number | null;
 }
 
 export async function listMejorGolResueltos(client: Client): Promise<ListMejorGolResueltosRow[]> {
@@ -324,7 +337,7 @@ VALUES ($1, $2)`;
 
 export interface GuardarMejorGolResueltoArgs {
     jugadorId: number;
-    posicion: number;
+    posicion: number | null;
 }
 
 export async function guardarMejorGolResuelto(client: Client, args: GuardarMejorGolResueltoArgs): Promise<void> {

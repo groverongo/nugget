@@ -728,13 +728,36 @@ const resolverAwardCommand = new SlashCommandBuilder()
 					.setRequired(true)
 					.setAutocomplete(true),
 			)
-			.addIntegerOption((option) =>
+			.addStringOption((option) =>
 				option
 					.setName("posicion")
-					.setDescription("Posición del gol entre todos los nominados (1-10)")
+					.setDescription(
+						"Posición entre los nominados (1-10), o NOMINADO si FIFA no la reveló",
+					)
 					.setRequired(true)
-					.setMinValue(1)
-					.setMaxValue(10),
+					.addChoices(
+						{ name: "1", value: "1" },
+						{ name: "2", value: "2" },
+						{ name: "3", value: "3" },
+						{ name: "4", value: "4" },
+						{ name: "5", value: "5" },
+						{ name: "6", value: "6" },
+						{ name: "7", value: "7" },
+						{ name: "8", value: "8" },
+						{ name: "9", value: "9" },
+						{ name: "10", value: "10" },
+						{
+							name: "NOMINADO (sin posición revelada, +1 fijo)",
+							value: "NOMINADO",
+						},
+					),
+			),
+	)
+	.addSubcommand((sub) =>
+		sub
+			.setName("mejor-gol-cerrar")
+			.setDescription(
+				"Cierra Mejor Gol aunque queden picks de usuarios sin resolver (jugadores nunca nominados)",
 			),
 	)
 	.addSubcommand((sub) =>
@@ -2741,13 +2764,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 									interaction.options.getString("jugador", true),
 									10,
 								);
-								const posicion = interaction.options.getInteger(
+								const posicionRaw = interaction.options.getString(
 									"posicion",
 									true,
 								);
-								if (Number.isNaN(jugadorId)) {
+								const posicion =
+									posicionRaw === "NOMINADO" ? null : parseInt(posicionRaw, 10);
+								if (
+									Number.isNaN(jugadorId) ||
+									(posicion !== null && Number.isNaN(posicion))
+								) {
 									throw new Error(
-										"Selecciona un jugador desde el autocompletado.",
+										"Selecciona los valores desde el autocompletado.",
 									);
 								}
 								return {
@@ -2756,6 +2784,18 @@ export const discordCommands = new Collection<string, DiscordCommand>([
 										jugadorId,
 										posicion,
 									),
+								};
+							}
+							case "mejor-gol-cerrar": {
+								await appContext.services.awards.cerrarMejorGol();
+								return {
+									titulo: "Mejor Gol",
+									resumen: {
+										resultadoDisplay:
+											"Cerrado — no se resolverán más nominados. Los picks sin resolver quedan en 0 puntos.",
+										totalUsuarios: 0,
+										resultados: [],
+									},
 								};
 							}
 							case "seleccion-decepcion": {

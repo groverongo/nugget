@@ -51,6 +51,7 @@ export interface IAwardsRepository {
 	): Promise<void>;
 	listMejorGolResueltos(): Promise<ListMejorGolResueltosRow[]>;
 	guardarMejorGolResuelto(args: GuardarMejorGolResueltoArgs): Promise<void>;
+	cerrarMejorGol(): Promise<void>;
 	guardarResultadoSeleccionDecepcion(
 		args: GuardarResultadoSeleccionDecepcionArgs,
 	): Promise<void>;

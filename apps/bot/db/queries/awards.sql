@@ -48,6 +48,9 @@ RETURNING puntos;
 -- name: VerAwardsResultados :one
 SELECT * FROM awards_resultados WHERE id = 1;
 
+-- name: CerrarMejorGol :exec
+UPDATE awards_resultados SET mejor_gol_cerrado_en = NOW() WHERE id = 1;
+
 -- name: GuardarResultadoCampeon :exec
 UPDATE awards_resultados SET resultado_campeon = sqlc.arg(resultado_campeon) WHERE id = 1;
 
@@ -68,7 +71,7 @@ SELECT jugador_id, posicion FROM awards_mejor_gol_resueltos ORDER BY posicion AS
 
 -- name: GuardarMejorGolResuelto :exec
 INSERT INTO awards_mejor_gol_resueltos (jugador_id, posicion)
-VALUES (sqlc.arg(jugador_id), sqlc.arg(posicion));
+VALUES (sqlc.arg(jugador_id), sqlc.narg(posicion));
 
 -- name: GuardarResultadoSeleccionDecepcion :exec
 UPDATE awards_resultados SET resultado_seleccion_decepcion = sqlc.arg(resultado_seleccion_decepcion) WHERE id = 1;

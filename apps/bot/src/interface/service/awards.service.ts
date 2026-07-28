@@ -124,10 +124,14 @@ export interface IAwardsService {
 	resolverMejorJugador(jugadorId: number): Promise<ResumenResolucionAward>;
 	resolverMejorArquero(jugadorId: number): Promise<ResumenResolucionAward>;
 	resolverMejorJugadorJoven(jugadorId: number): Promise<ResumenResolucionAward>;
+	/** posicion = null significa "nominado, sin posición revelada" (puntaje fijo). */
 	resolverMejorGol(
 		jugadorId: number,
-		posicion: number,
+		posicion: number | null,
 	): Promise<ResumenResolucionAward>;
+
+	/** Cierra Mejor Gol aunque queden picks de usuarios sin resolver (jugadores que nunca fueron nominados). */
+	cerrarMejorGol(): Promise<void>;
 	resolverSeleccionDecepcion(equipoId: number): Promise<ResumenResolucionAward>;
 	resolverSeleccionSorpresa(equipoId: number): Promise<ResumenResolucionAward>;
 	resolverKoFinalistas(
