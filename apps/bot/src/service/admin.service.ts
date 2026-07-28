@@ -370,10 +370,15 @@ export class AdminService implements IAdminService {
 			),
 		]);
 
-		const first = hmgGanadores[0];
-		const partido = first
-			? `${first.equipoLocalSiglas} ${first.equipoLocalBandera} ${first.golesLocal}-${first.golesVisitante} ${first.equipoVisitanteSiglas} ${first.equipoVisitanteBandera}`
-			: "";
+		const seenPartidos = new Set<string>();
+		const partidos: string[] = [];
+		for (const r of hmgGanadores) {
+			const partidoStr = `${r.equipoLocalSiglas} ${r.equipoLocalBandera} ${r.golesLocal}-${r.golesVisitante} ${r.equipoVisitanteSiglas} ${r.equipoVisitanteBandera}`;
+			if (!seenPartidos.has(partidoStr)) {
+				seenPartidos.add(partidoStr);
+				partidos.push(partidoStr);
+			}
+		}
 
 		return {
 			winRate: {
@@ -392,7 +397,7 @@ export class AdminService implements IAdminService {
 					username: u.username,
 				})),
 				totalGoles: hmgGanadores[0]?.totalGoles ?? 0,
-				partido,
+				partidos,
 				puntos: 2,
 			},
 		};

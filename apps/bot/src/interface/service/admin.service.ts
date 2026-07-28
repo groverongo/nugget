@@ -26,7 +26,7 @@ export interface BonusResult {
 	hitMasGoles: {
 		ganadores: BonusGanador[];
 		totalGoles: number;
-		partido: string;
+		partidos: string[];
 		puntos: number;
 	};
 }

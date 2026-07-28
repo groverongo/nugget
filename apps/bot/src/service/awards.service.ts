@@ -15,6 +15,8 @@ import type { TxManager } from "@support/db.provider";
 import type { IAwardsRepository } from "../interface/repository/awards.repository";
 import type { IEstaticoRepository } from "../interface/repository/estatico.repository";
 import type {
+	AwardGanador,
+	AwardGanadoresGrupo,
 	AwardsKODisplay,
 	AwardsKORaw,
 	GuardarAwardsInput,
@@ -30,6 +32,114 @@ type JugadorInfo = {
 	equipoNombre: string;
 	equipoBandera: string;
 };
+
+type PuntosCalculados = { puntos: number; aciertos: string[] };
+
+// ---------------------------------------------------------------------
+// Fórmulas de puntaje puras — usadas tanto por los resolverX (que además
+// aplican los puntos) como por calcularGanadoresPorAward (solo lectura).
+// ---------------------------------------------------------------------
+
+function calcularPuntosPickSimple(
+	pick: number | null,
+	real: number,
+	valorSiAcierta: number,
+	etiqueta: string,
+): PuntosCalculados {
+	if (pick !== null && pick === real) {
+		return {
+			puntos: valorSiAcierta,
+			aciertos: [`${etiqueta} +${valorSiAcierta}`],
+		};
+	}
+	return { puntos: 0, aciertos: [] };
+}
+
+function calcularPuntosMejorGolDesdeMapa(
+	pick: number | null,
+	puntosPorJugador: Map<number, number>,
+): PuntosCalculados {
+	if (pick === null) return { puntos: 0, aciertos: [] };
+	const puntos = puntosPorJugador.get(pick) ?? 0;
+	return puntos > 0
+		? { puntos, aciertos: [`Mejor gol +${puntos}`] }
+		: { puntos: 0, aciertos: [] };
+}
+
+function calcularPuntosKoFinalistas(
+	pickF1: number | null,
+	pickF2: number | null,
+	pickCampeon: number | null,
+	realF1: number,
+	realF2: number,
+	realCampeon: number,
+): PuntosCalculados {
+	if (pickF1 === null || pickF2 === null) return { puntos: 0, aciertos: [] };
+	const finalistasReales = new Set([realF1, realF2]);
+	const finalistasUsuario = new Set([pickF1, pickF2]);
+	const aciertosFinalistas = [...finalistasUsuario].filter((f) =>
+		finalistasReales.has(f),
+	).length;
+	let puntos = aciertosFinalistas * 2;
+	const aciertos =
+		aciertosFinalistas > 0
+			? [
+					`Finalistas: ${aciertosFinalistas} acertado(s) +${aciertosFinalistas * 2}`,
+				]
+			: [];
+	if (pickCampeon !== null && pickCampeon === realCampeon) {
+		puntos += 1;
+		aciertos.push("Campeón +1");
+	}
+	return { puntos, aciertos };
+}
+
+function calcularPuntosKoMejorPartido(
+	pickE1: number | null,
+	pickE2: number | null,
+	pickMasGoles: number | null,
+	realE1: number,
+	realE2: number,
+	realMasGoles: number | null,
+): PuntosCalculados {
+	if (pickE1 === null || pickE2 === null) return { puntos: 0, aciertos: [] };
+	const equiposReales = new Set([realE1, realE2]);
+	const equiposUsuario = new Set([pickE1, pickE2]);
+	const correctos = [...equiposUsuario].filter((e) => equiposReales.has(e));
+	if (correctos.length === 2) {
+		const masGolesCorr = pickMasGoles === realMasGoles;
+		const puntos = masGolesCorr ? 3 : 2;
+		return {
+			puntos,
+			aciertos: [
+				`Mejor partido${masGolesCorr ? " + más goles" : ""} +${puntos}`,
+			],
+		};
+	}
+	if (correctos.length === 1) {
+		const equipo = correctos[0];
+		if (realMasGoles !== null && equipo === realMasGoles) {
+			return {
+				puntos: 2,
+				aciertos: ["Mejor partido (1 equipo + más goles) +2"],
+			};
+		}
+		return { puntos: 1, aciertos: ["Mejor partido (1 equipo) +1"] };
+	}
+	return { puntos: 0, aciertos: [] };
+}
+
+function calcularPuntosKoNumSuplementarios(
+	pick: number | null,
+	real: number,
+): PuntosCalculados {
+	if (pick === null) return { puntos: 0, aciertos: [] };
+	const diff = Math.abs(pick - real);
+	if (diff === 0) return { puntos: 3, aciertos: ["Suplementarios exacto +3"] };
+	if (diff === 1) return { puntos: 2, aciertos: ["Suplementarios ±1 +2"] };
+	if (diff === 2) return { puntos: 1, aciertos: ["Suplementarios ±2 +1"] };
+	return { puntos: 0, aciertos: [] };
+}
 
 export class AwardsService implements IAwardsService {
 	constructor(
@@ -427,8 +537,12 @@ export class AwardsService implements IAwardsService {
 			for (const u of usuarios) {
 				if (u.awardCampeon === null) continue;
 				resumen.totalUsuarios++;
-				const acierto = u.awardCampeon === equipoId;
-				const puntos = acierto ? 10 : 0;
+				const { puntos, aciertos } = calcularPuntosPickSimple(
+					u.awardCampeon,
+					equipoId,
+					10,
+					"Campeón",
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -439,7 +553,7 @@ export class AwardsService implements IAwardsService {
 					puntosGanados: puntos,
 					puntosTotal,
 					eleccion: this.displayEquipo(equipos, u.awardCampeon),
-					aciertos: acierto ? ["Campeón +10"] : [],
+					aciertos,
 				});
 			}
 			await repo.guardarResultadoCampeon({ resultadoCampeon: equipoId });
@@ -482,8 +596,12 @@ export class AwardsService implements IAwardsService {
 				const valor = u[campo];
 				if (valor === null) continue;
 				resumen.totalUsuarios++;
-				const acierto = valor === jugadorId;
-				const puntos = acierto ? puntosPorAcierto : 0;
+				const { puntos, aciertos } = calcularPuntosPickSimple(
+					valor,
+					jugadorId,
+					puntosPorAcierto,
+					etiqueta,
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -494,7 +612,7 @@ export class AwardsService implements IAwardsService {
 					puntosGanados: puntos,
 					puntosTotal,
 					eleccion: this.displayJugador(jugadores, valor),
-					aciertos: acierto ? [`${etiqueta} +${puntos}`] : [],
+					aciertos,
 				});
 			}
 			await guardar(repo, jugadorId);
@@ -563,29 +681,34 @@ export class AwardsService implements IAwardsService {
 	): Promise<ResumenResolucionAward> {
 		return this.txManager.runInTx(async (tx) => {
 			const repo = this.awardsRepo.withTx(tx);
-			const actual = await this.obtenerResultados(repo);
-			if (actual.resultadoMejorGol !== null) {
-				throw new Error("El award de Mejor Gol ya fue resuelto.");
+			const resueltos = await repo.listMejorGolResueltos();
+			if (resueltos.some((r) => r.jugadorId === jugadorId)) {
+				throw new Error("Ese jugador ya fue resuelto para Mejor Gol.");
+			}
+			if (resueltos.some((r) => r.posicion === posicion)) {
+				throw new Error(
+					`La posición ${posicion} ya fue asignada a otro jugador.`,
+				);
 			}
 			const fila =
 				await this.estaticoRepo.verPuntosMejorGolPorPosicion(posicion);
 			const puntosMejorGol = fila?.puntos ?? 0;
 			const usuarios = await repo.listUsuariosConCamposAwards();
-			const ids = new Set<number>([jugadorId]);
-			for (const u of usuarios) {
-				if (u.awardMejorGol !== null) ids.add(u.awardMejorGol);
-			}
-			const jugadores = await this.jugadorMap([...ids]);
+			const jugadores = await this.jugadorMap([jugadorId]);
 			const resumen: ResumenResolucionAward = {
-				resultadoDisplay: `${this.displayJugador(jugadores, jugadorId)} (posición ${posicion})`,
+				resultadoDisplay: `${this.displayJugador(jugadores, jugadorId)} (posición ${posicion}) — ${resueltos.length + 1}/10 goles resueltos`,
 				totalUsuarios: 0,
 				resultados: [],
 			};
 			for (const u of usuarios) {
-				if (u.awardMejorGol === null) continue;
+				if (u.awardMejorGol !== jugadorId) continue;
 				resumen.totalUsuarios++;
-				const acierto = u.awardMejorGol === jugadorId && puntosMejorGol > 0;
-				const puntos = acierto ? puntosMejorGol : 0;
+				const { puntos, aciertos } = calcularPuntosPickSimple(
+					u.awardMejorGol,
+					jugadorId,
+					puntosMejorGol,
+					"Mejor gol",
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -596,13 +719,10 @@ export class AwardsService implements IAwardsService {
 					puntosGanados: puntos,
 					puntosTotal,
 					eleccion: this.displayJugador(jugadores, u.awardMejorGol),
-					aciertos: acierto ? [`Mejor gol +${puntos}`] : [],
+					aciertos,
 				});
 			}
-			await repo.guardarResultadoMejorGol({
-				resultadoMejorGol: jugadorId,
-				resultadoMejorGolPosicion: posicion,
-			});
+			await repo.guardarMejorGolResuelto({ jugadorId, posicion });
 			return resumen;
 		});
 	}
@@ -633,8 +753,12 @@ export class AwardsService implements IAwardsService {
 				const valor = u[campo];
 				if (valor === null) continue;
 				resumen.totalUsuarios++;
-				const acierto = valor === equipoId;
-				const puntos = acierto ? puntosPorAcierto : 0;
+				const { puntos, aciertos } = calcularPuntosPickSimple(
+					valor,
+					equipoId,
+					puntosPorAcierto,
+					etiqueta,
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -645,7 +769,7 @@ export class AwardsService implements IAwardsService {
 					puntosGanados: puntos,
 					puntosTotal,
 					eleccion: this.displayEquipo(equipos, valor),
-					aciertos: acierto ? [`${etiqueta} +${puntos}`] : [],
+					aciertos,
 				});
 			}
 			await guardar(repo, equipoId);
@@ -700,7 +824,6 @@ export class AwardsService implements IAwardsService {
 				throw new Error("El award de Finalistas ya fue resuelto.");
 			}
 			const equipos = await this.equipoMap();
-			const finalistasReales = new Set([finalista1, finalista2]);
 			const usuarios = await repo.listUsuariosConCamposAwardsKO();
 			const resumen: ResumenResolucionAward = {
 				resultadoDisplay: `${this.displayEquipo(equipos, finalista1)}/${this.displayEquipo(equipos, finalista2)} (campeón: ${this.displayEquipo(equipos, campeon)})`,
@@ -712,24 +835,14 @@ export class AwardsService implements IAwardsService {
 					continue;
 				}
 				resumen.totalUsuarios++;
-				const finalistasUsuario = new Set([
+				const { puntos, aciertos } = calcularPuntosKoFinalistas(
 					u.awardKoFinalista1,
 					u.awardKoFinalista2,
-				]);
-				const aciertosFinalistas = [...finalistasUsuario].filter((f) =>
-					finalistasReales.has(f),
-				).length;
-				let puntos = aciertosFinalistas * 2;
-				const aciertos =
-					aciertosFinalistas > 0
-						? [
-								`Finalistas: ${aciertosFinalistas} acertado(s) +${aciertosFinalistas * 2}`,
-							]
-						: [];
-				if (u.awardKoCampeon !== null && u.awardKoCampeon === campeon) {
-					puntos += 1;
-					aciertos.push("Campeón +1");
-				}
+					u.awardKoCampeon,
+					finalista1,
+					finalista2,
+					campeon,
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -768,7 +881,6 @@ export class AwardsService implements IAwardsService {
 				throw new Error("El award de Mejor Partido ya fue resuelto.");
 			}
 			const equipos = await this.equipoMap();
-			const equiposReales = new Set([equipo1, equipo2]);
 			const usuarios = await repo.listUsuariosConCamposAwardsKO();
 			const masGolesDisplay =
 				masGoles !== null ? this.displayEquipo(equipos, masGoles) : "empate";
@@ -785,31 +897,14 @@ export class AwardsService implements IAwardsService {
 					continue;
 				}
 				resumen.totalUsuarios++;
-				const equiposUsuario = new Set([
+				const { puntos, aciertos } = calcularPuntosKoMejorPartido(
 					u.awardKoMejorPartidoEquipo1,
 					u.awardKoMejorPartidoEquipo2,
-				]);
-				const correctos = [...equiposUsuario].filter((e) =>
-					equiposReales.has(e),
+					u.awardKoMejorPartidoMasGoles,
+					equipo1,
+					equipo2,
+					masGoles,
 				);
-				let puntos = 0;
-				const aciertos: string[] = [];
-				if (correctos.length === 2) {
-					const masGolesCorr = u.awardKoMejorPartidoMasGoles === masGoles;
-					puntos = masGolesCorr ? 3 : 2;
-					aciertos.push(
-						`Mejor partido${masGolesCorr ? " + más goles" : ""} +${puntos}`,
-					);
-				} else if (correctos.length === 1) {
-					const equipo = correctos[0];
-					if (masGoles !== null && equipo === masGoles) {
-						puntos = 2;
-						aciertos.push("Mejor partido (1 equipo + más goles) +2");
-					} else {
-						puntos = 1;
-						aciertos.push("Mejor partido (1 equipo) +1");
-					}
-				}
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -856,19 +951,10 @@ export class AwardsService implements IAwardsService {
 			for (const u of usuarios) {
 				if (u.awardKoNumSuplementarios === null) continue;
 				resumen.totalUsuarios++;
-				const diff = Math.abs(u.awardKoNumSuplementarios - cantidad);
-				let puntos = 0;
-				const aciertos: string[] = [];
-				if (diff === 0) {
-					puntos = 3;
-					aciertos.push("Suplementarios exacto +3");
-				} else if (diff === 1) {
-					puntos = 2;
-					aciertos.push("Suplementarios ±1 +2");
-				} else if (diff === 2) {
-					puntos = 1;
-					aciertos.push("Suplementarios ±2 +1");
-				}
+				const { puntos, aciertos } = calcularPuntosKoNumSuplementarios(
+					u.awardKoNumSuplementarios,
+					cantidad,
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -910,8 +996,12 @@ export class AwardsService implements IAwardsService {
 			for (const u of usuarios) {
 				if (u.awardKoGoleador === null) continue;
 				resumen.totalUsuarios++;
-				const acierto = u.awardKoGoleador === jugadorId;
-				const puntos = acierto ? 3 : 0;
+				const { puntos, aciertos } = calcularPuntosPickSimple(
+					u.awardKoGoleador,
+					jugadorId,
+					3,
+					"Goleador KO",
+				);
 				const puntosTotal =
 					puntos > 0
 						? await repo.sumarPuntosAward({ id: u.id, puntos })
@@ -922,11 +1012,348 @@ export class AwardsService implements IAwardsService {
 					puntosGanados: puntos,
 					puntosTotal,
 					eleccion: this.displayJugador(jugadores, u.awardKoGoleador),
-					aciertos: acierto ? ["Goleador KO +3"] : [],
+					aciertos,
 				});
 			}
 			await repo.guardarResultadoKoGoleador({ resultadoKoGoleador: jugadorId });
 			return resumen;
 		});
+	}
+
+	// ---------------------------------------------------------------------
+	// Cálculo de solo lectura — no aplica puntos, solo re-deriva quién ganó
+	// cada award ya resuelto. Usado por el resumen final y por /recuento.
+	// ---------------------------------------------------------------------
+
+	async calcularGanadoresPorAward(): Promise<AwardGanadoresGrupo[]> {
+		const actual = await this.obtenerResultados(this.awardsRepo);
+		const mejorGolResueltos = await this.awardsRepo.listMejorGolResueltos();
+		const usuarios = await this.awardsRepo.listUsuariosConCamposAwards();
+		const usuariosKO = await this.awardsRepo.listUsuariosConCamposAwardsKO();
+
+		const equipos = await this.equipoMap();
+		const jugadorIds = [
+			actual.resultadoGoleador,
+			actual.resultadoMejorJugador,
+			actual.resultadoMejorArquero,
+			actual.resultadoMejorJugadorJoven,
+			actual.resultadoKoGoleador,
+			...mejorGolResueltos.map((r) => r.jugadorId),
+		].filter((id): id is number => id !== null);
+		const jugadores = await this.jugadorMap(jugadorIds);
+
+		const ganador = (
+			usuarioId: string,
+			username: string,
+			r: PuntosCalculados,
+		): AwardGanador => ({
+			usuarioId,
+			username,
+			puntos: r.puntos,
+			detalle: r.aciertos.join(", "),
+		});
+
+		const grupos: AwardGanadoresGrupo[] = [];
+
+		grupos.push({
+			key: "campeon",
+			etiqueta: "Campeón",
+			resuelto: actual.resultadoCampeon !== null,
+			resultadoDisplay:
+				actual.resultadoCampeon !== null
+					? this.displayEquipo(equipos, actual.resultadoCampeon)
+					: null,
+			ganadores:
+				actual.resultadoCampeon !== null
+					? usuarios
+							.map((u) =>
+								ganador(
+									u.id,
+									u.username,
+									calcularPuntosPickSimple(
+										u.awardCampeon,
+										actual.resultadoCampeon as number,
+										10,
+										"Campeón",
+									),
+								),
+							)
+							.filter((g) => g.puntos > 0)
+					: [],
+		});
+
+		const jugadorSimple = (
+			key: string,
+			etiqueta: string,
+			resultado: number | null,
+			campo:
+				| "awardGoleador"
+				| "awardMejorJugador"
+				| "awardMejorArquero"
+				| "awardMejorJugadorJoven",
+			puntosPorAcierto: number,
+		): AwardGanadoresGrupo => ({
+			key,
+			etiqueta,
+			resuelto: resultado !== null,
+			resultadoDisplay:
+				resultado !== null ? this.displayJugador(jugadores, resultado) : null,
+			ganadores:
+				resultado !== null
+					? usuarios
+							.map((u) =>
+								ganador(
+									u.id,
+									u.username,
+									calcularPuntosPickSimple(
+										u[campo],
+										resultado,
+										puntosPorAcierto,
+										etiqueta,
+									),
+								),
+							)
+							.filter((g) => g.puntos > 0)
+					: [],
+		});
+
+		grupos.push(
+			jugadorSimple(
+				"goleador",
+				"Goleador",
+				actual.resultadoGoleador,
+				"awardGoleador",
+				5,
+			),
+		);
+		grupos.push(
+			jugadorSimple(
+				"mejor-jugador",
+				"Mejor Jugador",
+				actual.resultadoMejorJugador,
+				"awardMejorJugador",
+				5,
+			),
+		);
+		grupos.push(
+			jugadorSimple(
+				"mejor-arquero",
+				"Mejor Arquero",
+				actual.resultadoMejorArquero,
+				"awardMejorArquero",
+				3,
+			),
+		);
+		grupos.push(
+			jugadorSimple(
+				"mejor-jugador-joven",
+				"Mejor Jugador Joven",
+				actual.resultadoMejorJugadorJoven,
+				"awardMejorJugadorJoven",
+				3,
+			),
+		);
+
+		const mejorGolResuelto = mejorGolResueltos.length === 10;
+		const puntosPorJugadorMejorGol = new Map<number, number>();
+		for (const r of mejorGolResueltos) {
+			const fila = await this.estaticoRepo.verPuntosMejorGolPorPosicion(
+				r.posicion,
+			);
+			puntosPorJugadorMejorGol.set(r.jugadorId, fila?.puntos ?? 0);
+		}
+		grupos.push({
+			key: "mejor-gol",
+			etiqueta: "Mejor Gol",
+			resuelto: mejorGolResuelto,
+			resultadoDisplay: mejorGolResuelto
+				? [...mejorGolResueltos]
+						.sort((a, b) => a.posicion - b.posicion)
+						.map(
+							(r) =>
+								`${r.posicion}° ${this.displayJugador(jugadores, r.jugadorId)}`,
+						)
+						.join(", ")
+				: null,
+			ganadores: mejorGolResuelto
+				? usuarios
+						.map((u) =>
+							ganador(
+								u.id,
+								u.username,
+								calcularPuntosMejorGolDesdeMapa(
+									u.awardMejorGol,
+									puntosPorJugadorMejorGol,
+								),
+							),
+						)
+						.filter((g) => g.puntos > 0)
+				: [],
+		});
+
+		const equipoSimple = (
+			key: string,
+			etiqueta: string,
+			resultado: number | null,
+			campo: "awardSeleccionDecepcion" | "awardSeleccionSorpresa",
+			puntosPorAcierto: number,
+		): AwardGanadoresGrupo => ({
+			key,
+			etiqueta,
+			resuelto: resultado !== null,
+			resultadoDisplay:
+				resultado !== null ? this.displayEquipo(equipos, resultado) : null,
+			ganadores:
+				resultado !== null
+					? usuarios
+							.map((u) =>
+								ganador(
+									u.id,
+									u.username,
+									calcularPuntosPickSimple(
+										u[campo],
+										resultado,
+										puntosPorAcierto,
+										etiqueta,
+									),
+								),
+							)
+							.filter((g) => g.puntos > 0)
+					: [],
+		});
+
+		grupos.push(
+			equipoSimple(
+				"seleccion-decepcion",
+				"Selección Decepción",
+				actual.resultadoSeleccionDecepcion,
+				"awardSeleccionDecepcion",
+				5,
+			),
+		);
+		grupos.push(
+			equipoSimple(
+				"seleccion-sorpresa",
+				"Selección Sorpresa",
+				actual.resultadoSeleccionSorpresa,
+				"awardSeleccionSorpresa",
+				5,
+			),
+		);
+
+		const koFinalistasResuelto = actual.resultadoKoFinalista1 !== null;
+		grupos.push({
+			key: "ko-finalistas",
+			etiqueta: "Finalistas",
+			resuelto: koFinalistasResuelto,
+			resultadoDisplay: koFinalistasResuelto
+				? `${this.displayEquipo(equipos, actual.resultadoKoFinalista1 as number)}/${this.displayEquipo(equipos, actual.resultadoKoFinalista2 as number)} (campeón: ${this.displayEquipo(equipos, actual.resultadoKoCampeon as number)})`
+				: null,
+			ganadores: koFinalistasResuelto
+				? usuariosKO
+						.map((u) =>
+							ganador(
+								u.id,
+								u.username,
+								calcularPuntosKoFinalistas(
+									u.awardKoFinalista1,
+									u.awardKoFinalista2,
+									u.awardKoCampeon,
+									actual.resultadoKoFinalista1 as number,
+									actual.resultadoKoFinalista2 as number,
+									actual.resultadoKoCampeon as number,
+								),
+							),
+						)
+						.filter((g) => g.puntos > 0)
+				: [],
+		});
+
+		const koMejorPartidoResuelto =
+			actual.resultadoKoMejorPartidoEquipo1 !== null;
+		const masGolesDisplay =
+			actual.resultadoKoMejorPartidoMasGoles !== null
+				? this.displayEquipo(equipos, actual.resultadoKoMejorPartidoMasGoles)
+				: "empate";
+		grupos.push({
+			key: "ko-mejor-partido",
+			etiqueta: "Mejor Partido",
+			resuelto: koMejorPartidoResuelto,
+			resultadoDisplay: koMejorPartidoResuelto
+				? `${this.displayEquipo(equipos, actual.resultadoKoMejorPartidoEquipo1 as number)}/${this.displayEquipo(equipos, actual.resultadoKoMejorPartidoEquipo2 as number)} (más goles: ${masGolesDisplay})`
+				: null,
+			ganadores: koMejorPartidoResuelto
+				? usuariosKO
+						.map((u) =>
+							ganador(
+								u.id,
+								u.username,
+								calcularPuntosKoMejorPartido(
+									u.awardKoMejorPartidoEquipo1,
+									u.awardKoMejorPartidoEquipo2,
+									u.awardKoMejorPartidoMasGoles,
+									actual.resultadoKoMejorPartidoEquipo1 as number,
+									actual.resultadoKoMejorPartidoEquipo2 as number,
+									actual.resultadoKoMejorPartidoMasGoles,
+								),
+							),
+						)
+						.filter((g) => g.puntos > 0)
+				: [],
+		});
+
+		grupos.push({
+			key: "ko-num-suplementarios",
+			etiqueta: "Número de Suplementarios",
+			resuelto: actual.resultadoKoNumSuplementarios !== null,
+			resultadoDisplay:
+				actual.resultadoKoNumSuplementarios !== null
+					? `${actual.resultadoKoNumSuplementarios} suplementarios`
+					: null,
+			ganadores:
+				actual.resultadoKoNumSuplementarios !== null
+					? usuariosKO
+							.map((u) =>
+								ganador(
+									u.id,
+									u.username,
+									calcularPuntosKoNumSuplementarios(
+										u.awardKoNumSuplementarios,
+										actual.resultadoKoNumSuplementarios as number,
+									),
+								),
+							)
+							.filter((g) => g.puntos > 0)
+					: [],
+		});
+
+		grupos.push({
+			key: "ko-goleador",
+			etiqueta: "Goleador KO",
+			resuelto: actual.resultadoKoGoleador !== null,
+			resultadoDisplay:
+				actual.resultadoKoGoleador !== null
+					? this.displayJugador(jugadores, actual.resultadoKoGoleador)
+					: null,
+			ganadores:
+				actual.resultadoKoGoleador !== null
+					? usuariosKO
+							.map((u) =>
+								ganador(
+									u.id,
+									u.username,
+									calcularPuntosPickSimple(
+										u.awardKoGoleador,
+										actual.resultadoKoGoleador as number,
+										3,
+										"Goleador KO",
+									),
+								),
+							)
+							.filter((g) => g.puntos > 0)
+					: [],
+		});
+
+		return grupos;
 	}
 }

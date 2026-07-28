@@ -4,6 +4,7 @@ import type {
 } from "@sqlc/recuento_sql";
 import type { IPrediccionesRepository } from "../interface/repository/prediccion.repository";
 import type { IRecuentoRepository } from "../interface/repository/recuento.repository";
+import type { IAwardsService } from "../interface/service/awards.service";
 import type {
 	DatosRecuento,
 	HitMasGoles,
@@ -75,6 +76,7 @@ export class RecuentoService implements IRecuentoService {
 	constructor(
 		private readonly recuentoRepo: IRecuentoRepository,
 		private readonly prediccionesRepo: IPrediccionesRepository,
+		private readonly awardsService: IAwardsService,
 	) {}
 
 	private resolverDecepcionYSorpresa(equipos: VerEquiposConEliminacionRow[]): {
@@ -187,6 +189,7 @@ export class RecuentoService implements IRecuentoService {
 			hitRaw,
 			equiposConEliminacion,
 			partidoFinal,
+			awardsGanadores,
 		] = await Promise.all([
 			this.recuentoRepo.verEstadisticasTorneo(),
 			this.recuentoRepo.verWinRateGlobal(),
@@ -198,6 +201,7 @@ export class RecuentoService implements IRecuentoService {
 			this.prediccionesRepo.verGanadoresHitMasGoles(),
 			this.recuentoRepo.verEquiposConEliminacion(),
 			this.recuentoRepo.verPartidoFinal(),
+			this.awardsService.calcularGanadoresPorAward(),
 		]);
 
 		const { decepcionEquipoGanadorId, sorpresaEquipoGanadorId } =
@@ -245,6 +249,7 @@ export class RecuentoService implements IRecuentoService {
 			sorpresaEquipoGanadorId,
 			finalistaIds,
 			campeonKOId,
+			awardsGanadores,
 		};
 	}
 

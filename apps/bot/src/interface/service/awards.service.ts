@@ -33,6 +33,21 @@ export interface MisAwardsResueltos {
 	seleccionSorpresa: string | null;
 }
 
+export type AwardGanador = {
+	usuarioId: string;
+	username: string;
+	puntos: number;
+	detalle: string;
+};
+
+export type AwardGanadoresGrupo = {
+	key: string;
+	etiqueta: string;
+	resuelto: boolean;
+	resultadoDisplay: string | null;
+	ganadores: AwardGanador[];
+};
+
 export type ResumenResolucionAward = {
 	resultadoDisplay: string;
 	totalUsuarios: number;
@@ -129,4 +144,6 @@ export interface IAwardsService {
 		cantidad: number,
 	): Promise<ResumenResolucionAward>;
 	resolverKoGoleador(jugadorId: number): Promise<ResumenResolucionAward>;
+
+	calcularGanadoresPorAward(): Promise<AwardGanadoresGrupo[]>;
 }

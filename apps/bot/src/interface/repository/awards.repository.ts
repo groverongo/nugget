@@ -3,6 +3,7 @@ import type {
 	BuscarJugadoresNoEliminadosRow,
 	GuardarAwardsArgs,
 	GuardarAwardsKOArgs,
+	GuardarMejorGolResueltoArgs,
 	GuardarResultadoCampeonArgs,
 	GuardarResultadoGoleadorArgs,
 	GuardarResultadoKoFinalistasArgs,
@@ -10,11 +11,11 @@ import type {
 	GuardarResultadoKoMejorPartidoArgs,
 	GuardarResultadoKoNumSuplementariosArgs,
 	GuardarResultadoMejorArqueroArgs,
-	GuardarResultadoMejorGolArgs,
 	GuardarResultadoMejorJugadorArgs,
 	GuardarResultadoMejorJugadorJovenArgs,
 	GuardarResultadoSeleccionDecepcionArgs,
 	GuardarResultadoSeleccionSorpresaArgs,
+	ListMejorGolResueltosRow,
 	ListUsuariosConCamposAwardsKORow,
 	ListUsuariosConCamposAwardsRow,
 	SumarPuntosAwardArgs,
@@ -48,7 +49,8 @@ export interface IAwardsRepository {
 	guardarResultadoMejorJugadorJoven(
 		args: GuardarResultadoMejorJugadorJovenArgs,
 	): Promise<void>;
-	guardarResultadoMejorGol(args: GuardarResultadoMejorGolArgs): Promise<void>;
+	listMejorGolResueltos(): Promise<ListMejorGolResueltosRow[]>;
+	guardarMejorGolResuelto(args: GuardarMejorGolResueltoArgs): Promise<void>;
 	guardarResultadoSeleccionDecepcion(
 		args: GuardarResultadoSeleccionDecepcionArgs,
 	): Promise<void>;

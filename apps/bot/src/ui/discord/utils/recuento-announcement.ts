@@ -1,5 +1,6 @@
 import type { VerAwardsParaRecuentoRow } from "@sqlc/recuento_sql";
 import { generarPremiosPolla } from "@support/pozo";
+import type { AwardGanadoresGrupo } from "../../../interface/service/awards.service";
 import type { DatosRecuento } from "../../../interface/service/recuento.service";
 
 const AWARD_LABELS: Record<string, string> = {
@@ -79,6 +80,19 @@ function buildRevealedAwardLine(
 	return lineas;
 }
 
+/** Award ya resuelto vía /resolver-award: reemplaza la heurística de esa categoría puntual por los ganadores confirmados. */
+function lineasGanadoresConfirmados(grupo: AwardGanadoresGrupo): string[] {
+	const lineas = [`- ***${grupo.etiqueta}:*** ${grupo.resultadoDisplay}`];
+	if (grupo.ganadores.length === 0) {
+		lineas.push("  _Nadie atinó este award._");
+	} else {
+		for (const g of grupo.ganadores) {
+			lineas.push(`  ✅ <@${g.usuarioId}> +${g.puntos} 💠`);
+		}
+	}
+	return lineas;
+}
+
 function buildAwardsSection(
 	awards: VerAwardsParaRecuentoRow[],
 	eliminadosIds: Set<number>,
@@ -86,10 +100,18 @@ function buildAwardsSection(
 	sorpresaEquipoGanadorId: number | null,
 	finalistaIds: [number, number] | null,
 	campeonKOId: number | null,
+	awardsGanadores: AwardGanadoresGrupo[],
 ): string[] {
-	if (awards.length === 0) return [];
+	if (awards.length === 0 && !awardsGanadores.some((g) => g.resuelto)) {
+		return [];
+	}
+
+	const grupoPorKey = (key: string) =>
+		awardsGanadores.find((g) => g.key === key);
+	const hayAlgunAwardResuelto = awardsGanadores.some((g) => g.resuelto);
 
 	if (
+		!hayAlgunAwardResuelto &&
 		eliminadosIds.size === 0 &&
 		finalistaIds === null &&
 		campeonKOId === null
@@ -98,45 +120,53 @@ function buildAwardsSection(
 	}
 
 	type AwardDef = {
+		key: string;
 		label: string;
 		isEliminated: (r: VerAwardsParaRecuentoRow) => boolean;
 	};
 
 	const regularDefs: AwardDef[] = [
 		{
+			key: "campeon",
 			label: AWARD_LABELS.campeon,
 			isEliminated: (r) =>
 				r.campeonId !== null && eliminadosIds.has(r.campeonId),
 		},
 		{
+			key: "goleador",
 			label: AWARD_LABELS.goleador,
 			isEliminated: (r) =>
 				r.goleadorEquipoId !== null && eliminadosIds.has(r.goleadorEquipoId),
 		},
 		{
+			key: "mejor-jugador",
 			label: AWARD_LABELS.mejorJugador,
 			isEliminated: (r) =>
 				r.mejorJugadorEquipoId !== null &&
 				eliminadosIds.has(r.mejorJugadorEquipoId),
 		},
 		{
+			key: "mejor-arquero",
 			label: AWARD_LABELS.mejorArquero,
 			isEliminated: (r) =>
 				r.mejorArqueroEquipoId !== null &&
 				eliminadosIds.has(r.mejorArqueroEquipoId),
 		},
 		{
+			key: "mejor-jugador-joven",
 			label: AWARD_LABELS.mejorJugadorJoven,
 			isEliminated: (r) =>
 				r.mejorJugadorJovenEquipoId !== null &&
 				eliminadosIds.has(r.mejorJugadorJovenEquipoId),
 		},
 		{
+			key: "mejor-gol",
 			label: AWARD_LABELS.mejorGol,
 			isEliminated: (r) =>
 				r.mejorGolEquipoId !== null && eliminadosIds.has(r.mejorGolEquipoId),
 		},
 		{
+			key: "ko-goleador",
 			label: AWARD_LABELS.goleadorKO,
 			isEliminated: (r) =>
 				r.koGoleadorEquipoId !== null &&
@@ -145,111 +175,150 @@ function buildAwardsSection(
 	];
 
 	const lineas: string[] = [];
-	let hayMuertas = false;
+	let hayContenido = false;
 
 	for (const def of regularDefs) {
+		const grupo = grupoPorKey(def.key);
+		if (grupo?.resuelto) {
+			hayContenido = true;
+			lineas.push(...lineasGanadoresConfirmados(grupo));
+			continue;
+		}
 		const muertos = awards
 			.filter((r) => def.isEliminated(r))
 			.map((r) => `<@${r.usuarioId}>`);
 		if (muertos.length > 0) {
-			hayMuertas = true;
+			hayContenido = true;
 			lineas.push(`- ***${def.label}:*** ${muertos.join("/")} ❌`);
 		}
 	}
 
-	const decepcionAfectados = awards.filter(
-		(r) =>
-			r.seleccionDecepcionId !== null &&
-			eliminadosIds.has(r.seleccionDecepcionId),
-	);
-	const decepcionLineas = buildSplitAwardLine(
-		AWARD_LABELS.seleccionDecepcion,
-		decepcionAfectados,
-		(r) => r.seleccionDecepcionId,
-		decepcionEquipoGanadorId,
-	);
-	if (decepcionLineas.length > 0) {
-		hayMuertas = true;
-		lineas.push(...decepcionLineas);
-	}
-
-	const sorpresaAfectados = awards.filter(
-		(r) =>
-			r.seleccionSorpresaId !== null &&
-			eliminadosIds.has(r.seleccionSorpresaId),
-	);
-	const sorpresaLineas = buildSplitAwardLine(
-		AWARD_LABELS.seleccionSorpresa,
-		sorpresaAfectados,
-		(r) => r.seleccionSorpresaId,
-		sorpresaEquipoGanadorId,
-	);
-	if (sorpresaLineas.length > 0) {
-		hayMuertas = true;
-		lineas.push(...sorpresaLineas);
-	}
-
-	// Finalistas (KO): mientras no se conozcan los 2 finalistas reales, se descarta
-	// progresivamente a quien ya tenga un pick eliminado (ya no puede ganar la categoria).
-	// Una vez existe el partido de la final, se resuelve del todo (✅/❌ para todos).
-	let finalistasLineas: string[] = [];
-	if (finalistaIds !== null) {
-		const finalistasSet = new Set(finalistaIds);
-		const elegibles = awards.filter(
-			(r) => r.koFinalista1Id !== null && r.koFinalista2Id !== null,
-		);
-		finalistasLineas = buildRevealedAwardLine(
-			AWARD_LABELS.finalistasKO,
-			elegibles,
+	const decepcionGrupo = grupoPorKey("seleccion-decepcion");
+	if (decepcionGrupo?.resuelto) {
+		hayContenido = true;
+		lineas.push(...lineasGanadoresConfirmados(decepcionGrupo));
+	} else {
+		const decepcionAfectados = awards.filter(
 			(r) =>
-				finalistasSet.has(r.koFinalista1Id as number) &&
-				finalistasSet.has(r.koFinalista2Id as number),
+				r.seleccionDecepcionId !== null &&
+				eliminadosIds.has(r.seleccionDecepcionId),
 		);
+		const decepcionLineas = buildSplitAwardLine(
+			AWARD_LABELS.seleccionDecepcion,
+			decepcionAfectados,
+			(r) => r.seleccionDecepcionId,
+			decepcionEquipoGanadorId,
+		);
+		if (decepcionLineas.length > 0) {
+			hayContenido = true;
+			lineas.push(...decepcionLineas);
+		}
+	}
+
+	const sorpresaGrupo = grupoPorKey("seleccion-sorpresa");
+	if (sorpresaGrupo?.resuelto) {
+		hayContenido = true;
+		lineas.push(...lineasGanadoresConfirmados(sorpresaGrupo));
 	} else {
-		const descartados = awards
-			.filter(
+		const sorpresaAfectados = awards.filter(
+			(r) =>
+				r.seleccionSorpresaId !== null &&
+				eliminadosIds.has(r.seleccionSorpresaId),
+		);
+		const sorpresaLineas = buildSplitAwardLine(
+			AWARD_LABELS.seleccionSorpresa,
+			sorpresaAfectados,
+			(r) => r.seleccionSorpresaId,
+			sorpresaEquipoGanadorId,
+		);
+		if (sorpresaLineas.length > 0) {
+			hayContenido = true;
+			lineas.push(...sorpresaLineas);
+		}
+	}
+
+	// Finalistas + Campeón (KO): en /resolver-award son un solo award combinado,
+	// así que una vez resuelto reemplaza las dos líneas heurísticas de una.
+	const finalistasGrupo = grupoPorKey("ko-finalistas");
+	if (finalistasGrupo?.resuelto) {
+		hayContenido = true;
+		lineas.push(...lineasGanadoresConfirmados(finalistasGrupo));
+	} else {
+		// Mientras no se conozcan los 2 finalistas reales, se descarta
+		// progresivamente a quien ya tenga un pick eliminado (ya no puede ganar la categoria).
+		// Una vez existe el partido de la final, se resuelve del todo (✅/❌ para todos).
+		let finalistasLineas: string[] = [];
+		if (finalistaIds !== null) {
+			const finalistasSet = new Set(finalistaIds);
+			const elegibles = awards.filter(
+				(r) => r.koFinalista1Id !== null && r.koFinalista2Id !== null,
+			);
+			finalistasLineas = buildRevealedAwardLine(
+				AWARD_LABELS.finalistasKO,
+				elegibles,
 				(r) =>
-					(r.koFinalista1Id !== null && eliminadosIds.has(r.koFinalista1Id)) ||
-					(r.koFinalista2Id !== null && eliminadosIds.has(r.koFinalista2Id)),
-			)
-			.map((r) => `<@${r.usuarioId}>`);
-		if (descartados.length > 0) {
-			finalistasLineas = [
-				`- ***${AWARD_LABELS.finalistasKO}:*** ${descartados.join("/")} ❌`,
-			];
+					finalistasSet.has(r.koFinalista1Id as number) &&
+					finalistasSet.has(r.koFinalista2Id as number),
+			);
+		} else {
+			const descartados = awards
+				.filter(
+					(r) =>
+						(r.koFinalista1Id !== null &&
+							eliminadosIds.has(r.koFinalista1Id)) ||
+						(r.koFinalista2Id !== null && eliminadosIds.has(r.koFinalista2Id)),
+				)
+				.map((r) => `<@${r.usuarioId}>`);
+			if (descartados.length > 0) {
+				finalistasLineas = [
+					`- ***${AWARD_LABELS.finalistasKO}:*** ${descartados.join("/")} ❌`,
+				];
+			}
+		}
+		if (finalistasLineas.length > 0) {
+			hayContenido = true;
+			lineas.push(...finalistasLineas);
+		}
+
+		// Campeon (KO): mismo criterio - descarte progresivo antes de que termine la final,
+		// resolucion completa (✅/❌) una vez que la final esta finalizada.
+		let campeonKOLineas: string[] = [];
+		if (campeonKOId !== null) {
+			const elegibles = awards.filter((r) => r.koCampeonId !== null);
+			campeonKOLineas = buildRevealedAwardLine(
+				AWARD_LABELS.campeonKO,
+				elegibles,
+				(r) => r.koCampeonId === campeonKOId,
+			);
+		} else {
+			const descartados = awards
+				.filter(
+					(r) => r.koCampeonId !== null && eliminadosIds.has(r.koCampeonId),
+				)
+				.map((r) => `<@${r.usuarioId}>`);
+			if (descartados.length > 0) {
+				campeonKOLineas = [
+					`- ***${AWARD_LABELS.campeonKO}:*** ${descartados.join("/")} ❌`,
+				];
+			}
+		}
+		if (campeonKOLineas.length > 0) {
+			hayContenido = true;
+			lineas.push(...campeonKOLineas);
 		}
 	}
-	if (finalistasLineas.length > 0) {
-		hayMuertas = true;
-		lineas.push(...finalistasLineas);
-	}
 
-	// Campeon (KO): mismo criterio - descarte progresivo antes de que termine la final,
-	// resolucion completa (✅/❌) una vez que la final esta finalizada.
-	let campeonKOLineas: string[] = [];
-	if (campeonKOId !== null) {
-		const elegibles = awards.filter((r) => r.koCampeonId !== null);
-		campeonKOLineas = buildRevealedAwardLine(
-			AWARD_LABELS.campeonKO,
-			elegibles,
-			(r) => r.koCampeonId === campeonKOId,
-		);
-	} else {
-		const descartados = awards
-			.filter((r) => r.koCampeonId !== null && eliminadosIds.has(r.koCampeonId))
-			.map((r) => `<@${r.usuarioId}>`);
-		if (descartados.length > 0) {
-			campeonKOLineas = [
-				`- ***${AWARD_LABELS.campeonKO}:*** ${descartados.join("/")} ❌`,
-			];
+	// Awards sin heurística posible (no hay señal de eliminación de equipos que aplique):
+	// solo aparecen una vez resueltos formalmente.
+	for (const key of ["ko-mejor-partido", "ko-num-suplementarios"]) {
+		const grupo = grupoPorKey(key);
+		if (grupo?.resuelto) {
+			hayContenido = true;
+			lineas.push(...lineasGanadoresConfirmados(grupo));
 		}
 	}
-	if (campeonKOLineas.length > 0) {
-		hayMuertas = true;
-		lineas.push(...campeonKOLineas);
-	}
 
-	if (!hayMuertas) {
+	if (!hayContenido) {
 		return ["🏅 🟢 _Todas las **awards** siguen abiertas._"];
 	}
 
@@ -264,6 +333,7 @@ export function buildAlertaEliminacion(
 	sorpresaEquipoGanadorId: number | null,
 	finalistaIds: [number, number] | null,
 	campeonKOId: number | null,
+	awardsGanadores: AwardGanadoresGrupo[],
 ): string {
 	const lineas: string[] = [
 		`_***${equipo.nombre} ${equipo.bandera}*** fue eliminado_`,
@@ -276,6 +346,7 @@ export function buildAlertaEliminacion(
 		sorpresaEquipoGanadorId,
 		finalistaIds,
 		campeonKOId,
+		awardsGanadores,
 	);
 	if (
 		afectadas.length > 0 &&
@@ -337,6 +408,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 		sorpresaEquipoGanadorId,
 		finalistaIds,
 		campeonKOId,
+		awardsGanadores,
 	} = datos;
 
 	const pct =
@@ -378,6 +450,7 @@ export function buildRecuento(datos: DatosRecuento): string {
 		sorpresaEquipoGanadorId,
 		finalistaIds,
 		campeonKOId,
+		awardsGanadores,
 	);
 	if (awardsLineas.length > 0) {
 		lineas.push("");
