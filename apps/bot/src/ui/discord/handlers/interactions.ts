@@ -1565,7 +1565,20 @@ type DiscordClient = {
 // mensaje para no perder el contexto de a qué award pertenecen esas líneas.
 const HEADER_PREFIX = "- ***";
 
-function splitMessage(text: string, maxLength = 2000): string[] {
+// Banderas tipo Inglaterra/Escocia se codifican con "tag sequences" Unicode
+// (U+E0000-U+E007F, caracteres invisibles). Están bien formadas, pero
+// rompen el parser de markdown/menciones de Discord para el resto del
+// mensaje una vez que aparecen. Se las saca de cualquier mensaje antes de
+// mandarlo (queda el 🏴 negro sin el país, pero el resto del mensaje
+// renderiza bien).
+const UNICODE_TAG_CHARS = /[\u{E0000}-\u{E007F}]/gu;
+
+function sanitizarBanderas(text: string): string {
+	return text.replace(UNICODE_TAG_CHARS, "");
+}
+
+function splitMessage(rawText: string, maxLength = 2000): string[] {
+	const text = sanitizarBanderas(rawText);
 	if (text.length <= maxLength) return [text];
 	const chunks: string[] = [];
 	let current = "";
