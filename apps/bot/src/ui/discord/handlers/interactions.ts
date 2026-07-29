@@ -1559,15 +1559,31 @@ type DiscordClient = {
 	};
 };
 
+// Prefijo que usan los headers de award en recuento-announcement.ts
+// (ej. "- ***Campeón:*** España"). Si un corte cae en medio de la lista de
+// ganadores de un award, se repite este header al inicio del siguiente
+// mensaje para no perder el contexto de a qué award pertenecen esas líneas.
+const HEADER_PREFIX = "- ***";
+
 function splitMessage(text: string, maxLength = 2000): string[] {
 	if (text.length <= maxLength) return [text];
 	const chunks: string[] = [];
 	let current = "";
+	let lastHeader: string | null = null;
 	for (const line of text.split("\n")) {
+		if (line.startsWith(HEADER_PREFIX)) lastHeader = line;
+		else if (line === "") lastHeader = null; // salimos del bloque (nueva sección)
 		const addition = current ? `\n${line}` : line;
 		if (current.length + addition.length > maxLength) {
 			if (current) chunks.push(current);
 			current = line.length > maxLength ? line.slice(0, maxLength) : line;
+			if (
+				lastHeader !== null &&
+				line !== lastHeader &&
+				!line.startsWith(HEADER_PREFIX)
+			) {
+				current = `${lastHeader} (cont.)\n${current}`;
+			}
 		} else {
 			current += addition;
 		}
